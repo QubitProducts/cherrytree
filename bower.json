@@ -1,0 +1,19 @@
+{
+  "name": "cherrytree",
+  "version": "0.1.0",
+  "main": "router.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "router.js": "tildeio/router.js",
+    "route-recognizer": "tildeio/route-recognizer",
+    "rsvp.js": "tildeio/rsvp.js#~2.0.0",
+    "underscore": "~1.5.0"
+  }
+}
