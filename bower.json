@@ -13,7 +13,7 @@
   "dependencies": {
     "router.js": "tildeio/router.js",
     "route-recognizer": "tildeio/route-recognizer",
-    "rsvp.js": "tildeio/rsvp.js#~2.0.0",
+    "rsvp.js": "tildeio/rsvp.js#2.0.0",
     "underscore": "~1.5.0"
   }
 }
