@@ -15,6 +15,8 @@ define(function (require) {
   State.prototype = {
     initialize: function () {},
     prepare: function () {},
+    // best hook for doing redirects
+    afterPrepare: function () {},
     activate: function () {
       console.log("activating state");
     },

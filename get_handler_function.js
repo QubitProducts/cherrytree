@@ -175,6 +175,9 @@ define(function (require) {
         afterModel: function (state, transition) {
           if (state) {
             transition.data.parentState = state;
+            if (state.afterPrepare) {
+              state.afterPrepare();
+            }
           }
         },
         enter: function () {
