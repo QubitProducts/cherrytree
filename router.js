@@ -111,12 +111,12 @@ define(function (require) {
 
     transitionTo: function() {
       var args = [].slice.call(arguments);
-      doTransition(this, 'transitionTo', args);
+      return doTransition(this, 'transitionTo', args);
     },
 
     replaceWith: function() {
       var args = [].slice.call(arguments);
-      doTransition(this, 'replaceWith', args);
+      return doTransition(this, 'replaceWith', args);
     },
 
     generate: function() {
