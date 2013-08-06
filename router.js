@@ -242,22 +242,24 @@ define(function (require) {
 
     scheduleLoadingStateEntry(router);
 
-    // var transitionPromise = router.router[method].apply(router.router, args);
-    // transitionPromise.then(function() {
-    //   transitionCompleted(router);
-    // });
-
-    var url = router.generate.apply(router, args);
-    // router.handle
-    var transitionPromise = router.router.handleURL(url).then(function () {
-      if (method === 'replaceWith') {
-        router.router.replaceURL(url);
-      } else {
-        // Assume everything else is just a URL update for now.
-        router.router.updateURL(url);
-      }
+    var transitionPromise = router.router[method].apply(router.router, args);
+    transitionPromise.then(function() {
       transitionCompleted(router);
     });
+
+    // TODO: figure out why I had to generate the URL here instead of just
+    // using the transitions...
+    // var url = router.generate.apply(router, args);
+    // // router.handle
+    // var transitionPromise = router.router.handleURL(url).then(function () {
+    //   if (method === 'replaceWith') {
+    //     router.router.replaceURL(url);
+    //   } else {
+    //     // Assume everything else is just a URL update for now.
+    //     router.router.updateURL(url);
+    //   }
+    //   transitionCompleted(router);
+    // });
 
     // We want to return the configurable promise object
     // so that callers of this function can use `.method()` on it,
