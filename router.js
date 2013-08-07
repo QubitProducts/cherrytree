@@ -314,6 +314,9 @@ define(function (require) {
   function transitionCompleted(router) {
     // router.notifyPropertyChange('url');
     exitLoadingState(router);
+    if (router.urlChanged) {
+      router.urlChanged(router.location.getURL());
+    }
   }
 
 });
