@@ -22,7 +22,8 @@ define(function (require) {
 
   return function getHandlerFunction(router) {
     var seen = {};
-    var states = router.states;
+    var stateClasses = router.stateClasses;
+    var prepares = router.prepares;
 
     var currentHandlers = [];
     var abandonedStates = [];
@@ -45,7 +46,7 @@ define(function (require) {
       //   return handler;
       // }
 
-      if (name === "loading" && !states["loading"]) {
+      if (name === "loading" && !stateClasses["loading"]) {
         handler = {};
         seen[name] = handler;
         return handler;
@@ -87,22 +88,9 @@ define(function (require) {
 
           lastParams = _.clone(params);
 
-          // if (state) {
-          //   state.destroy();
-          //   state = null;
-          // }
-          var State = states[name];
 
-          if (State) {
-
-            // we accept a State class, or a function that will give us one
-            // check here which one it is
-            // if (_.isEmpty(State)) {
-            //   // it's a function!
-            //   statePromise = State();
-            // }
-
-            state = new State(name, _.extend(params || {}, {
+          function createState(State) {
+             state = new State(name, _.extend(params || {}, {
               router: router
             }));
 
@@ -171,10 +159,35 @@ define(function (require) {
               return state;
             }
           }
+
+
+          var State;
+          if (!prepares[name]) {
+            State = stateClasses[name];
+            if (State) {
+              return createState(State);
+            }
+          } else {
+            var promise = new RSVP.Promise(function(resolve, reject){
+              prepares[name](router, function () {
+                // now that we gave the prepare method a chance to preload
+                // the states
+                State = stateClasses[name];
+                if (State) {
+                  resolve(createState(State));
+                } else {
+                  reject(new Error("called the state loader, but that didn't provide the state for id", name));
+                }
+              });
+            });
+            return promise;
+          }
         },
+
         afterModel: function (state, transition) {
           if (state) {
-            transition.data.parentState = state;
+            // update the transition's parentState
+            // transition.data.parentState = state;
             if (state.afterPrepare) {
               state.afterPrepare();
             }

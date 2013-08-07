@@ -15,6 +15,8 @@ define(function (require) {
 
   var CherryTreeRouter = function (options) {
     this.options = _.extend({}, this.options, options);
+    this.stateClasses = {};
+    this.prepares = {};
   };
   CherryTreeRouter.prototype = {
     options: {
@@ -30,7 +32,7 @@ define(function (require) {
         };
       }
 
-      var dsl = RouterDSL.map(function () {
+      var dsl = RouterDSL.map(this, function () {
         this.resource("application", { path: "/" }, function () {
           callback.call(this);
         });
@@ -38,10 +40,20 @@ define(function (require) {
 
       router.map(dsl.generate());
 
-      this.states = dsl.stateClasses;
+      this.prepares = dsl.prepares;
 
       // return router;
       return this;
+    },
+
+    states: function (map) {
+      _.each(map, function (state, name) {
+        this.state(name, state);
+      }, this);
+    },
+
+    state: function (name, state) {
+      this.stateClasses[name] = state;
     },
 
     startRouting: function () {
