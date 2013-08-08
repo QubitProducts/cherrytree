@@ -10,6 +10,7 @@ define(function (require) {
     this.name = name;
     this.options = _.clone(params);
     this.router = params.router;
+    this.id = _.uniqueId();
     this.initialize();
   };
   State.prototype = {

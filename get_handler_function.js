@@ -52,13 +52,47 @@ define(function (require) {
         return handler;
       }
 
-      var lastParams, state;
+      var lastParams, state, oldState;
 
       handler = {
         serialize: function (params) {
-          return params;
+          // console.log("serializing", name, params);
+          if (params === state) {
+            return lastParams || {};
+          } else {
+            // normally we're not passing models to
+            // generate/transitionTo/replaceWith, etc.
+            // we simply pass in an object with params,
+            // therefore in those cases we just want to
+            // return whatever we passed in
+            // TODO routing: perhaps this should be deprecated
+            // perhaps we should only allow using the new syntax
+            // this.transitionTo("foo.bar", 32, "b");
+            // instead of
+            // this.transitionTo("foo.bar", {
+            //   param1: 32,
+            //   param2: "b"
+            // })
+            return params;
+          }
+        },
+        beforeModel: function (transition) {
+          // keep clearing the providedModels object,
+          // we currently aren't using this functionality where
+          // an instance of the model can passed in transitionTo calls, etc.
+          // therefore we never want router.js to think that some models
+          // are provided, we always wanna be calling the model method in
+          // this handler, that's where we decide ourselves if the state
+          // should be reinstantiated or not, etc.
+          // We could probably still pass in real instances via transitionTo
+          // and handle that in the model function - params would contain
+          // those instances that we could possible pass on to the states to consume
+          // etc.
+          transition.providedModels = {};
+          transition.providedModelsArray = [];
         },
         model: function (params, transition) {
+          // console.log("cherry:", name, ":", "model", (state || {}).id);
           _.each(params, function (val, key) {
             params[key] = _.isNumber(val) ? val + "" : val;
           });
@@ -77,6 +111,10 @@ define(function (require) {
             return state;
           }
 
+          // This is currently not used anywhere in the app
+          // The soft param feature where certain URL parameters
+          // don't recreate the state, but instead only call an
+          // update method on the state
           if (params && state && state.softParams) {
             var hardLastParams = _.omit(lastParams, state.softParams);
             var hardParams = _.omit(params, state.softParams);
@@ -90,15 +128,19 @@ define(function (require) {
 
 
           function createState(State) {
-             state = new State(name, _.extend(params || {}, {
-              router: router
+            oldState = state;
+            // console.log("cherry:", name, ":", "createState", (state || {}).id, "with params", params);
+            state = new State(name, _.extend(params || {}, {
+              router: router,
             }));
 
             // need to set parent here..?
             if (transition) {
               transition.then(function () {
+                // TODO what should we do with the abandoned states?
                 _.each(abandonedStates, function (state) {
                   if (!state._activated) {
+                    // console.log("cherry:", name, ":", "destroying", (state || {}).id);
                     state.destroy();
                     state = null;
                     lastParams = null;
@@ -148,6 +190,7 @@ define(function (require) {
                 // aborting otherwise should be done before the deserialzie
                 // is even called
                 state.activate();
+                // console.log("ACTIVATING", name);
                 state._activated = true;
               }
               return state;
@@ -185,6 +228,7 @@ define(function (require) {
         },
 
         afterModel: function (state, transition) {
+          // console.log("cherry:", name, ":", "afterModel", (state || {}).id);
           if (state) {
             // update the transition's parentState
             // transition.data.parentState = state;
@@ -193,18 +237,26 @@ define(function (require) {
             }
           }
         },
-        enter: function () {
-        },
         setup: function () {
+          // console.log("cherry:", name, ":", "setup", (state || {}).id);
           if (state) {
             if (!state._activated) {
               state.activate();
               state._activated = true;
             }
           }
+          // now that we've activated the new state,
+          // we can destroy the old one
+          if (oldState) {
+            // console.log("cherry:", name, ":", "destroying old state", (oldState || {}).id);
+            oldState.destroy();
+            oldState = null;
+          }
         },
         exit: function () {
+          // console.log("cherry:", name, ":", "exit", (state || {}).id);
           if (state) {
+            // console.log("DESTROYING", name);
             state.destroy();
             state = null;
             lastParams = null;
