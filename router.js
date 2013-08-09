@@ -102,6 +102,12 @@ define(function (require) {
 
       return this.router.handleURL(url).then(function() {
         transitionCompleted(self);
+      }, function(err) {
+        // we want to complete the transition
+        // * we want to notify everyone that url changed
+        // * we want to exit the loading state
+        transitionCompleted(self);
+        return err;
       });
     },
 
