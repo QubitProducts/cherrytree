@@ -24,6 +24,7 @@ define(function (require) {
     var seen = {};
     var stateClasses = router.stateClasses;
     var prepares = router.prepares;
+    var preparesCalled = {};
 
     var currentHandlers = [];
     var abandonedStates = [];
@@ -205,21 +206,30 @@ define(function (require) {
 
 
           var State;
-          if (!prepares[name]) {
+          // if we don't have a prepare method for this state
+          // or if it's already been called - proceed with creating
+          // the state
+          if (!prepares[name] || preparesCalled[name]) {
             State = stateClasses[name];
             if (State) {
               return createState(State);
             }
           } else {
             var promise = new RSVP.Promise(function(resolve, reject){
+              // TODO routing: once a prepare has been called, we should remember
+              // that and not calle it again in the future
               prepares[name](router, function () {
-                // now that we gave the prepare method a chance to preload
-                // the states
+                // record that this prepare has been called - we only
+                // do this per the lifetime of the application as it's
+                // mostly intended for loading extra code
+                preparesCalled[name] = true;
+
+                // now that we gave the prepare method a chance to preload the states
                 State = stateClasses[name];
                 if (State) {
                   resolve(createState(State));
                 } else {
-                  reject(new Error("called the state loader, but that didn't provide the state for id", name));
+                  reject(new Error("called the prepare, but that didn't provide the state for route", name));
                 }
               });
             });
