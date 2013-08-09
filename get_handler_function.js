@@ -273,8 +273,15 @@ define(function (require) {
           }
         },
         events: {
-          willTransition: function () {
+          willTransition: function (transition) {
+            // TODO if transition is aborted - should we
+            // still be popping the handler?
             currentHandlers.pop();
+            if (state && state.willTransition) {
+              return state.willTransition(transition);
+            } else {
+              return true;
+            }
           },
           error: function (err, transition) {
             if (state && state.error) {
