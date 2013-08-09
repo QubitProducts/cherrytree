@@ -266,8 +266,13 @@ define(function (require) {
           willTransition: function () {
             currentHandlers.pop();
           },
-          error: function (e) {
-            console.error(e.stack);
+          error: function (err, transition) {
+            if (state && state.error) {
+              // console.error("ERROR IN STATE", name, e);
+              return state.error(err, transition);
+            } else {
+              return true;
+            }
           }
         }
       };
