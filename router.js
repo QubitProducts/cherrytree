@@ -263,6 +263,12 @@ define(function (require) {
     var transitionPromise = router.router[method].apply(router.router, args);
     transitionPromise.then(function() {
       transitionCompleted(router);
+    }, function(err) {
+      // we want to complete the transition
+      // * we want to notify everyone that url changed
+      // * we want to exit the loading state
+      transitionCompleted(router);
+      return err;
     });
 
     // TODO: figure out why I had to generate the URL here instead of just
