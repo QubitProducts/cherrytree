@@ -18,12 +18,8 @@ define(function (require) {
     prepare: function () {},
     // best hook for doing redirects
     afterPrepare: function () {},
-    activate: function () {
-      console.log("activating state");
-    },
-    destroy: function () {
-      console.log("destroying state");
-    },
+    activate: function () {},
+    destroy: function () {},
     setParent: function (parent) {
       this.parent = parent;
     },
