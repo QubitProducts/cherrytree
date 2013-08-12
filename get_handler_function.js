@@ -19,6 +19,7 @@ define(function (require) {
 
   var _ = require("underscore");
   var RSVP = require("rsvp");
+  var BaseState = require("./state");
 
   return function getHandlerFunction(router) {
     var seen = {};
@@ -166,7 +167,6 @@ define(function (require) {
                 // }
                 // parentState = transition.resolvedModels[parentName];
                 // var resolvedModels = _.values(transition.resolvedModels);
-               
                 var leafState = _.find(transition.resolvedModels, function (leafState) {
                   // it's a leafState only if every other state is not pointing to it
                   return _.every(transition.resolvedModels, function (state) {
@@ -210,7 +210,7 @@ define(function (require) {
           // or if it's already been called - proceed with creating
           // the state
           if (!prepares[name] || preparesCalled[name]) {
-            State = stateClasses[name];
+            State = stateClasses[name] || BaseState;
             if (State) {
               return createState(State);
             }
