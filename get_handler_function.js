@@ -1,19 +1,24 @@
 define(function (require) {
 
-  // This generated a handler function for each route
-  // This is where all the State management happens
+  // This generates a handler function for each route
+  // This is where all the State lifecycle management happens
+
+  // each handler is an everliving object, which can store
+  // a reference to a context (in router.js language) or
+  // a state (in cherrytree language). The state is where
+  // the users of cherrytree libraries do interesting things
+  // like fetching data, creating views and nesting them.
+
+  // So a route, has an everliving handler which manages
+  // a state that can be instantiated with params, activated,
+  // and destroyed when handler becomes inactive
 
   /**
-
     TODO
-
-    * error handling and bubbling
-    * events, send? bubbling, states, hmz..
     * look into not having a state thing, but just using
       handlers as they're meant to be used, to avoid memory
-      leaks, simply return context from prepare, if the handler is
+      leaks, simply return context from model, if the handler is
       never activated, the context won't be saved, etc.
-
   */
 
 
@@ -179,9 +184,9 @@ define(function (require) {
               transition.data.parentState = state;
 
             }
-            var preparePromise = state.prepare();
+            var modelPromise = state.model();
 
-            var afterPrepare = function () {
+            var whenModelResolved = function () {
               if (state.shouldActivate) {
                 // destroy everything in the currentHandlerInfos down to the
                 // match point. then we can
@@ -196,10 +201,10 @@ define(function (require) {
               }
               return state;
             };
-            if (preparePromise && preparePromise.then) {
-              return RSVP.resolve(preparePromise).then(afterPrepare);
+            if (modelPromise && modelPromise.then) {
+              return RSVP.resolve(modelPromise).then(whenModelResolved);
             } else {
-              afterPrepare();
+              whenModelResolved();
               return state;
             }
           }
@@ -217,7 +222,7 @@ define(function (require) {
           } else {
             var promise = new RSVP.Promise(function(resolve, reject){
               // TODO routing: once a prepare has been called, we should remember
-              // that and not calle it again in the future
+              // that and not call it again in the future
               prepares[name](router, function () {
                 // record that this prepare has been called - we only
                 // do this per the lifetime of the application as it's
@@ -242,8 +247,8 @@ define(function (require) {
           if (state) {
             // update the transition's parentState
             // transition.data.parentState = state;
-            if (state.afterPrepare) {
-              state.afterPrepare();
+            if (state.afterModel) {
+              state.afterModel(transition);
             }
           }
         },

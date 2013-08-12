@@ -11,7 +11,7 @@ TODO
   * look into submitting tildeio packages into bower
   * figure out if it's really useful to have State instead of just using handlers
   * figure out why we can't transitionTo within activate while transitioning
-    it seems that the only good place for redirecting is afterPrepare
+    it seems that the only good place for redirecting is afterModel
   * using transitionTo("some.state", {param1: 1}) doesn't work well, possibly dissalow
     this usage for now completely and only allow the new transitionTo("some.state", 1).
     I think this makes some sense, in case we wanna be able to pass in models like route.js

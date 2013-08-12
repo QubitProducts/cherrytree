@@ -15,9 +15,9 @@ define(function (require) {
   };
   State.prototype = {
     initialize: function () {},
-    prepare: function () {},
+    model: function () {},
     // best hook for doing redirects
-    afterPrepare: function () {},
+    afterModel: function () {},
     activate: function () {},
     destroy: function () {},
     setParent: function (parent) {
@@ -26,6 +26,10 @@ define(function (require) {
     transitionTo: function() {
       var router = this.router;
       return router.transitionTo.apply(router, arguments);
+    },
+    replaceWith: function () {
+      var router = this.router;
+      return router.replaceWith.apply(router, arguments);
     }
   };
 
