@@ -100,39 +100,38 @@ define(function (require) {
         },
         model: function (params, transition) {
           // console.log("cherry:", name, ":", "model", (state || {}).id);
-          _.each(params, function (val, key) {
-            params[key] = _.isNumber(val) ? val + "" : val;
-          });
-          // reset
+
           if (name === "application") {
+            // reset the currentHandlers
             currentHandlers = [handler];
           } else if (name !== "loading") {
+            // extend the currentHandlers
             currentHandlers.push(handler);
           }
 
+          // normalize params
           if (_.isEmpty(params)) {
             params = false;
           }
 
+          // if params didn't change - we keep this state
           if (_.isEqual(lastParams, params)) {
             return state;
           }
 
-          // This is currently not used anywhere in the app
-          // The soft param feature where certain URL parameters
-          // don't recreate the state, but instead only call an
-          // update method on the state
-          if (params && state && state.softParams) {
-            var hardLastParams = _.omit(lastParams, state.softParams);
-            var hardParams = _.omit(params, state.softParams);
-            if (_.isEqual(hardLastParams, hardParams)) {
-              state.update(params);
+          // keep a record of the new params
+          lastParams = _.clone(params);
+
+          // if the params changed - call an optional update
+          // method on the state - if return value is true,
+          // that means the update function handled the update
+          // and we don't need to destroy this state anymore
+          // otherwise - proceed with destroying
+          if (params && state && state.update) {
+            if (state.update(params)) {
               return state;
             }
           }
-
-          lastParams = _.clone(params);
-
 
           function createState(State) {
             oldState = state;
