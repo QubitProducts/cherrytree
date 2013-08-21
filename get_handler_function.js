@@ -123,12 +123,12 @@ define(function (require) {
           lastParams = _.clone(params);
 
           // if the params changed - call an optional update
-          // method on the state - if return value is true,
-          // that means the update function handled the update
-          // and we don't need to destroy this state anymore
-          // otherwise - proceed with destroying
+          // method on the state - return value false,
+          // prevents the desctruction of the state and proceeds
+          // with the transition. Otherwise we will destroy this
+          // state and recreate it
           if (params && state && state.update) {
-            if (state.update(params)) {
+            if (state.update(params) === false) {
               return state;
             }
           }
