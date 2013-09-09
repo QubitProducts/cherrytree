@@ -106,7 +106,7 @@ define(function (require) {
         // we want to complete the transition
         // * we want to notify everyone that url changed
         // * we want to exit the loading state
-        transitionCompleted(self);
+        transitionFailed(err, self);
         return err;
       });
     },
@@ -267,7 +267,7 @@ define(function (require) {
       // we want to complete the transition
       // * we want to notify everyone that url changed
       // * we want to exit the loading state
-      transitionCompleted(router);
+      transitionFailed(err, router);
       return err;
     });
 
@@ -328,6 +328,13 @@ define(function (require) {
     exitLoadingState(router);
     if (router.urlChanged) {
       router.urlChanged(router.location.getURL());
+    }
+  }
+
+  function transitionFailed(err, router) {
+    transitionCompleted(router);
+    if (err.name !== "TransitionAborted") {
+      console.error(err.stack ? err.stack : err);
     }
   }
 
