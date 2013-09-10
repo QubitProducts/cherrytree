@@ -37,7 +37,7 @@ define(function (require) {
 
     return function(name) {
       var handler;
-      
+
       // if (name === 'application') {
       //   // Inject default `routeTo` handler.
       //   handler.events = handler.events || {};
@@ -60,6 +60,21 @@ define(function (require) {
       }
 
       var lastParams, state, oldState;
+
+      function destroyState(state) {
+        // console.log("cherry:", state.name, ":", "destroying", (state || {}).id);
+        state.destroy();
+        state._destroyed = true;
+
+        // check if we're in the right closure
+        // TODO: the closure stuff seems quite tricky here
+        // not clear what's happening in different situations, perhaps it's better
+        // to store all these infos on an object instead of in a closure
+        if (state.name === name) {
+          state = null;
+          lastParams = null;
+        }
+      }
 
       handler = {
         serialize: function (params) {
@@ -97,6 +112,15 @@ define(function (require) {
           // etc.
           transition.providedModels = {};
           transition.providedModelsArray = [];
+
+          // clean up in case we didn't have a chance to cleanup before
+          // that happens when we transition while transitioning, which means
+          // we abandon some states and even though we've destroyed them, we
+          // were in the wrong closure to clean up the closure variables...
+          if (state && state._destroyed) {
+            state = null;
+            lastParams = null;
+          }
         },
         model: function (params, transition) {
           // console.log("cherry:", name, ":", "model", (state || {}).id);
@@ -146,10 +170,7 @@ define(function (require) {
                 // TODO what should we do with the abandoned states?
                 _.each(abandonedStates, function (state) {
                   if (!state._activated) {
-                    // console.log("cherry:", name, ":", "destroying", (state || {}).id);
-                    state.destroy();
-                    state = null;
-                    lastParams = null;
+                    destroyState(state);
                   }
                 });
                 abandonedStates = [];
@@ -263,17 +284,13 @@ define(function (require) {
           // we can destroy the old one
           if (oldState) {
             // console.log("cherry:", name, ":", "destroying old state", (oldState || {}).id);
-            oldState.destroy();
-            oldState = null;
+            destroyState(oldState);
           }
         },
         exit: function () {
           // console.log("cherry:", name, ":", "exit", (state || {}).id);
           if (state) {
-            // console.log("DESTROYING", name);
-            state.destroy();
-            state = null;
-            lastParams = null;
+            destroyState(state);
           }
         },
         events: {
