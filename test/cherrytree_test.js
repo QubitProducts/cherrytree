@@ -1,0 +1,69 @@
+define(function (require) {
+
+  var $ = require("jquery");
+  var RSVP = require("rsvp");
+  var TestApp = require("test/test_app");
+
+  var app, router;
+
+  describe("cherrytree router", function () {
+
+    beforeEach(function (done) {
+      window.location.hash = "/";
+      app = new TestApp();
+      router = app.router;
+      app.start().then(done, done);
+    });
+
+    afterEach(function () {
+      app.destroy();
+    });
+
+    it("should transition when location.hash is changed", function (done) {
+      window.location.hash = "#about";
+      router.urlChanged = function (url) {
+        url.should.equal("/about");
+        $(".application .outlet").html().should.equal("This is about page");
+        done();
+      };
+    });
+
+    it("can be used to render a webapp", function (done) {
+      $(".application .outlet").html().should.equal("Welcome to this application");
+      // we can transition into different parts of the app
+      // using the transitionTo method
+      router.transitionTo("about").then(function () {
+        $(".application .outlet").html().should.equal("This is about page");
+      }).then(function () {
+        // we can also change the url directly to cause another transition to happen
+        window.location.hash = "#posts/filter/mine";
+        var d = RSVP.defer();
+        router.urlChanged = function (url) {
+          url.should.equal("/posts/filter/mine");
+          d.resolve();
+        };
+        return d.promise;
+      }).then(function () {
+        $(".application .outlet").html().should.equal("My posts...");
+      }).then(function () {
+        // let's try a different filter
+        window.location.hash = "#posts/filter/foo";
+        var d = RSVP.defer();
+        router.urlChanged = function (url) {
+          url.should.equal("/posts/filter/foo");
+          d.resolve();
+        };
+        return d.promise;
+      }).then(function () {
+        $(".application .outlet").html().should.equal("Filter not found");
+      }).then(function () {
+        // we can abort transitions
+        router.location.getURL().should.be.equal("/posts/filter/foo");
+        var transition = router.transitionTo("about");
+        transition.abort();
+        router.location.getURL().should.be.equal("/posts/filter/foo");
+      }).then(done, done);
+    });
+  });
+
+});

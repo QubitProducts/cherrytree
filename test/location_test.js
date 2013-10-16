@@ -1,0 +1,1 @@
+//test the location functionality
