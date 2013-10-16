@@ -23,7 +23,7 @@ As you can see you can also provide your own implementation of location. For exa
 
 TODO
   * docs
-  * tests :-"
+  * tests :-", I know, I know..
   * look into removing dependency on underscore
   * look into submitting tildeio packages into bower
   * figure out if it's really useful to have State instead of just using handlers
@@ -35,3 +35,4 @@ TODO
     intended this feature to be used.
   * consider pulling in router.js and route-recognizer as vendored dependencies
   * refactor and simplify get_handler_function - avoid using closure variables, instead keep state on the handler object
+  * don't pass in params as a top level object to the state constructor, pass them in as {params: params, queryParams, queryParams, router: router}

@@ -35,6 +35,15 @@ define(function (require) {
       router.transitionTo("about").then(function () {
         $(".application .outlet").html().should.equal("This is about page");
       }).then(function () {
+        // we can also transition via URL
+        return router.transitionTo("/faq?sortBy=date");
+      }).then(function () {
+        $(".application .outlet").html().should.equal("FAQ. Sorted By: date");
+        // we can change the param now
+        return router.transitionTo("faq", {queryParams: { sortBy: "user" }});
+      }).then(function () {
+        $(".application .outlet").html().should.equal("FAQ. Sorted By: user");
+      }).then(function () {
         // we can also change the url directly to cause another transition to happen
         window.location.hash = "#posts/filter/mine";
         var d = RSVP.defer();

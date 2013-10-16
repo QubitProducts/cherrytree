@@ -59,7 +59,7 @@ define(function (require) {
         return handler;
       }
 
-      var lastParams, state, oldState;
+      var lastParams, lastQueryParams, state, oldState;
 
       function destroyState(state) {
         // console.log("cherry:", state.name, ":", "destroying", (state || {}).id);
@@ -73,6 +73,7 @@ define(function (require) {
         if (state.name === name) {
           state = null;
           lastParams = null;
+          lastQueryParams = null;
         }
       }
 
@@ -98,7 +99,12 @@ define(function (require) {
             return params;
           }
         },
-        beforeModel: function (transition) {
+        beforeModel: function (queryParams, transition) {
+          if (transition === undefined) {
+            transition = queryParams;
+            queryParams = false;
+          }
+
           // keep clearing the providedModels object,
           // we currently aren't using this functionality where
           // an instance of the model can passed in transitionTo calls, etc.
@@ -120,9 +126,16 @@ define(function (require) {
           if (state && state._destroyed) {
             state = null;
             lastParams = null;
+            lastQueryParams = null;
           }
         },
-        model: function (params, transition) {
+        model: function (params, queryParams, transition) {
+
+          if (transition === undefined) {
+            transition = queryParams;
+            queryParams = false;
+          }
+
           // console.log("cherry:", name, ":", "model", (state || {}).id);
 
           if (name === "application") {
@@ -137,22 +150,26 @@ define(function (require) {
           if (_.isEmpty(params)) {
             params = false;
           }
+          if (_.isEmpty(queryParams)) {
+            queryParams = false;
+          }
 
           // if params didn't change - we keep this state
-          if (_.isEqual(lastParams, params)) {
+          if (_.isEqual(lastParams, params) && _.isEqual(lastQueryParams, queryParams)) {
             return state;
           }
 
           // keep a record of the new params
           lastParams = _.clone(params);
+          lastQueryParams = _.clone(queryParams);
 
           // if the params changed - call an optional update
           // method on the state - return value false,
           // prevents the desctruction of the state and proceeds
           // with the transition. Otherwise we will destroy this
           // state and recreate it
-          if (params && state && state.update) {
-            if (state.update(params) === false) {
+          if ((params || queryParams) && state && state.update) {
+            if (state.update(params, queryParams) === false) {
               return state;
             }
           }
@@ -162,6 +179,7 @@ define(function (require) {
             // console.log("cherry:", name, ":", "createState", (state || {}).id, "with params", params);
             state = new State(name, _.extend(params || {}, {
               router: router,
+              queryParams: queryParams || {}
             }));
 
             // need to set parent here..?
@@ -262,7 +280,11 @@ define(function (require) {
           }
         },
 
-        afterModel: function (state, transition) {
+        afterModel: function (state, queryParams, transition) {
+          if (transition === undefined) {
+            transition = queryParams;
+            queryParams = false;
+          }
           // console.log("cherry:", name, ":", "afterModel", (state || {}).id);
           if (state) {
             // update the transition's parentState

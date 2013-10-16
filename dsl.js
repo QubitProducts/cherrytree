@@ -32,18 +32,18 @@ define(function (require) {
       if (callback) {
         var dsl = new DSL(name, this.router);
         callback.call(dsl);
-        this.push(options.path, name, dsl.generate());
+        this.push(options.path, name, dsl.generate(), options.queryParams);
         _.extend(this.prepares, dsl.prepares);
       } else {
-        this.push(options.path, name);
+        this.push(options.path, name, null, options.queryParams);
       }
     },
 
-    push: function(url, name, callback) {
+    push: function(url, name, callback, queryParams) {
       var parts = name.split('.');
       if (url === "" || url === "/" || parts[parts.length-1] === "index") { this.explicitIndex = true; }
 
-      this.matches.push([url, name, callback]);
+      this.matches.push([url, name, callback, queryParams]);
     },
 
     route: function(name, options) {
@@ -63,7 +63,7 @@ define(function (require) {
         this.prepares[name] = options.prepare;
       }
 
-      this.push(options.path, name);
+      this.push(options.path, name, null, options.queryParams);
     },
 
     generate: function() {
@@ -76,7 +76,10 @@ define(function (require) {
       return function(match) {
         for (var i=0, l=dslMatches.length; i<l; i++) {
           var dslMatch = dslMatches[i];
-          match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+          var matchObj = match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+          if(dslMatch[3]) {
+            matchObj.withQueryParams.apply(matchObj, dslMatch[3]);
+          }
         }
       };
     },
