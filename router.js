@@ -81,7 +81,7 @@ define(function (require) {
         self.handleURL(url);
       });
 
-      this.handleURL(location.getURL());
+      return this.handleURL(location.getURL());
     },
 
     didTransition: function (infos) {
