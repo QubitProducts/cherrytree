@@ -11,9 +11,13 @@
     "tests"
   ],
   "dependencies": {
-    "router.js": "KidkArolis/router.js#1e31941370d6152b181cddece6b5be48223ef04a",
+    "router.js": "KidkArolis/router.js#5fb31311fc7c0ea4b397be7f90068949849a6cec",
     "route-recognizer": "tildeio/route-recognizer#7d78b62279f0ceff22ec7783c43e36efe4a8e336",
-    "rsvp": "rsvp#2.0.1",
+    "location-bar": "1.0.0",
+    "rsvp": "2.0.1",
     "underscore": ">=1.4.4"
+  },
+  "devDependencies": {
+    "jquery": "~2.0.3"
   }
 }
