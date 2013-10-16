@@ -189,6 +189,12 @@ define(function (require) {
 
       this._activeViews[templateName] = [view, disconnect];
       view.one('willDestroyElement', this, disconnect);
+    },
+
+    destroy: function () {
+      if (this.location.destroy) {
+        this.location.destroy();
+      }
     }
   };
 
