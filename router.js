@@ -17,6 +17,10 @@ define(function (require) {
     this.options = _.extend({}, this.options, options);
     this.stateClasses = {};
     this.prepares = {};
+
+    if (this.options.BaseState) {
+      this.BaseState = this.options.BaseState;
+    }
   };
   CherryTreeRouter.prototype = {
     options: {

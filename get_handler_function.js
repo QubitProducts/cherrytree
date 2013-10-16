@@ -235,7 +235,7 @@ define(function (require) {
           // or if it's already been called - proceed with creating
           // the state
           if (!prepares[name] || preparesCalled[name]) {
-            State = stateClasses[name] || BaseState;
+            State = stateClasses[name] || router.BaseState || BaseState;
             if (State) {
               return createState(State);
             }
