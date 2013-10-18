@@ -59,7 +59,7 @@ define(function (require) {
         return handler;
       }
 
-      var lastParams, lastQueryParams, state, oldState;
+      var lastParams, lastQueryParams, state;
 
       function destroyState(state) {
         // console.log("cherry:", state.name, ":", "destroying", (state || {}).id);
@@ -175,7 +175,6 @@ define(function (require) {
           }
 
           function createState(State) {
-            oldState = state;
             // console.log("cherry:", name, ":", "createState", (state || {}).id, "with params", params);
             state = new State(name, _.extend(params || {}, {
               router: router,
@@ -301,12 +300,6 @@ define(function (require) {
               state.activate();
               state._activated = true;
             }
-          }
-          // now that we've activated the new state,
-          // we can destroy the old one
-          if (oldState) {
-            // console.log("cherry:", name, ":", "destroying old state", (oldState || {}).id);
-            destroyState(oldState);
           }
         },
         exit: function () {
