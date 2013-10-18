@@ -85,18 +85,8 @@ define(function (require) {
     },
 
     didTransition: function (infos) {
-      // var appController = this.container.lookup('controller:application'),
-      //     path = routePath(infos);
-
-      // if (!('currentPath' in appController)) {
-      //   defineProperty(appController, 'currentPath');
-      // }
-      // set(appController, 'currentPath', path);
-      // this.notifyPropertyChange('url');
-
-      // if (get(this, 'namespace').LOG_TRANSITIONS) {
-      //   Ember.Logger.log("Transitioned into '" + path + "'");
-      // }
+      var path = routePath(infos);
+      // announce we transitioned somehow?
     },
 
     handleURL: function(url) {
@@ -211,10 +201,10 @@ define(function (require) {
     return path.join(".");
   }
 
-  function setupRouter(emberRouter, router, location) {
+  function setupRouter(cherrytree, router, location) {
     var lastURL;
 
-    router.getHandler = getHandlerFunction(emberRouter);
+    router.getHandler = getHandlerFunction(cherrytree);
 
     var doUpdateURL = function() {
       location.setURL(lastURL);
@@ -238,14 +228,14 @@ define(function (require) {
       };
     }
 
-    if (location.onChangeURL && emberRouter.urlChanged) {
+    if (location.onChangeURL && cherrytree.urlChanged) {
       location.onChangeURL(function (url) {
-        emberRouter.urlChanged(url);
+        cherrytree.urlChanged(url);
       });
     }
 
     router.didTransition = function(infos) {
-      emberRouter.didTransition(infos);
+      cherrytree.didTransition(infos);
     };
   }
 

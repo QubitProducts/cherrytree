@@ -36,28 +36,13 @@ define(function (require) {
     var abandonedStates = [];
 
     return function(name) {
-      var handler;
-
-      // if (name === 'application') {
-      //   // Inject default `routeTo` handler.
-      //   handler.events = handler.events || {};
-      //   handler.events.routeTo = handler.events.routeTo || Ember.TransitionEvent.defaultHandler;
-      // }
-
-      if (seen[name]) { return seen[name]; }
-
-      // if (_.isObject(states[name])) {
-      //   handler = states[name];
-      //   handler.routeName = name;
-      //   seen[name] = handler;
-      //   return handler;
-      // }
-
+      // special loading handler case
       if (name === "loading" && !stateClasses["loading"]) {
-        handler = {};
-        seen[name] = handler;
-        return handler;
+        seen[name] = {};
       }
+
+      // look up previously generated handler functions
+      if (seen[name]) { return seen[name]; }
 
       var lastParams, lastQueryParams, state;
 
@@ -77,7 +62,7 @@ define(function (require) {
         }
       }
 
-      handler = {
+      var handler = {
         serialize: function (params) {
           // console.log("serializing", name, params);
           if (params === state) {
