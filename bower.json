@@ -11,8 +11,8 @@
     "tests"
   ],
   "dependencies": {
-    "router.js": "KidkArolis/router.js#5fb31311fc7c0ea4b397be7f90068949849a6cec",
-    "route-recognizer": "tildeio/route-recognizer#7d78b62279f0ceff22ec7783c43e36efe4a8e336",
+    "router.js": "tildeio/router.js#f9c32fea509409982e2c637a7e1c2957448bc506",
+    "route-recognizer": "tildeio/route-recognizer#95f0508462875790d845f66422d22d960108951c",
     "location-bar": "1.0.0",
     "rsvp": "2.0.1",
     "underscore": ">=1.4.4"

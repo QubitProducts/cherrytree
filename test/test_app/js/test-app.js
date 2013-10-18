@@ -71,7 +71,7 @@ define(function (require) {
     this.route("faq");
     this.resource("posts", function () {
       this.route("popular");
-      this.route("filter", { path: "/filter/:filterId" });
+      this.route("filter", { path: "/filter/:filterId", queryParams: ["sortBy"] });
       this.route("show", { path: "/:id" });
     });
   });
@@ -104,10 +104,22 @@ define(function (require) {
   // blog page
   router.state("posts.filter", BaseState.extend({
     activate: function () {
+      this.render();
+    },
+    update: function (params, queryParams) {
+      this.options.queryParams = queryParams;
+      this.render();
+      // don't reload the state
+      return false;
+    },
+    render: function () {
       if (this.options.filterId === "mine") {
         this.parent.parent.$outlet.html("My posts...");
       } else {
         this.parent.parent.$outlet.html("Filter not found");
+      }
+      if (this.options.queryParams.sortBy) {
+        this.parent.parent.$outlet.append("<div>Sorting by:" + this.options.queryParams.sortBy + "</div>");
       }
     }
   }));

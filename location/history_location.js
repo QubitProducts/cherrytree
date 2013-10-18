@@ -43,7 +43,7 @@ define(function (require) {
         }, 1);
 
         // var query = path.split("?")[1];
-        path = path.split("?")[0];
+        // path = path.split("?")[0];
         self.handleURL("/" + path);
 
         // for now, we publish the url:params via mediator

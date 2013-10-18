@@ -38,10 +38,10 @@ define(function (require) {
     // provide the route map
     router.map(function () {
       this.route("about");
-      this.route("faq");
+      this.route("faq", { queryParams: ["sortBy"]});
       this.resource("posts", function () {
         this.route("popular");
-        this.route("filter", { path: "/filter/:filterId" });
+        this.route("filter", { path: "/filter/:filterId", queryParams: ["sortBy"] });
         this.route("show", { path: "/:id" });
       });
     });
@@ -80,7 +80,21 @@ define(function (require) {
         this.parent.$outlet.html("This is about page");
       }
     }));
-    // about page
+    // faq page
+    router.state("faq", State.extend({
+      activate: function () {
+        this.render();
+      },
+      render: function () {
+        this.parent.$outlet.html("FAQ.");
+        this.parent.$outlet.append(" Sorted By: " + this.options.queryParams.sortBy);
+      },
+      update: function (params, queryParams) {
+        this.options.queryParams = queryParams;
+        this.render();
+      }
+    }));
+    // posts page
     router.state("posts.filter", State.extend({
       activate: function () {
         if (this.options.filterId === "mine") {
