@@ -32,8 +32,15 @@ define(function (require) {
     var prepares = router.prepares;
     var preparesCalled = {};
 
-    var currentHandlers = [];
-    var abandonedStates = [];
+    // abandoned states are states that have been initialized
+    // so that "model" could be called on them, but that are
+    // no longer needed, because the transition has been aborted
+    // (either by explicitly aborting it, or by initiating a new
+    // transition). Router.js won't call exit on such a state
+    // because it hasn't been entered/setup, but we still want
+    // to call a destroy on those, and so we'll keep these abandoned
+    // states in this array until the end of the loop
+    router.abandonedStates = [];
 
     return function(name) {
       // special loading handler case
@@ -44,7 +51,7 @@ define(function (require) {
       // look up previously generated handler functions
       if (seen[name]) { return seen[name]; }
 
-      var lastParams, lastQueryParams, state;
+      var lastParams, lastQueryParams, state, oldState;
 
       function destroyState(state) {
         // console.log("cherry:", state.name, ":", "destroying", (state || {}).id);
@@ -63,8 +70,8 @@ define(function (require) {
       }
 
       var handler = {
+
         serialize: function (params) {
-          // console.log("serializing", name, params);
           if (params === state) {
             return lastParams || {};
           } else {
@@ -102,7 +109,7 @@ define(function (require) {
           // those instances that we could possible pass on to the states to consume
           // etc.
           transition.providedModels = {};
-          transition.providedModelsArray = [];
+          transition.providedModelsArray = [Math.random()];
 
           // clean up in case we didn't have a chance to cleanup before
           // that happens when we transition while transitioning, which means
@@ -115,20 +122,11 @@ define(function (require) {
           }
         },
         model: function (params, queryParams, transition) {
+          // console.log("cherry:", name, ":", "model", (state || {}).id);
 
           if (transition === undefined) {
             transition = queryParams;
             queryParams = false;
-          }
-
-          // console.log("cherry:", name, ":", "model", (state || {}).id);
-
-          if (name === "application") {
-            // reset the currentHandlers
-            currentHandlers = [handler];
-          } else if (name !== "loading") {
-            // extend the currentHandlers
-            currentHandlers.push(handler);
           }
 
           // normalize params
@@ -159,8 +157,17 @@ define(function (require) {
             }
           }
 
+
           function createState(State) {
             // console.log("cherry:", name, ":", "createState", (state || {}).id, "with params", params);
+            if (state) {
+              if (!state._setup) {
+                destroyState(state);
+              } else {
+                oldState = state;
+              }
+            }
+
             state = new State(name, _.extend(params || {}, {
               router: router,
               queryParams: queryParams || {}
@@ -170,18 +177,18 @@ define(function (require) {
             if (transition) {
               transition.then(function () {
                 // TODO what should we do with the abandoned states?
-                _.each(abandonedStates, function (state) {
-                  if (!state._activated) {
+                _.each(router.abandonedStates, function (state) {
+                  if (!state._setup) {
                     destroyState(state);
                   }
                 });
-                abandonedStates = [];
+                router.abandonedStates = [];
               }, function () {
                 // in case the transition was aborted, we might need to
                 // destroy this state, after the transition has settled in
                 // currently there is no way to call into
-                if (!state._activated && transition.isAborted) {
-                  abandonedStates.push(state);
+                if (!state._setup && transition.isAborted) {
+                  router.abandonedStates.push(state);
                 }
               });
               var parentState = transition.data.parentState;
@@ -218,7 +225,6 @@ define(function (require) {
                 // aborting otherwise should be done before the deserialzie
                 // is even called
                 state.activate();
-                // console.log("ACTIVATING", name);
                 state._activated = true;
               }
               return state;
@@ -265,11 +271,13 @@ define(function (require) {
         },
 
         afterModel: function (state, queryParams, transition) {
+          // console.log("cherry:", name, ":", "afterModel", (state || {}).id);
+
           if (transition === undefined) {
             transition = queryParams;
             queryParams = false;
           }
-          // console.log("cherry:", name, ":", "afterModel", (state || {}).id);
+
           if (state) {
             // update the transition's parentState
             // transition.data.parentState = state;
@@ -280,11 +288,24 @@ define(function (require) {
         },
         setup: function () {
           // console.log("cherry:", name, ":", "setup", (state || {}).id);
+
           if (state) {
+            // used when determining abandoned states
+            state._setup = true;
             if (!state._activated) {
               state.activate();
               state._activated = true;
             }
+          }
+
+          // if we were using the same handler for this
+          // state, it won't be exited, it will just be setup
+          // again, therefore we'll use this chance to
+          // check if we do indeed have an old instance of this
+          // same handler-state pair and destroy it
+          if (oldState && !oldState._destroyed) {
+            destroyState(oldState);
+            oldState = null;
           }
         },
         exit: function () {
@@ -297,7 +318,6 @@ define(function (require) {
           willTransition: function (transition) {
             // TODO if transition is aborted - should we
             // still be popping the handler?
-            currentHandlers.pop();
             if (state && state.willTransition) {
               return state.willTransition(transition);
             } else {
@@ -315,7 +335,6 @@ define(function (require) {
         }
       };
 
-      handler.routeName = name;
       seen[name] = handler;
 
       return handler;

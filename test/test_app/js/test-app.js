@@ -25,6 +25,7 @@ define(function (require) {
 
   var $ = require("jquery");
   var _ = require("underscore");
+  var Promise = require("rsvp").Promise;
   var Router = require("cherrytree");
   var State = require("cherrytree/state");
   var HistoryLocation = require("cherrytree/location/history_location");
@@ -34,6 +35,27 @@ define(function (require) {
   };
 
   var BaseState = State.extend({
+    model: function () {
+      console.log("MODELLING", this.options.id);
+      var self = this;
+      return new Promise(function (resolve) {
+        self.timeout = setTimeout(function () {
+          console.log("TIMEOUT DONE", self.options.id);
+          resolve();
+        }, 300);
+      });
+    },
+    abortModel: function () {
+      console.log("aborting model");
+      window.clearTimeout(this.timeout);
+    },
+    destroy: function () {
+      window.clearTimeout(this.timeout);
+      console.log("DESTROYING", this.options.id);
+      if (this.$view) {
+        this.$view.remove();
+      }
+    },
     getTemplateName: function () {
       return this.templateName || this.name.replace(/\./g, "-");
     },
@@ -61,7 +83,7 @@ define(function (require) {
     location: new HistoryLocation({
       pushState: false
     }),
-    logging: true,
+    logging: false,
     BaseState: BaseState
   });
 
@@ -81,6 +103,9 @@ define(function (require) {
   router.state("application", BaseState.extend({
     // this is a cherrytree hook for "performing"
     // actions upon entering this state
+    model: function () {
+      return 1;
+    },
     outlet: function () {
       return $(document.body);
     }
