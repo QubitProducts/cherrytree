@@ -91,11 +91,11 @@ define(function (require) {
             return params;
           }
         },
-        beforeModel: function (queryParams, transition) {
-          if (transition === undefined) {
-            transition = queryParams;
-            queryParams = false;
-          }
+        beforeModel: function () {
+          // if (transition === undefined) {
+          //   transition = queryParams;
+          //   queryParams = false;
+          // }
 
           // keep clearing the providedModels object,
           // we currently aren't using this functionality where
@@ -108,8 +108,8 @@ define(function (require) {
           // and handle that in the model function - params would contain
           // those instances that we could possible pass on to the states to consume
           // etc.
-          transition.providedModels = {};
-          transition.providedModelsArray = [Math.random()];
+          // transition.providedModels = {};
+          // transition.providedModelsArray = [];
 
           // clean up in case we didn't have a chance to cleanup before
           // that happens when we transition while transitioning, which means

@@ -1,6 +1,5 @@
 define(function (require) {
 
-  var $ = require("jquery");
   var RSVP = require("rsvp");
   var Promise = RSVP.Promise;
   var Router = require("cherrytree");
@@ -11,13 +10,6 @@ define(function (require) {
     return new Promise(function (resolve) {
       setTimeout(resolve, time);
     });
-  };
-
-  var delayer = function (time) {
-    time = time || 50;
-    return function () {
-      return delay(time);
-    };
   };
 
   var router, sequence = [];
@@ -174,6 +166,23 @@ define(function (require) {
            'activate posts.show 2',
            'destroy posts.show 1'
           ]);
+        }).then(done, done);
+      });
+    });
+
+    describe("check for identical transitions", function () {
+      it("should fail when params have changed", function (done) {
+        var t1, t2;
+        router.transitionTo("posts.show", 1).then(function () {
+          t1 = router.transitionTo("posts.show", 2);
+          return delay(10);
+        }).then(function () {
+          // we can also transition via URL
+          t2 = router.transitionTo("posts.show", 3);
+          return t2;
+        }).then(function () {
+          console.log(t1.sequence, t2.sequence);
+          t1.should.not.equal(t2);
         }).then(done, done);
       });
     });
