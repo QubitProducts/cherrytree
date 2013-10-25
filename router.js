@@ -161,6 +161,21 @@ define(function (require) {
       this.router.reset();
     },
 
+    activeStates: function () {
+      return _.pluck(this.router.currentHandlerInfos, "context");
+    },
+
+    activeStateNames: function () {
+      return _.pluck(_.pluck(this.router.currentHandlerInfos, "context"), "name");
+    },
+
+    activeState: function (id) {
+      var states = this.activeStates();
+      return _.find(states, function (state) {
+        return state.id === id || state.name === id;
+      });
+    },
+
     _lookupActiveView: function(templateName) {
       var active = this._activeViews[templateName];
       return active && active[0];

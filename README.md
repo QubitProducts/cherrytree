@@ -21,6 +21,28 @@ Cherrytree can be configured to use differet implementations of libraries that m
 
 As you can see you can also provide your own implementation of location. For example, if you're already using `Backbone`, you might wanna use `Backbone.History` to manage the `hashChange` events and you could easily hook that into Cherrytree.
 
+## API
+
+The following methods have been added to provide an easy way to access entities within your application, mostly for debugging purposes during dev time. I haven't consider how these methods should/shouldn't be used in application logic.
+
+### activeStates()
+
+Get the list of currently active state objects, e.g.
+
+### activeStateNames()
+
+Get the list of currently active state ids.
+
+### activeState(id)
+
+Get a specific currently active state object, e.g.
+
+```
+// an easy way to access resources within the state like models and views
+router.activeState("posts.show").model.get("name");
+```
+
+
 TODO
   * docs
   * tests :-", I know, I know..
