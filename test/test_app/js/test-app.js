@@ -152,4 +152,6 @@ define(function (require) {
   // start routing
   router.startRouting();
 
+  window.router = router;
+
 });
