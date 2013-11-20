@@ -23,13 +23,23 @@ define(function (require) {
     setParent: function (parent) {
       this.parent = parent;
     },
-    transitionTo: function() {
+    transitionTo: function () {
       var router = this.router;
       return router.transitionTo.apply(router, arguments);
     },
     replaceWith: function () {
       var router = this.router;
       return router.replaceWith.apply(router, arguments);
+    },
+    get: function (modelName) {
+      var state = this;
+      while (state) {
+        if (state[modelName]) {
+          return state[modelName];
+        } else {
+          state = state.parent;
+        }
+      }
     }
   };
 
