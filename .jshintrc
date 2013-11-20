@@ -18,10 +18,10 @@
 
   "browser": true,
   "devel": true,
-  
+
   "indent": 2,
   "maxlen": 120,
-  "white": false,
+  "white": true,
 
   "predef": ["require", "define", "buster", "assert", "refute", "describe", "it", "expect", "before", "after", "module", "beforeEach", "afterEach"],
 

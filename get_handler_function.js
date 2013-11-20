@@ -42,7 +42,7 @@ define(function (require) {
     // states in this array until the end of the loop
     router.abandonedStates = [];
 
-    return function(name) {
+    return function (name) {
       // special loading handler case
       if (name === "loading" && !stateClasses["loading"]) {
         seen[name] = {};
@@ -71,25 +71,8 @@ define(function (require) {
 
       var handler = {
 
-        serialize: function (params) {
-          if (params === state) {
-            return lastParams || {};
-          } else {
-            // normally we're not passing models to
-            // generate/transitionTo/replaceWith, etc.
-            // we simply pass in an object with params,
-            // therefore in those cases we just want to
-            // return whatever we passed in
-            // TODO routing: perhaps this should be deprecated
-            // perhaps we should only allow using the new syntax
-            // this.transitionTo("foo.bar", 32, "b");
-            // instead of
-            // this.transitionTo("foo.bar", {
-            //   param1: 32,
-            //   param2: "b"
-            // })
-            return params;
-          }
+        serialize: function () {
+          return this.params;
         },
         beforeModel: function () {
           // if (transition === undefined) {
@@ -136,6 +119,8 @@ define(function (require) {
           if (_.isEmpty(queryParams)) {
             queryParams = false;
           }
+
+          this.params = _.clone(params);
 
           // if params didn't change - we keep this state
           if (_.isEqual(lastParams, params) && _.isEqual(lastQueryParams, queryParams)) {
@@ -248,7 +233,7 @@ define(function (require) {
               return createState(State);
             }
           } else {
-            var promise = new RSVP.Promise(function(resolve, reject){
+            var promise = new RSVP.Promise(function (resolve) {
               // TODO routing: once a prepare has been called, we should remember
               // that and not call it again in the future
               prepares[name](router, function () {
@@ -258,12 +243,8 @@ define(function (require) {
                 preparesCalled[name] = true;
 
                 // now that we gave the prepare method a chance to preload the states
-                State = stateClasses[name];
-                if (State) {
-                  resolve(createState(State));
-                } else {
-                  reject(new Error("called the prepare, but that didn't provide the state for route", name));
-                }
+                State = stateClasses[name] || router.BaseState || BaseState;
+                resolve(createState(State));
               });
             });
             return promise;
