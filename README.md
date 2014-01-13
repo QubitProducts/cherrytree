@@ -1,3 +1,7 @@
+# Cherrytree
+
+![build status](https://www.codeship.io/projects/bb769230-5ec0-0131-1b78-16ee4fa09096/status)
+
 Cherrytree is an awesome hierarchical stateful router for JavaScript applications.
 
 It's build on top of [tildeio/router.js](https://github.com/tildeio/router.js) which is a micro library extracted from Ember. Cherrytree is based on Ember's own router, but is made to be independant of the framework and has a slightly different take on what a State/Route is.
