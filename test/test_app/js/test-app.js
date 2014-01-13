@@ -36,22 +36,18 @@ define(function (require) {
 
   var BaseState = State.extend({
     model: function () {
-      console.log("MODELLING", this.options.id);
       var self = this;
       return new Promise(function (resolve) {
         self.timeout = setTimeout(function () {
-          console.log("TIMEOUT DONE", self.options.id);
           resolve();
         }, 300);
       });
     },
     abortModel: function () {
-      console.log("aborting model");
       window.clearTimeout(this.timeout);
     },
     destroy: function () {
       window.clearTimeout(this.timeout);
-      console.log("DESTROYING", this.options.id);
       if (this.$view) {
         this.$view.remove();
       }

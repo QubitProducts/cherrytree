@@ -181,7 +181,6 @@ define(function (require) {
           t2 = router.transitionTo("posts.show", 3);
           return t2;
         }).then(function () {
-          console.log(t1.sequence, t2.sequence);
           t1.should.not.equal(t2);
         }).then(done, done);
       });
