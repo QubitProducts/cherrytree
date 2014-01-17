@@ -1,16 +1,24 @@
 define(function (require) {
 
-  // getHandler function, given a route name returns a handler object -
-  // an instance of a route.
-
   var _ = require("underscore");
-  var createRoute = require("./create_route");
+  var RSVP = require("rsvp");
+  var BaseRoute = require("./route");
 
-  return function getHandler(router) {
+  return function createRoute(router) {
     var seen = {};
     var stateClasses = router.stateClasses;
     var prepares = router.prepares;
     var preparesCalled = {};
+
+    // abandoned states are states that have been initialized
+    // so that "model" could be called on them, but that are
+    // no longer needed, because the transition has been aborted
+    // (either by explicitly aborting it, or by initiating a new
+    // transition). Router.js won't call exit on such a state
+    // because it hasn't been entered/setup, but we still want
+    // to call a destroy on those, and so we'll keep these abandoned
+    // states in this array until the end of the loop
+    router.abandonedStates = [];
 
     return function (name) {
       // special loading handler case
@@ -38,17 +46,6 @@ define(function (require) {
       }
 
       var handler = {
-
-        beforeModel: function () {
-          
-          // clean up in case we didn't have a chance to cleanup before
-          // that happens when we transition while transitioning, which means
-          // we abandon some states and even though we've destroyed them, we
-          // were in the wrong closure to clean up the closure variables...
-          if (state && state._destroyed) {
-            state = null;
-          }
-        },
         model: function (params, queryParams, transition) {
           // console.log("cherry:", name, ":", "model", (state || {}).id);
 
@@ -94,8 +91,32 @@ define(function (require) {
 
             // need to set parent here..?
             if (transition) {
+              transition.then(function () {
+                // TODO what should we do with the abandoned states?
+                _.each(router.abandonedStates, function (state) {
+                  if (!state._setup) {
+                    destroyState(state);
+                  }
+                });
+                router.abandonedStates = [];
+              }, function () {
+                // in case the transition was aborted, we might need to
+                // destroy this state, after the transition has settled in
+                // currently there is no way to call into
+                if (!state._setup && transition.isAborted) {
+                  router.abandonedStates.push(state);
+                }
+              });
               var parentState = transition.data.parentState;
               if (!parentState) {
+                // var parentName = name.split(".");
+                // parentName.pop();
+                // parentName = parentName.join(".");
+                // if (!parentName) {
+                //   parentName = "application";
+                // }
+                // parentState = transition.resolvedModels[parentName];
+                // var resolvedModels = _.values(transition.resolvedModels);
                 var leafState = _.find(transition.resolvedModels, function (leafState) {
                   // it's a leafState only if every other state is not pointing to it
                   return _.every(transition.resolvedModels, function (state) {
@@ -106,6 +127,7 @@ define(function (require) {
               }
               state.setParent(parentState);
               transition.data.parentState = state;
+
             }
             var modelPromise = state.model();
 

@@ -3,7 +3,7 @@ define(function (require) {
   var _ = require("underscore");
   var Router = require("router");
   var RouterDSL = require("./dsl");
-  var getHandlerFunction = require("./get_handler_function");
+  var getHandler = require("./get_handler_function");
 
   var locations = {
     "none": require("./location/none_location")
@@ -219,7 +219,7 @@ define(function (require) {
   function setupRouter(cherrytree, router, location) {
     var lastURL;
 
-    router.getHandler = getHandlerFunction(cherrytree);
+    router.getHandler = getHandler(cherrytree);
 
     var doUpdateURL = function() {
       location.setURL(lastURL);

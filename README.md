@@ -63,3 +63,10 @@ TODO
   * refactor and simplify get_handler_function - avoid using closure variables, instead keep state on the handler object
   * don't pass in params as a top level object to the state constructor, pass them in as {params: params, queryParams, queryParams, router: router}
   * write a test re "identicalTransition" when params are different
+
+
+# v0.2 design doc
+  
+get_handler.js
+
+similar to how it's now, except no closure variables, it immediately returns an object either from cache, or puts one there. That object proxies all methods into the route instance which it contains at this.route. This.route is created when model is called via prepare mechanism. Once this.route exists, the before model is created everywhere. Perhaps we could even create this.route in the beforeModel. If this.route is loaded, then we skip this step.. Crazy? Might work..

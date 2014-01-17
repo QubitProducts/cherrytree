@@ -6,20 +6,27 @@ define(function (require) {
   // TODO options should be a generic hash of options,
   // it should contain params, which are the params extracted from the URL
 
-  var State = function (name, params) {
+  var Route = function (name, params) {
     this.name = name;
     this.options = _.clone(params);
     this.router = params.router;
     this.id = _.uniqueId();
     this.initialize();
   };
-  State.prototype = {
+  Route.prototype = {
+    serialize: function () {
+      return this.params;
+    },
     initialize: function () {},
+    beforeModel: function () {},
     model: function () {},
     // best hook for doing redirects
     afterModel: function () {},
     activate: function () {},
     destroy: function () {},
+    setup: function () {
+      this.activate();
+    },
     setParent: function (parent) {
       this.parent = parent;
     },
@@ -32,19 +39,19 @@ define(function (require) {
       return router.replaceWith.apply(router, arguments);
     },
     get: function (modelName) {
-      var state = this;
-      while (state) {
-        if (state[modelName]) {
-          return state[modelName];
+      var route = this;
+      while (route) {
+        if (route[modelName]) {
+          return route[modelName];
         } else {
-          state = state.parent;
+          route = route.parent;
         }
       }
     }
   };
 
-  State.extend = extend;
+  Route.extend = extend;
 
-  return State;
+  return Route;
 
 });
