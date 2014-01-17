@@ -3,7 +3,7 @@ define(function (require) {
   var RSVP = require("rsvp");
   var Promise = RSVP.Promise;
   var Router = require("cherrytree");
-  var State = require("cherrytree/state");
+  var Route = require("cherrytree/route");
   var HistoryLocation = require("cherrytree/location/history_location");
 
   var delay = function (time) {
@@ -14,7 +14,7 @@ define(function (require) {
 
   var router, sequence = [];
 
-  var BaseState = State.extend({
+  var BaseRoute = Route.extend({
     model: function () {
       sequence.push("model " + this.name);
       return delay(30);
@@ -36,7 +36,7 @@ define(function (require) {
       window.location.hash = "/";
       router = new Router({
         location: new HistoryLocation(),
-        BaseState: BaseState
+        BaseRoute: BaseRoute
       });
 
       // provide the route map
@@ -58,19 +58,22 @@ define(function (require) {
     });
 
     it("should destroy abandoned states when param is changing", function (done) {
-      router.state("posts.show", BaseState.extend({
+      router.addRoute("posts.show", BaseRoute.extend({
         initialize: function () {
-          sequence.push("initialize " + this.name + " " + this.options.postId);
+          sequence.push("initialize " + this.name);
         },
-        model: function () {
-          sequence.push("model " + this.name + " " + this.options.postId);
-          return delay(30);
+        model: function (params) {
+          sequence.push("model " + this.name + " " + params.postId);
+          return delay(30).then(function () {
+            return params;
+          });
         },
-        activate: function () {
-          sequence.push("activate " + this.name + " " + this.options.postId);
+        activate: function (context) {
+          this.postId = context.postId;
+          sequence.push("activate " + this.name + " " + context.postId);
         },
         destroy: function () {
-          sequence.push("destroy " + this.name + " " + this.options.postId);
+          sequence.push("destroy " + this.name + " " + this.postId);
         }
       }));
       router.transitionTo("about").then(function () {
@@ -83,20 +86,21 @@ define(function (require) {
       }).then(function () {
         return router.transitionTo("posts.show", 3);
       }).then(function () {
+        return router.transitionTo("posts.show", 4);
+      }).then(function () {
         sequence.should.deep.equal([
-         'initialize posts',
-         'model posts',
-         'initialize posts.show 1',
-         'model posts.show 1',
-         'destroy posts.show 1',
-         'initialize posts.show 2',
-         'model posts.show 2',
-         'destroy posts.show 2',
-         'initialize posts.show 3',
-         'model posts.show 3',
-         'destroy about',
-         'activate posts',
-         'activate posts.show 3'
+          'initialize posts',
+          'model posts',
+          'initialize posts.show',
+          'model posts.show 1',
+          'model posts.show 2',
+          'model posts.show 3',
+          'destroy about',
+          'activate posts',
+          'activate posts.show 3',
+          'model posts.show 4',
+          'destroy posts.show 3',
+          'activate posts.show 4',
         ]);
       }).then(done, done);
     });
@@ -123,28 +127,29 @@ define(function (require) {
           'model posts.best',
           'destroy about',
           'activate posts',
-          'activate posts.best',
-          'destroy posts.popular',
-          'destroy posts.latest'
+          'activate posts.best'
         ]);
       }).then(done, done);
     });
 
     describe("only changing params", function () {
       it("should still destroy the previous state with the same name", function (done) {
-        router.state("posts.show", BaseState.extend({
+        router.addRoute("posts.show", BaseRoute.extend({
           initialize: function () {
-            sequence.push("initialize " + this.name + " " + this.options.postId);
+            sequence.push("initialize " + this.name);
           },
-          model: function () {
-            sequence.push("model " + this.name + " " + this.options.postId);
-            return delay(30);
+          model: function (params) {
+            this.postId = params.postId;
+            sequence.push("model " + this.name + " " + this.postId);
+            return delay(30).then(function () {
+              return params;
+            });
           },
-          activate: function () {
-            sequence.push("activate " + this.name + " " + this.options.postId);
+          activate: function (context) {
+            sequence.push("activate " + this.name + " " + context.postId);
           },
           destroy: function () {
-            sequence.push("destroy " + this.name + " " + this.options.postId);
+            sequence.push("destroy " + this.name);
           }
         }));
         router.transitionTo("about").then(function () {
@@ -153,18 +158,18 @@ define(function (require) {
         }).then(function () {
           return router.transitionTo("posts.show", 2);
         }).then(function () {
+          console.log(JSON.stringify(sequence, null, 2));
           sequence.should.deep.equal([
-           'initialize posts',
-           'model posts',
-           'initialize posts.show 1',
-           'model posts.show 1',
-           'destroy about',
-           'activate posts',
-           'activate posts.show 1',
-           'initialize posts.show 2',
-           'model posts.show 2',
-           'activate posts.show 2',
-           'destroy posts.show 1'
+            'initialize posts',
+            'model posts',
+            'initialize posts.show',
+            'model posts.show 1',
+            'destroy about',
+            'activate posts',
+            'activate posts.show 1',
+            'model posts.show 2',
+            'destroy posts.show',
+            'activate posts.show 2',
           ]);
         }).then(done, done);
       });

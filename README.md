@@ -60,8 +60,7 @@ router.activeState("posts.show").model.get("name");
 
 TODO
   * docs
-  * tests :-", I know, I know..
-  * look into removing dependency on underscore
+  * remove dependency on underscore
   * look into submitting tildeio packages into bower
   * figure out if it's really useful to have State instead of just using handlers
   * figure out why we can't transitionTo within activate while transitioning
@@ -74,3 +73,18 @@ TODO
   * refactor and simplify get_handler_function - avoid using closure variables, instead keep state on the handler object
   * don't pass in params as a top level object to the state constructor, pass them in as {params: params, queryParams, queryParams, router: router}
   * write a test re "identicalTransition" when params are different
+  * rename destroy to deactivate - it's an opposite action to activate, not to initialize - routes are never destroyed
+  * ensure routes are exited right to left when something in the middle is reactivated
+  * finish cherrytree-abyssa-demo + webpack + npm install
+  * make a cherrytree-reactjs-demo + webpack + npm install
+  * publish cherrytree to npm and make sure both bower install cherrytree and npm install cherrytree work out of the box - document the path config, etc.
+  * consider cherrytree-standalone.js for jsbins or so. Alternatively requirebin should be fine.
+  * add interceptLinks method to the router / history location or somewhere
+  * update semantics - existance of update method should indicate that the route won't be reloaded, returning false overrides that behaviour
+
+
+# v0.2 design doc
+  
+get_handler.js
+
+similar to how it's now, except no closure variables, it immediately returns an object either from cache, or puts one there. That object proxies all methods into the route instance which it contains at this.route. This.route is created when model is called via prepare mechanism. Once this.route exists, the before model is created everywhere. Perhaps we could even create this.route in the beforeModel. If this.route is loaded, then we skip this step.. Crazy? Might work..

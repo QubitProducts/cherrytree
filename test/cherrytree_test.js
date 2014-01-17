@@ -45,23 +45,23 @@ define(function (require) {
         $(".application .outlet").html().should.equal("FAQ. Sorted By: user");
       }).then(function () {
         // we can also change the url directly to cause another transition to happen
-        window.location.hash = "#posts/filter/mine";
         var d = RSVP.defer();
         router.urlChanged = function (url) {
           url.should.equal("/posts/filter/mine");
           d.resolve();
         };
+        window.location.hash = "#posts/filter/mine";
         return d.promise;
       }).then(function () {
         $(".application .outlet").html().should.equal("My posts...");
       }).then(function () {
         // let's try a different filter
-        window.location.hash = "#posts/filter/foo";
         var d = RSVP.defer();
         router.urlChanged = function (url) {
           url.should.equal("/posts/filter/foo");
           d.resolve();
         };
+        window.location.hash = "#posts/filter/foo";
         return d.promise;
       }).then(function () {
         $(".application .outlet").html().should.equal("Filter not found");
