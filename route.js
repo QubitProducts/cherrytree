@@ -31,16 +31,33 @@ define(function (require) {
     },
     setup: function () {
       this._setup++;
-      if (this._setup > 1 && this.update) {
-        if (this.update.apply(this, arguments) === false) {
-          this.activate.apply(this, arguments);
+      var route = this;
+      var args = arguments;
+
+      function activate() {
+        console.log("activating", route.name);
+        route.activate.apply(route, args);
+      }
+
+      function reactivate() {
+        console.log("reaactivating", route.name);
+        route.exit();
+        route.enter.apply(route, args);
+        route.activate.apply(route, args);
+      }
+
+      if (this._setup > 1) {
+        if (this.update) {
+          if (this.update.apply(this, arguments) === false) {
+            activate();
+          } else {
+            reactivate();
+          }
         } else {
-          this.exit();
-          this.enter.apply(this, arguments);
-          this.activate.apply(this, arguments);
+          reactivate();
         }
       } else {
-        this.activate.apply(this, arguments);
+        activate();
       }
     },
     setParent: function (parent) {

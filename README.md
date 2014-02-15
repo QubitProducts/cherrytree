@@ -74,6 +74,7 @@ TODO
   * refactor and simplify get_handler_function - avoid using closure variables, instead keep state on the handler object
   * don't pass in params as a top level object to the state constructor, pass them in as {params: params, queryParams, queryParams, router: router}
   * write a test re "identicalTransition" when params are different
+  * rename destroy to deactivate - it's an opposite action to activate, not to initialize - routes are never destroyed
 
 
 # v0.2 design doc

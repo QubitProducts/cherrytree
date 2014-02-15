@@ -44,7 +44,24 @@ define(function (require) {
           return self.route.beforeModel.apply(self.route, arguments);
         });
       },
-      model: proxy("model"),
+      model: function (params) {
+        console.log("proxying", this.route.name + "#" + "model");
+        // console.log("proxying", this.route.name + "#" + method);
+        var method = "model";
+        var c = this.route[method].apply(this.route, arguments);
+        // a bit of magic - ensure that if model doesn't return anything
+        // we still return something, because we don't want this model
+        // function to be called multiple times in case no context
+        // is needed - perhaps we shouldn't do this..
+        // just document that model function should be used to return the context
+        // actually there is no problem if this is called many times..
+        // or just document that model will get called multiple times 
+        if (c === undefined) {
+          return params;
+        } else {
+          return c;
+        }
+      },
       afterModel: proxy("afterModel"),
       enter: proxy("enter"),
       setup: proxy("setup"),
