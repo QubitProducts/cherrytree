@@ -47,6 +47,17 @@ router.activeState("posts.show").model.get("name");
 ```
 
 
+## Changelog
+
+### 0.1.2
+
+* Fix query param support by updating to location-bar 2.0.0.
+
+### 0.1.3.
+
+* Fix double `cherrytree.urlChanged` calls, only called once per transition now
+
+
 TODO
   * docs
   * tests :-", I know, I know..

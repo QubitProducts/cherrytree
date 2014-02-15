@@ -1,6 +1,6 @@
 {
   "name": "cherrytree",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "router.js",
   "ignore": [
     "**/.*",
@@ -13,7 +13,7 @@
   "dependencies": {
     "router.js": "tildeio/router.js#efbb9697d3a9c0b0ee48c68da64b76153cd38eed",
     "route-recognizer": "tildeio/route-recognizer#95f0508462875790d845f66422d22d960108951c",
-    "location-bar": "1.0.0",
+    "location-bar": "2.0.0-beta.1",
     "rsvp": "2.0.1",
     "underscore": ">=1.4.4"
   },

@@ -243,11 +243,11 @@ define(function (require) {
       };
     }
 
-    if (location.onChangeURL && cherrytree.urlChanged) {
-      location.onChangeURL(function (url) {
-        cherrytree.urlChanged(url);
-      });
-    }
+    // if (location.onChangeURL && cherrytree.urlChanged) {
+    //   location.onChangeURL(function (url) {
+    //     cherrytree.urlChanged(url);
+    //   });
+    // }
 
     router.didTransition = function(infos) {
       cherrytree.didTransition(infos);
