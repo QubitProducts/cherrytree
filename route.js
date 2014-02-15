@@ -6,10 +6,9 @@ define(function (require) {
   // TODO options should be a generic hash of options,
   // it should contain params, which are the params extracted from the URL
 
-  var Route = function (name, params) {
-    this.name = name;
-    this.options = _.clone(params);
-    this.router = params.router;
+  var Route = function (options) {
+    this.name = options.name;
+    this.router = options.router;
     this.id = _.uniqueId();
     this.initialize();
   };
@@ -24,8 +23,25 @@ define(function (require) {
     afterModel: function () {},
     activate: function () {},
     destroy: function () {},
+    enter: function () {
+      this._setup = 0;
+    },
+    exit: function () {
+      this.destroy.apply(this, arguments);
+    },
     setup: function () {
-      this.activate();
+      this._setup++;
+      if (this._setup > 1 && this.update) {
+        if (this.update.apply(this, arguments) === false) {
+          this.activate.apply(this, arguments);
+        } else {
+          this.exit();
+          this.enter.apply(this, arguments);
+          this.activate.apply(this, arguments);
+        }
+      } else {
+        this.activate.apply(this, arguments);
+      }
     },
     setParent: function (parent) {
       this.parent = parent;

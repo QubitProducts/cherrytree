@@ -9,17 +9,17 @@ define(function (require) {
     "none": require("./location/none_location")
   };
 
-  var assert = function(desc, test) {
+  var assert = function (desc, test) {
     if (!test) throw new Error("assertion failed: " + desc);
   };
 
   var CherryTreeRouter = function (options) {
     this.options = _.extend({}, this.options, options);
-    this.stateClasses = {};
+    this.routeClasses = {};
     this.prepares = {};
 
-    if (this.options.BaseState) {
-      this.BaseState = this.options.BaseState;
+    if (this.options.BaseRoute) {
+      this.BaseRoute = this.options.BaseRoute;
     }
   };
   CherryTreeRouter.prototype = {
@@ -50,14 +50,14 @@ define(function (require) {
       return this;
     },
 
-    states: function (map) {
-      _.each(map, function (state, name) {
-        this.state(name, state);
+    addRoutes: function (map) {
+      _.each(map, function (route, name) {
+        this.addRoute(name, route);
       }, this);
     },
 
-    state: function (name, state) {
-      this.stateClasses[name] = state;
+    addRoute: function (name, route) {
+      this.routeClasses[name] = route;
     },
 
     startRouting: function () {
@@ -90,7 +90,7 @@ define(function (require) {
     },
 
     handleURL: function(url) {
-      scheduleLoadingStateEntry(this);
+      scheduleLoadingRouteEntry(this);
 
       var self = this;
 
@@ -99,7 +99,7 @@ define(function (require) {
       }, function(err) {
         // we want to complete the transition
         // * we want to notify everyone that url changed
-        // * we want to exit the loading state
+        // * we want to exit the loading route
         transitionFailed(err, self);
         return err;
       });
@@ -273,7 +273,7 @@ define(function (require) {
       assert("The route " + passedName + " was not found", router.router.hasRoute(name));
     }
 
-    scheduleLoadingStateEntry(router);
+    scheduleLoadingRouteEntry(router);
 
     var transitionPromise = router.router[method].apply(router.router, args);
     transitionPromise.then(function() {
@@ -281,7 +281,7 @@ define(function (require) {
     }, function(err) {
       // we want to complete the transition
       // * we want to notify everyone that url changed
-      // * we want to exit the loading state
+      // * we want to exit the loading route
       transitionFailed(err, router);
       return err;
     });
@@ -308,39 +308,39 @@ define(function (require) {
 
   return CherryTreeRouter;
 
-  function scheduleLoadingStateEntry(router) {
-    if (router._loadingStateActive) { return; }
-    router._shouldEnterLoadingState = true;
-    // Ember.run.scheduleOnce('routerTransitions', null, enterLoadingState, router);
+  function scheduleLoadingRouteEntry(router) {
+    if (router._loadingRouteActive) { return; }
+    router._shouldEnterLoadingRoute = true;
+    // Ember.run.scheduleOnce('routerTransitions', null, enterLoadingRoute, router);
     _.defer(function () {
-      enterLoadingState(router);
+      enterLoadingRoute(router);
     });
   }
 
-  function enterLoadingState(router) {
-    if (router._loadingStateActive || !router._shouldEnterLoadingState) { return; }
+  function enterLoadingRoute(router) {
+    if (router._loadingRouteActive || !router._shouldEnterLoadingRoute) { return; }
 
     var loadingRoute = router.router.getHandler('loading');
     if (loadingRoute) {
       if (loadingRoute.model) { loadingRoute.model(); }
       if (loadingRoute.enter) { loadingRoute.enter(); }
       if (loadingRoute.setup) { loadingRoute.setup(); }
-      router._loadingStateActive = true;
+      router._loadingRouteActive = true;
     }
   }
 
-  function exitLoadingState(router) {
-    router._shouldEnterLoadingState = false;
-    if (!router._loadingStateActive) { return; }
+  function exitLoadingRoute(router) {
+    router._shouldEnterLoadingRoute = false;
+    if (!router._loadingRouteActive) { return; }
 
     var loadingRoute = router.router.getHandler('loading');
     if (loadingRoute && loadingRoute.exit) { loadingRoute.exit(); }
-    router._loadingStateActive = false;
+    router._loadingRouteActive = false;
   }
 
   function transitionCompleted(router) {
     // router.notifyPropertyChange('url');
-    exitLoadingState(router);
+    exitLoadingRoute(router);
     if (router.urlChanged) {
       router.urlChanged(router.location.getURL());
     }

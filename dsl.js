@@ -10,7 +10,7 @@ define(function (require) {
   }
 
   DSL.prototype = {
-    resource: function(name, options, callback) {
+    resource: function (name, options, callback) {
       if (arguments.length === 2 && typeof options === 'function') {
         callback = options;
         options = {};
@@ -24,7 +24,7 @@ define(function (require) {
         options.path = "/" + name;
       }
 
-      // a method we'll call before entering this state
+      // a method we'll call before entering this route
       if (options.prepare) {
         this.prepares[name] = options.prepare;
       }
@@ -39,14 +39,14 @@ define(function (require) {
       }
     },
 
-    push: function(url, name, callback, queryParams) {
+    push: function (url, name, callback, queryParams) {
       var parts = name.split('.');
-      if (url === "" || url === "/" || parts[parts.length-1] === "index") { this.explicitIndex = true; }
+      if (url === "" || url === "/" || parts[parts.length - 1] === "index") { this.explicitIndex = true; }
 
       this.matches.push([url, name, callback, queryParams]);
     },
 
-    route: function(name, options) {
+    route: function (name, options) {
       // Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
 
       options = options || {};
@@ -66,34 +66,34 @@ define(function (require) {
       this.push(options.path, name, null, options.queryParams);
     },
 
-    generate: function() {
+    generate: function () {
       var dslMatches = this.matches;
 
       if (!this.explicitIndex) {
         this.route("index", { path: "/" });
       }
 
-      return function(match) {
-        for (var i=0, l=dslMatches.length; i<l; i++) {
+      return function (match) {
+        for (var i = 0, l = dslMatches.length; i < l; i++) {
           var dslMatch = dslMatches[i];
           var matchObj = match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
-          if(dslMatch[3]) {
+          if (dslMatch[3]) {
             matchObj.withQueryParams.apply(matchObj, dslMatch[3]);
           }
         }
       };
     },
 
-    state: function () {
-      this.router.state.apply(this.router, arguments);
+    addRoute: function () {
+      this.router.addRoute.apply(this.router, arguments);
     },
 
-    states: function () {
-      this.router.states.apply(this.router, arguments);
+    addRoutes: function () {
+      this.router.addRoutes.apply(this.router, arguments);
     }
   };
 
-  DSL.map = function(router, callback) {
+  DSL.map = function (router, callback) {
     var dsl = new DSL(null, router);
     callback.call(dsl);
     return dsl;
