@@ -5,18 +5,27 @@ define(function (require) {
   // route and mediating between router and the route, i.e. all calls
   // from router onto the handler are passed on to the route
 
+  var _ = require("underscore");
   var makeRouteCreator = require("./route_creator");
   var RSVP = require("rsvp");
 
+  var debug = false;
+
   function proxy(method) {
     return function () {
-      console.log("proxying", this.route.name + "#" + method);
+      if (debug) {
+        console.log("cherrytree:", this.route.name + "#" + method);
+      }
       return this.route[method].apply(this.route, arguments);
     };
   }
 
   function makeHandler(router, routeCreator, name) {
     return {
+      serialize: function () {
+        // console.log("SERIALIZING", name, arguments);
+        return this.params;
+      },
       beforeModel: function (queryParams, transition) {
         if (!transition) {
           transition = queryParams;
@@ -40,15 +49,69 @@ define(function (require) {
           // } else if (transition.data.parent) {
           // }
           // transition.data.parent = self.route;
-          console.log("proxying", self.route.name + "#" + "beforeModel");
+          if (debug) {
+            console.log("cherrytree:", self.route.name + "#" + "beforeModel");
+          }
           return self.route.beforeModel.apply(self.route, arguments);
         });
       },
-      model: function (params) {
-        console.log("proxying", this.route.name + "#" + "model");
-        // console.log("proxying", this.route.name + "#" + method);
+      model: function (params, queryParams, transition) {
+        if (transition === undefined) {
+          transition = queryParams;
+          queryParams = false;
+        }
+        // normalize params
+        if (_.isEmpty(params)) {
+          params = false;
+        }
+        if (_.isEmpty(queryParams)) {
+          queryParams = false;
+        }
+
+        this.params = _.clone(params);
+
+        this.route.options = this.route.options || {};
+        _.extend(this.route.options, params);
+        this.route.options.queryParams = queryParams || {};
+
+        // // if params didn't change - we keep this state
+        // console.log("PARAMS ARE", name, params);
+        // if (_.isEqual(this.lastParams, params) && _.isEqual(this.lastQueryParams, queryParams)) {
+        //   console.log("REUSING CONTEXT", this.route.name, this.prevContext);
+        //   return this.prevContext;
+        // }
+
+        // // keep a record of the new params
+        // this.lastParams = _.clone(params);
+        // this.lastQueryParams = _.clone(queryParams);
+
+        // // if the params changed - call an optional update
+        // // method on the state - return value false,
+        // // prevents the desctruction of the state and proceeds
+        // // with the transition. Otherwise we will destroy this
+        // // state and recreate it
+        // if ((params || queryParams) && this.route.update) {
+        //   this.route._lastUpdateHandled = this.route.update(params, queryParams) === false;
+        //   if (this.route._lastUpdateHandled) {
+        //     console.log("REUSING CONTEXT AFTER #UPDATE", this.route.name, this.prevContext);
+        //     return this.prevContext;
+        //   }
+        // }
+        
+
+
+
         var method = "model";
+        if (debug) {
+          console.log("cherrytree:", this.route.name + "#" + method);
+        }
         var c = this.route[method].apply(this.route, arguments);
+
+        if (this.route.shouldActivate) {
+          this.route.enter(c, transition);
+          this.route.setup(c, transition);
+        }
+
         // a bit of magic - ensure that if model doesn't return anything
         // we still return something, because we don't want this model
         // function to be called multiple times in case no context
@@ -56,16 +119,35 @@ define(function (require) {
         // just document that model function should be used to return the context
         // actually there is no problem if this is called many times..
         // or just document that model will get called multiple times 
-        if (c === undefined) {
-          return params;
-        } else {
-          return c;
-        }
+        // if (c === undefined) {
+        //   return params;
+        // } else {
+        // this.prevContext = c || {};
+        return RSVP.resolve(c).then(function (context) {
+          return context || {};
+        });
+        // }
       },
       afterModel: proxy("afterModel"),
       enter: proxy("enter"),
       setup: proxy("setup"),
-      exit: proxy("exit")
+      exit: proxy("exit"),
+      events: {
+        willTransition: function (transition) {
+          if (this.route.willTransition) {
+            return this.route.willTransition(transition);
+          } else {
+            return true;
+          }
+        },
+        error: function (err, transition) {
+          if (this.route.error) {
+            return this.route.error(err, transition);
+          } else {
+            return true;
+          }
+        }
+      }
     };
   }
 
@@ -76,6 +158,9 @@ define(function (require) {
 
     if (!routeClasses["loading"]) {
       seen.loading = {};
+    } else {
+      seen.loading = makeHandler(router, routeCreator, "loading");
+      seen.loading.beforeModel();
     }
 
     return function (name) {

@@ -27,38 +27,39 @@ define(function (require) {
       this._setup = 0;
     },
     exit: function () {
+      // console.log("EXIT", this.name);
       this.destroy.apply(this, arguments);
     },
     setup: function () {
-      this._setup++;
+      this._setup += 1;
       var route = this;
       var args = arguments;
 
       function activate() {
-        console.log("activating", route.name);
+        // console.log("ACTIVATING", route.name);
         route.activate.apply(route, args);
       }
 
       function reactivate() {
-        console.log("reaactivating", route.name);
+        // console.log("REACTIVATING", route.name);
         route.exit();
-        route.enter.apply(route, args);
+        // route.enter.apply(route, args);
         route.activate.apply(route, args);
       }
 
-      if (this._setup > 1) {
-        if (this.update) {
-          if (this.update.apply(this, arguments) === false) {
-            activate();
-          } else {
-            reactivate();
-          }
-        } else {
-          reactivate();
-        }
-      } else {
-        activate();
+      // if it's the first time setup is called after
+      // the route has been entered - activate
+      if (this._setup === 1) {
+        return activate();
       }
+
+      // give route.update a chance to deal with the change in context / params
+      if (this.update && this.update.apply(this, args) === false) {
+        return;
+      }
+      
+      // reactivate
+      reactivate();
     },
     setParent: function (parent) {
       this.parent = parent;

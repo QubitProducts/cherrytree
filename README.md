@@ -75,6 +75,7 @@ TODO
   * don't pass in params as a top level object to the state constructor, pass them in as {params: params, queryParams, queryParams, router: router}
   * write a test re "identicalTransition" when params are different
   * rename destroy to deactivate - it's an opposite action to activate, not to initialize - routes are never destroyed
+  * ensure routes are exited right to left when something in the middle is reactivated
 
 
 # v0.2 design doc

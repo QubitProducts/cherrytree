@@ -162,11 +162,11 @@ define(function (require) {
     },
 
     activeStates: function () {
-      return _.pluck(this.router.currentHandlerInfos, "context");
+      return _.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route");
     },
 
     activeStateNames: function () {
-      return _.pluck(_.pluck(this.router.currentHandlerInfos, "context"), "name");
+      return _.pluck(_.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route"), "name");
     },
 
     activeState: function (id) {
