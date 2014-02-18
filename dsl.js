@@ -7,6 +7,9 @@ define(function (require) {
     this.router = router;
     this.matches = [];
     this.prepares = {};
+
+    this.state = this.addRoute;
+    this.states = this.addRoutes;
   }
 
   DSL.prototype = {
