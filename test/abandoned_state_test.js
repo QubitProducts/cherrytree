@@ -158,7 +158,6 @@ define(function (require) {
         }).then(function () {
           return router.transitionTo("posts.show", 2);
         }).then(function () {
-          console.log(JSON.stringify(sequence, null, 2));
           sequence.should.deep.equal([
             'initialize posts',
             'model posts',
