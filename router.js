@@ -3,8 +3,8 @@
 
     var _ = require("underscore");
     var Router = require("router");
-    var RouterDSL = require("./dsl");
-    var getHandler = require("./get_handler_function");
+    var RouterDSL = require("./lib/dsl");
+    var getHandler = require("./lib/get_handler_function");
 
     var locations = {
       "none": require("./location/none_location")
@@ -85,10 +85,10 @@
         return this.handleURL(location.getURL());
       },
 
-      didTransition: function (infos) {
-        var path = routePath(infos);
-        // announce we transitioned somehow?
-      },
+      // didTransition: function (infos) {
+      //   var path = routePath(infos);
+      //   // announce we transitioned somehow?
+      // },
 
       handleURL: function(url) {
         scheduleLoadingRouteEntry(this);
@@ -250,9 +250,9 @@
       //   });
       // }
 
-      router.didTransition = function(infos) {
-        cherrytree.didTransition(infos);
-      };
+      // router.didTransition = function(infos) {
+      //   cherrytree.didTransition(infos);
+      // };
     }
 
     function doTransition(router, method, args) {

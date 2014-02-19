@@ -1,58 +1,27 @@
 (function (define) { 'use strict';
   define(function (require) {
 
-    var extend      = require("../util/extend");
-    var LocationBar = require("location-bar");
-
-    // save the current scroll position at all times
-    // for use when back/forward buttons are used
-    var $ = require("jquery");
-    var currentScroll;
-    $(window).scroll(function () {
-      currentScroll = window.scrollY;
-    });
+    var extend      = require('../lib/util/extend');
+    var LocationBar = require('location-bar');
 
     var HistoryLocation = function (options) {
       this.options = extend({}, this.options);
       this.options = extend(this.options, options);
       this.initialize(this.options);
     };
-    HistoryLocation.prototype = {
-      path: "",
+    extend(HistoryLocation.prototype, {
+      path: '',
 
       options: {
         pushState: false,
-        root: "/"
+        root: '/'
       },
 
       initialize: function (options) {
         var self = this;
-
         this.locationBar = new LocationBar();
-
         this.locationBar.onChange(function (path) {
-          path = path || "";
-
-          // experimental feature: preserving scroll upon
-          // navigation
-          window.scrollTo(0, currentScroll);
-          setTimeout(function () {
-            window.scrollTo(0, currentScroll);
-          }, 0);
-          setTimeout(function () {
-            window.scrollTo(0, currentScroll);
-          }, 1);
-
-          // var query = path.split("?")[1];
-          // path = path.split("?")[0];
-          self.handleURL("/" + path);
-
-          // for now, we publish the url:params via mediator
-          // we should get some better inspiration from ember-query
-          // about how we could pass these in via the router into the
-          // states
-          // var mediator = require("leap/mediator");
-          // mediator.publish("url:params", query);
+          self.handleURL('/' + (path || ''));
         });
         this.locationBar.start(extend(options));
       },
@@ -116,23 +85,23 @@
         if (this.locationBar.hasPushState()) {
           var rootURL = this.options.root;
 
-          if (url !== "") {
+          if (url !== '') {
             rootURL = rootURL.replace(/\/$/, '');
           }
 
           return rootURL + url;
         } else {
-          if (url[0] === "/") {
+          if (url[0] === '/') {
             url = url.substr(1);
           }
-          return "#" + url;
+          return '#' + url;
         }
       },
 
       destroy: function () {
         this.locationBar.stop();
       }
-    };
+    });
 
     return HistoryLocation;
   });
