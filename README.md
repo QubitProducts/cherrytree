@@ -60,8 +60,7 @@ router.activeState("posts.show").model.get("name");
 
 TODO
   * docs
-  * tests :-", I know, I know..
-  * look into removing dependency on underscore
+  * remove dependency on underscore
   * look into submitting tildeio packages into bower
   * figure out if it's really useful to have State instead of just using handlers
   * figure out why we can't transitionTo within activate while transitioning
@@ -76,6 +75,12 @@ TODO
   * write a test re "identicalTransition" when params are different
   * rename destroy to deactivate - it's an opposite action to activate, not to initialize - routes are never destroyed
   * ensure routes are exited right to left when something in the middle is reactivated
+  * finish cherrytree-abyssa-demo + webpack + npm install
+  * make a cherrytree-reactjs-demo + webpack + npm install
+  * publish cherrytree to npm and make sure both bower install cherrytree and npm install cherrytree work out of the box - document the path config, etc.
+  * consider cherrytree-standalone.js for jsbins or so. Alternatively requirebin should be fine.
+  * add interceptLinks method to the router / history location or somewhere
+  * update semantics - existance of update method should indicate that the route won't be reloaded, returning false overrides that behaviour
 
 
 # v0.2 design doc
