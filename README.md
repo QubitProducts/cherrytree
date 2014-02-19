@@ -85,6 +85,7 @@ TODO
   * document how to do redirects in beforeModel (or anywhere else) using this.router.transitionTo
   * document transitionTo vs replaceWith
   * document get method - explain it's experimental - it's important to be able to access parent models, but not clear of the best way yet
+  * consolidate router.js logging and cherrytree logging into the same system somehow
 
 ## Roadmap
 
