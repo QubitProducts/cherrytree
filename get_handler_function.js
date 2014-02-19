@@ -46,9 +46,6 @@ define(function (require) {
             }
             self.route.setParent(parentHandler.handler.route);
           }
-          // } else if (transition.data.parent) {
-          // }
-          // transition.data.parent = self.route;
           if (debug) {
             console.log("cherrytree:", self.route.name + "#" + "beforeModel");
           }
@@ -107,10 +104,10 @@ define(function (require) {
         }
         var c = this.route[method].apply(this.route, arguments);
 
-        if (this.route.shouldActivate) {
-          this.route.enter(c, transition);
-          this.route.setup(c, transition);
-        }
+        // if (this.route.shouldActivate) {
+        //   this.route.enter(c, transition);
+        //   this.route.setup(c, transition);
+        // }
 
         // a bit of magic - ensure that if model doesn't return anything
         // we still return something, because we don't want this model
