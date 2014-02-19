@@ -73,9 +73,16 @@ define(function (require) {
       return router.replaceWith.apply(router, arguments);
     },
     get: function (modelName) {
+      var context;
       var route = this;
       while (route) {
-        if (route[modelName]) {
+        context = route.getContext();
+        if (context && context[modelName]) {
+          return context[modelName];
+        } else if (route[modelName]) {
+          // TODO: consider removing this, it should either be
+          // context or any attribute of the route. Context is a lot
+          // more explicit so probably a better choice.
           return route[modelName];
         } else {
           route = route.parent;

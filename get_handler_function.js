@@ -33,8 +33,16 @@ define(function (require) {
         }
 
         var self = this;
+        var handler = this;
         return RSVP.resolve(self.route || routeCreator.createRoute(name)).then(function (route) {
           self.route = route;
+
+          // enable access to route's context from within the route
+          if (!route.getContext) {
+            route.getContext = function () {
+              return handler.context;
+            };
+          }
           
           if (name !== "application" && name !== "loading") {
             var parentHandler = transition.handlerInfos[0];
