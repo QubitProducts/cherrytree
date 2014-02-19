@@ -81,6 +81,15 @@ TODO
   * consider cherrytree-standalone.js for jsbins or so. Alternatively requirebin should be fine.
   * add interceptLinks method to the router / history location or somewhere
   * update semantics - existance of update method should indicate that the route won't be reloaded, returning false overrides that behaviour
+  * document how to do 404s using /*path
+  * document how to do redirects in beforeModel (or anywhere else) using this.router.transitionTo
+  * document transitionTo vs replaceWith
+  * document get method - explain it's experimental - it's important to be able to access parent models, but not clear of the best way yet
+
+## Roadmap
+
+* explore triggering events on routes that bubble up (a bit like error and willTransition events), this way less need to access parent things like this.parent.view, etc.
+* explore a way to activate a state right after it's model is fetched without waiting for child states. Atm it's possible to just call `this.activate()` in the model manually, but if a transition away from this route occurs, cherrytree won't deactivate the route as it was never entered (?). Latest versions of router.js has the substates, so those might be the answer.
 
 
 # v0.2 design doc
