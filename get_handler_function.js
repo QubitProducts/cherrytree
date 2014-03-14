@@ -136,7 +136,7 @@ define(function (require) {
           // prevents the desctruction of the state and proceeds
           // with the transition. Otherwise we will destroy this
           // state and recreate it
-          if ((params || queryParams) && state && state.update) {
+          if (state && state.update) {
             if (state.update(params, queryParams) === false) {
               return state;
             }
