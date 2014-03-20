@@ -87,10 +87,12 @@ TODO
   * document get method - explain it's experimental - it's important to be able to access parent models, but not clear of the best way yet
   * consolidate router.js logging and cherrytree logging into the same system somehow
 
+
 ## Roadmap
 
 * explore triggering events on routes that bubble up (a bit like error and willTransition events), this way less need to access parent things like this.parent.view, etc.
 * explore a way to activate a state right after it's model is fetched without waiting for child states. Atm it's possible to just call `this.activate()` in the model manually, but if a transition away from this route occurs, cherrytree won't deactivate the route as it was never entered (?). Latest versions of router.js has the substates, so those might be the answer.
+* explore a way to call model on multiple routes at once - sometimes we can parallelize the model calls.
 
 
 # v0.2 design doc
