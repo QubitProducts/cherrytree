@@ -55,6 +55,7 @@ define(function (require) {
           this.resource("settings", function () {
             this.route("password");
             this.route("photo", {queryParams: ["size"]});
+            this.route("permissions", {path: "/:setId"});
           });
         });
       });
@@ -63,6 +64,9 @@ define(function (require) {
         update: function () {
           sequence.push("update " + this.name);
           return false;
+        },
+        queryParamsDidChange: function () {
+          this.refresh();
         }
       }));
 
@@ -70,6 +74,9 @@ define(function (require) {
         update: function () {
           sequence.push("update " + this.name);
           return false;
+        },
+        queryParamsDidChange: function () {
+          this.refresh();
         }
       }));
 
@@ -170,8 +177,33 @@ define(function (require) {
     });
 
     describe("optional transitionTo params", function () {
-
+      it("should be possible to list all params", function (done) {
+        router.transitionTo("settings.permissions", 1, 2).then(function () {
+          sequence = [];
+          return router.transitionTo("settings.permissions", 1, 3);
+        }).then(function () {
+          console.log(sequence);
+          sequence.should.deep.equal([
+            'model settings.permissions',
+            'destroy settings.permissions',
+            'activate settings.permissions'
+          ]);
+        }).then(done, done);
+      });
+      it("should be possible to skip parent route params", function (done) {
+        router.transitionTo("settings.permissions", 1, 2).then(function () {
+          sequence = [];
+          return router.transitionTo("settings.permissions", 3);
+        }).then(function () {
+          sequence.should.deep.equal([
+            'model settings.permissions',
+            'destroy settings.permissions',
+            'activate settings.permissions'
+          ]);
+        }).then(done, done);
+      });
     });
+
 
     describe("upstream route changing context", function () {
       it("should reactivate the child routes", function (done) {

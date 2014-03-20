@@ -32,7 +32,7 @@ define(function (require) {
   function TestApp() {
     // create the router
     var router = this.router = new Router({
-      logging: true,
+      // logging: true,
       location: new HistoryLocation()
     });
 
@@ -96,6 +96,9 @@ define(function (require) {
       update: function () {
         this.render();
         return false;
+      },
+      queryParamsDidChange: function () {
+        this.refresh();
       }
     }));
     // posts page
