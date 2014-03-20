@@ -1,1 +1,0 @@
-// test the logging functionality

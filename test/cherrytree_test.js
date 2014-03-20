@@ -28,6 +28,8 @@ define(function (require) {
       };
     });
 
+    it.skip("should log info if logging is turned on", function () {});
+
     it("can be used to render a webapp", function (done) {
       $(".application .outlet").html().should.equal("Welcome to this application");
       // we can transition into different parts of the app
