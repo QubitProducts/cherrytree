@@ -3,7 +3,7 @@
 
     var uniqueId = require('./lib/util/unique_id');
     var extend = require('./lib/util/extend');
-    var extender = require('./lib/extender');
+    var inherit = require('./lib/inherit');
     var noop = function () {};
 
     var Route = function (options) {
