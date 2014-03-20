@@ -28,9 +28,24 @@ define(function (require) {
       };
     });
 
+    describe("query params", function () {
+      it("should update routes in a similar fashion to regular params", function (done) {
+        router.transitionTo("about").then(function () {
+          // we can also transition via URL
+          return router.transitionTo("/faq?sortBy=date");
+        }).then(function () {
+          $(".application .outlet").html().should.equal("FAQ. Sorted By: date");
+          // we can change the param now
+          return router.transitionTo("faq", {queryParams: { sortBy: "user" }});
+        }).then(function () {
+          $(".application .outlet").html().should.equal("FAQ. Sorted By: user");
+        }).then(done, done);
+      });
+    });
+
     it.skip("should log info if logging is turned on", function () {});
 
-    it.only("can be used to render a webapp", function (done) {
+    it("can be used to render a webapp", function (done) {
       $(".application .outlet").html().should.equal("Welcome to this application");
       // we can transition into different parts of the app
       // using the transitionTo method
@@ -42,7 +57,6 @@ define(function (require) {
       }).then(function () {
         $(".application .outlet").html().should.equal("FAQ. Sorted By: date");
         // we can change the param now
-        console.log("TRANSITIONING TO NEW QUERY PARAMS");
         return router.transitionTo("faq", {queryParams: { sortBy: "user" }});
       }).then(function () {
         $(".application .outlet").html().should.equal("FAQ. Sorted By: user");
