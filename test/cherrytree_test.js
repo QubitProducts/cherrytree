@@ -30,7 +30,7 @@ define(function (require) {
 
     it.skip("should log info if logging is turned on", function () {});
 
-    it("can be used to render a webapp", function (done) {
+    it.only("can be used to render a webapp", function (done) {
       $(".application .outlet").html().should.equal("Welcome to this application");
       // we can transition into different parts of the app
       // using the transitionTo method
@@ -42,6 +42,7 @@ define(function (require) {
       }).then(function () {
         $(".application .outlet").html().should.equal("FAQ. Sorted By: date");
         // we can change the param now
+        console.log("TRANSITIONING TO NEW QUERY PARAMS");
         return router.transitionTo("faq", {queryParams: { sortBy: "user" }});
       }).then(function () {
         $(".application .outlet").html().should.equal("FAQ. Sorted By: user");

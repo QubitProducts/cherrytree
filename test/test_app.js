@@ -32,6 +32,7 @@ define(function (require) {
   function TestApp() {
     // create the router
     var router = this.router = new Router({
+      logging: true,
       location: new HistoryLocation()
     });
 
@@ -82,16 +83,15 @@ define(function (require) {
     }));
     // faq page
     router.addRoute("faq", State.extend({
-      model: function (params, queryParams) {
+      model: function (params) {
         this.params = params;
-        this.queryParams = queryParams;
       },
       activate: function () {
         this.render();
       },
       render: function () {
         this.parent.$outlet.html("FAQ.");
-        this.parent.$outlet.append(" Sorted By: " + this.queryParams.sortBy);
+        this.parent.$outlet.append(" Sorted By: " + this.params.queryParams.sortBy);
       },
       update: function () {
         this.render();

@@ -2,7 +2,7 @@
   define(function (require) {
 
     var _ = require("underscore");
-    var Router = require("router");
+    var Router = require("router").default;
     var RouterDSL = require("./lib/dsl");
     var getHandler = require("./lib/get_handler_function");
 
