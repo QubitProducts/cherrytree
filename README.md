@@ -49,19 +49,18 @@ router.activeState("posts.show").model.get("name");
 
 ## Changelog
 
-### 0.1.2
-
-* Fix query param support by updating to location-bar 2.0.0.
-
 ### 0.1.3.
 
 * Fix double `cherrytree.urlChanged` calls, only called once per transition now
 
+### 0.1.2
+
+* Fix query param support by updating to location-bar 2.0.0.
+
 
 TODO
   * docs
-  * tests :-", I know, I know..
-  * look into removing dependency on underscore
+  * remove dependency on underscore
   * look into submitting tildeio packages into bower
   * figure out if it's really useful to have State instead of just using handlers
   * figure out why we can't transitionTo within activate while transitioning
@@ -74,3 +73,30 @@ TODO
   * refactor and simplify get_handler_function - avoid using closure variables, instead keep state on the handler object
   * don't pass in params as a top level object to the state constructor, pass them in as {params: params, queryParams, queryParams, router: router}
   * write a test re "identicalTransition" when params are different
+  * rename destroy to deactivate - it's an opposite action to activate, not to initialize - routes are never destroyed
+  * ensure routes are exited right to left when something in the middle is reactivated
+  * finish cherrytree-abyssa-demo + webpack + npm install
+  * make a cherrytree-reactjs-demo + webpack + npm install
+  * publish cherrytree to npm and make sure both bower install cherrytree and npm install cherrytree work out of the box - document the path config, etc.
+  * consider cherrytree-standalone.js for jsbins or so. Alternatively requirebin should be fine.
+  * add interceptLinks method to the router / history location or somewhere
+  * update semantics - existance of update method should indicate that the route won't be reloaded, returning false overrides that behaviour
+  * document how to do 404s using /*path
+  * document how to do redirects in beforeModel (or anywhere else) using this.router.transitionTo
+  * document transitionTo vs replaceWith
+  * document get method - explain it's experimental - it's important to be able to access parent models, but not clear of the best way yet
+  * consolidate router.js logging and cherrytree logging into the same system somehow
+
+
+## Roadmap
+
+* explore triggering events on routes that bubble up (a bit like error and willTransition events), this way less need to access parent things like this.parent.view, etc.
+* explore a way to activate a state right after it's model is fetched without waiting for child states. Atm it's possible to just call `this.activate()` in the model manually, but if a transition away from this route occurs, cherrytree won't deactivate the route as it was never entered (?). Latest versions of router.js has the substates, so those might be the answer.
+* explore a way to call model on multiple routes at once - sometimes we can parallelize the model calls.
+
+
+# v0.2 design doc
+  
+get_handler.js
+
+similar to how it's now, except no closure variables, it immediately returns an object either from cache, or puts one there. That object proxies all methods into the route instance which it contains at this.route. This.route is created when model is called via prepare mechanism. Once this.route exists, the before model is created everywhere. Perhaps we could even create this.route in the beforeModel. If this.route is loaded, then we skip this step.. Crazy? Might work..
