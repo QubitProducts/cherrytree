@@ -44,44 +44,11 @@
         the server that is required to enter a route.
 
         ```js
-        App.PostRoute = Ember.Route.extend({
+        var PostRoute = Route.extend({
           beforeModel: function(transition) {
-            if (!App.Post) {
-              return Ember.$.getScript('/models/post.js');
-            }
-          }
-        });
-        ```
-
-        If `App.Post` doesn't exist in the above example,
-        `beforeModel` will use jQuery's `getScript`, which
-        returns a promise that resolves after the server has
-        successfully retrieved and executed the code from the
-        server. Note that if an error were to occur, it would
-        be passed to the `error` hook on `Ember.Route`, but
-        it's also possible to handle errors specific to
-        `beforeModel` right from within the hook (to distinguish
-        from the shared error handling behavior of the `error`
-        hook):
-
-        ```js
-        App.PostRoute = Ember.Route.extend({
-          beforeModel: function(transition) {
-            if (!App.Post) {
-              var self = this;
-              return Ember.$.getScript('post.js').then(null, function(e) {
-                self.transitionTo('help');
-
-                // Note that the above transitionTo will implicitly
-                // halt the transition. If you were to return
-                // nothing from this promise reject handler,
-                // according to promise semantics, that would
-                // convert the reject into a resolve and the
-                // transition would continue. To propagate the
-                // error so that it'd be handled by the `error`
-                // hook, you would have to either
-                return Ember.RSVP.reject(e);
-              });
+            var post = this.get("posts").first();
+            if (!post) {
+              this.transitionTo("/somewhere");
             }
           }
         });
@@ -98,67 +65,60 @@
       beforeModel: noop,
 
       /**
-        A hook you can implement to convert the URL into the model for
+        A hook you can implement to convert the URL into the context for
         this route.
 
         ```js
-        App.Router.map(function() {
+        Router.map(function() {
           this.resource('post', {path: '/posts/:post_id'});
         });
         ```
 
-        The model for the `post` route is `App.Post.find(params.post_id)`.
-
-        By default, if your route has a dynamic segment ending in `_id`:
-
-        * The model class is determined from the segment (`post_id`'s
-          class is `App.Post`)
-        * The find method is called on the model class with the value of
-          the dynamic segment.
-
-        Note that for routes with dynamic segments, this hook is only
-        executed when entered via the URL. If the route is entered
-        through a transition (e.g. when using the `link-to` Handlebars
-        helper), then a model context is already provided and this hook
-        is not called. Routes without dynamic segments will always
-        execute the model hook.
-
         This hook follows the asynchronous/promise semantics
         described in the documentation for `beforeModel`. In particular,
         if a promise returned from `model` fails, the error will be
-        handled by the `error` hook on `Ember.Route`.
+        handled by the `error` hook unless you `catch` the failed promise
+        and handle the error locally.
 
         Example
 
         ```js
-        App.PostRoute = Ember.Route.extend({
+        PostRoute = Route.extend({
           model: function(params) {
-            return App.Post.find(params.post_id);
+            return Post.find(params.post_id).then(function (post) {
+              return {
+                post: post
+              };
+            });
           }
         });
         ```
+
+        Notice how we return an object with key `post` - that's because
+        we want to name the model. This way the child routes can access this
+        model by calling `this.get("post")`.
 
         @method model
         @param {Object} params the parameters extracted from the URL
         @param {Transition} transition
         @param {Object} queryParams the query params for this route
-        @return {Object|Promise} the model for this route. If
+        @return {Object|Promise} the context for this route. If
           a promise is returned, the transition will pause until
           the promise resolves, and the resolved value of the promise
-          will be used as the model for this route.
+          will be used as the context for this route.
       */
       model: noop,
       
       /**
         This hook is called after this route's model has resolved.
         It follows identical async/promise semantics to `beforeModel`
-        but is provided the route's resolved model in addition to
+        but is provided the route's resolved context in addition to
         the `transition`, and is therefore suited to performing
         logic that can only take place after the model has already
         resolved.
 
         ```js
-        App.PostsRoute = Ember.Route.extend({
+        PostsRoute = Route.extend({
           afterModel: function(posts, transition) {
             if (posts.length === 1) {
               this.transitionTo('post.show', posts[0]);
@@ -172,7 +132,7 @@
         from this hook.
 
         @method afterModel
-        @param {Object} resolvedModel the value returned from `model`,
+        @param {Object} resolvedContext the value returned from `model`,
           or its resolved value if it was a promise
         @param {Transition} transition
         @param {Object} queryParams the active query params for this handler
@@ -184,16 +144,26 @@
       afterModel: noop,
 
       /**
-        This hook is executed when the router enters the route. It is not executed
-        when the model for the route changes.
-
+        This hook is executed when the router enters the route or when the context
+        of the route changes, unless the context change has been handled in the update
+        hook
         @method activate
       */
       activate: noop,
 
       /**
-        This hook is executed when the router completely exits this route. It is
-        not executed when the model for the route changes.
+        This hook is executed when the context of the route changes. Return false
+        to indicate that the update of the route has been handled and route shouldn't
+        be reactivated. Any other return value will proceed with destroying and activating
+        the route.
+        @method update
+      */
+      update: noop,
+
+      /**
+        This hook is executed when the router exits this route or when the context changes
+        to prepare the route for activating again, unless the context changing has been
+        handled in the update hook.
 
         @method deactivate
       */
@@ -205,6 +175,7 @@
       */
       enter: function () {
         this._setup = 0;
+        this.needsReactivation = false;
       },
 
       /**
@@ -231,6 +202,10 @@
           route.activate.apply(route, args);
         }
 
+        function shouldTryUpdate() {
+          return route.parent && !route.parent.needsReactivation;
+        }
+
         // if it's the first time setup is called after
         // the route has been entered - activate
         if (this._setup === 1) {
@@ -238,41 +213,53 @@
         }
 
         // give route.update a chance to deal with the change in context / params
-        if (this.update && this.update.apply(this, args) === false) {
+        if (shouldTryUpdate() && this.update && this.update.apply(this, args) === false) {
+          // inform child routes that actually this route didn't need reactivation
+          // so they can also use their update methods
+          route.needsReactivation = false;
           return;
         }
-        
+
         // if none of the above - reactivate
         reactivate();
       },
 
+      /**
+        @private
+      */
       setParent: function (parent) {
         this.parent = parent;
       },
 
       /**
-        Transition into another route. Optionally supply model(s) for the
-        route in question. If multiple models are supplied they will be applied
-        last to first recursively up the resource tree (see Multiple Models Example
-        below). The model(s) will be serialized into the URL using the appropriate
-        route's `serialize` hook. See also 'replaceWith'.
+        This is overwriten by the handler with the real function
+        that returns the right context right after the model
+        of the route has resolved.
+        @private
+      */
+      getContext: noop,
+
+      /**
+        Transition into another route. Optionally supply params for the
+        route in question. If multiple params are supplied they will be applied
+        last to first recursively up the resource tree (see Multiple Params Example
+        below). See also 'replaceWith'.
 
         Simple Transition Example
 
         ```javascript
-        App.Router.map(function() {
+        Router.map(function() {
           this.route("index");
           this.route("secret");
           this.route("fourOhFour", { path: "*:"});
         });
 
-        App.IndexRoute = Ember.Route.extend({
-          actions: {
-            moveToSecret: function(context){
-              if (authorized()){
-                this.transitionTo('secret', context);
-              }
-                this.transitionTo('fourOhFour');
+        var IndexRoute = Route.extend({
+          moveToSecret: function(model){
+            if (authorized()){
+              this.transitionTo('secret', model.id);
+            } else {
+              this.transitionTo('fourOhFour');
             }
           }
         });
@@ -281,45 +268,43 @@
        Transition to a nested route
 
        ```javascript
-       App.Router.map(function() {
+       Router.map(function() {
          this.resource('articles', { path: '/articles' }, function() {
            this.route('new');
          });
        });
 
-       App.IndexRoute = Ember.Route.extend({
-         actions: {
-           transitionToNewArticle: function() {
-             this.transitionTo('articles.new');
-           }
+       var IndexRoute = Route.extend({
+         transitionToNewArticle: function() {
+           this.transitionTo('articles.new');
          }
        });
        ```
 
-        Multiple Models Example
+        Multiple Params Example
 
         ```javascript
-        App.Router.map(function() {
+        Router.map(function() {
           this.route("index");
           this.resource('breakfast', {path:':breakfastId'}, function(){
             this.resource('cereal', {path: ':cerealId'});
           });
         });
 
-        App.IndexRoute = Ember.Route.extend({
-          actions: {
-            moveToChocolateCereal: function(){
-              var cereal = { cerealId: "ChocolateYumminess"},
-                  breakfast = {breakfastId: "CerealAndMilk"};
-
-              this.transitionTo('cereal', breakfast, cereal);
-            }
+        var IndexRoute = Route.extend({
+          moveToChocolateCereal: function(){
+            var cerealId = "CerealAndMilk";
+                breakfastId = "ChocolateYumminess";
+            this.transitionTo('cereal', breakfastId, cerealId);
+            // or calling with one param only will reuse
+            // the currently active breakfastId (if any)
+            // this.transitionTo('cereal', cerealId);
           }
         });
 
         @method transitionTo
         @param {String} name the name of the route
-        @param {...Object} models the model(s) to be used while transitioning
+        @param {...String|Number} params the param(s) to be used while transitioning
         to the route.
         @return {Transition} the transition object associated with this
           attempted transition
@@ -333,17 +318,17 @@
         Transition into another route while replacing the current URL, if possible.
         This will replace the current history entry instead of adding a new one.
         Beside that, it is identical to `transitionTo` in all other respects. See
-        'transitionTo' for additional information regarding multiple models.
+        'transitionTo' for additional information regarding multiple params.
 
         Example
 
         ```javascript
-        App.Router.map(function() {
+        Router.map(function() {
           this.route("index");
           this.route("secret");
         });
 
-        App.SecretRoute = Ember.Route.extend({
+        var SecretRoute = Route.extend({
           afterModel: function() {
             if (!authorized()){
               this.replaceWith('index');
@@ -354,7 +339,7 @@
 
         @method replaceWith
         @param {String} name the name of the route
-        @param {...Object} models the model(s) to be used while transitioning
+        @param {...String|Number} params the param(s) to be used while transitioning
         to the route.
         @return {Transition} the transition object associated with this
           attempted transition
@@ -365,7 +350,7 @@
       },
 
       /**
-       * Retrieve an attribute from route's context or any of it's
+       * Retrieve a model from route's context or any of it's
        * parents contexts.
        * 
        * @param  {String} modelName [description]
@@ -378,7 +363,7 @@
           context = route.getContext();
           if (context && context[modelName]) {
             return context[modelName];
-          } else if (route[modelName]) {
+          } else if (route[modelName]) { // TODO: use route.hasOwnProperty
             // TODO: consider removing this, it should either be
             // context or any attribute of the route. Context is a lot
             // more explicit so probably a better choice.
@@ -394,12 +379,11 @@
      * Extend static method enables inheritance for Routes.
      * E.g. var BaseRoute = Route.extend({...});
      */
-    Route.extend = extender;
+    Route.extend = inherit;
 
     /**
      * export
      */
-    
     return Route;
 
   });

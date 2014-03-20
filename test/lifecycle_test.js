@@ -30,7 +30,7 @@ define(function (require) {
     }
   });
 
-  describe("abandoned states", function () {
+  describe("route lifecycle", function () {
 
     beforeEach(function (done) {
       window.location.hash = "/";
@@ -47,8 +47,31 @@ define(function (require) {
           this.route("latest");
           this.route("best");
           this.route("show", {path: "/:postId"});
+          this.resource("postsAdmin", function () {
+            this.route("create", {queryParams: ["templateId"]});
+          });
+        });
+        this.resource("account", {path: "/:accountId"}, function () {
+          this.resource("settings", function () {
+            this.route("password");
+            this.route("photo", {queryParams: ["size"]});
+          });
         });
       });
+
+      router.addRoute("postsAdmin.create", BaseRoute.extend({
+        update: function () {
+          sequence.push("update " + this.name);
+          return false;
+        }
+      }));
+
+      router.addRoute("settings.photo", BaseRoute.extend({
+        update: function () {
+          sequence.push("update " + this.name);
+          return false;
+        }
+      }));
 
       router.startRouting().then(done, done);
     });
@@ -57,7 +80,7 @@ define(function (require) {
       router.destroy();
     });
 
-    it("should destroy abandoned states when param is changing", function (done) {
+    it("should handle rapid retransitioning", function (done) {
       router.addRoute("posts.show", BaseRoute.extend({
         initialize: function () {
           sequence.push("initialize " + this.name);
@@ -105,7 +128,7 @@ define(function (require) {
       }).then(done, done);
     });
 
-    it("should destroy all abandoned states", function (done) {
+    it("should destroy all abandoned states when changing target route midst transition", function (done) {
       router.transitionTo("about").then(function () {
         sequence = [];
         router.transitionTo("posts.popular");
@@ -130,6 +153,71 @@ define(function (require) {
           'activate posts.best'
         ]);
       }).then(done, done);
+    });
+
+    describe("update hook", function () {
+      it("should be able to prevent the route from exiting", function (done) {
+        router.transitionTo("postsAdmin.create", {queryParams: {templateId: 1}}).then(function () {
+          sequence = [];
+          return router.transitionTo("postsAdmin.create", {queryParams: {templateId: 2}});
+        }).then(function () {
+          sequence.should.deep.equal([
+            'model postsAdmin.create',
+            'update postsAdmin.create'
+          ]);
+        }).then(done, done);
+      });
+    });
+
+    describe("optional transitionTo params", function () {
+
+    });
+
+    describe("upstream route changing context", function () {
+      it("should reactivate the child routes", function (done) {
+        router.transitionTo("settings.password", 1).then(function () {
+          sequence = [];
+          return router.transitionTo("settings.password", 2);
+        }).then(function () {
+          sequence.should.deep.equal([
+            'model account',
+            'model settings',
+            'model settings.password',
+            'destroy account',
+            'activate account',
+            'destroy settings',
+            'activate settings',
+            'destroy settings.password',
+            'activate settings.password'
+          ]);
+        }).then(done, done);
+      });
+
+      it("should reactivate the child routes with update function", function (done) {
+        router.transitionTo("settings.photo", 1).then(function () {
+          sequence = [];
+          return router.transitionTo("settings.photo", {queryParams: {size: 24}});
+        }).then(function () {
+          sequence.should.deep.equal([
+            'model settings.photo',
+            'update settings.photo'
+          ]);
+          sequence = [];
+          return router.transitionTo("settings.photo", 2);
+        }).then(function () {
+          sequence.should.deep.equal([
+            'model account',
+            'model settings',
+            'model settings.photo',
+            'destroy account',
+            'activate account',
+            'destroy settings',
+            'activate settings',
+            'destroy settings.photo',
+            'activate settings.photo'
+          ]);
+        }).then(done, done);
+      });
     });
 
     describe("only changing params", function () {
