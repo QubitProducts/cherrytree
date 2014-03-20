@@ -70,7 +70,7 @@
         // or a full implementation of the location can be passed in
         if (_.isString(this.options.location)) {
           assert("Specified location type does not exist", locations[this.options.location]);
-          location = locations[this.options.location];
+          location = locations[this.options.location]();
         } else {
           location = this.options.location;
         }
