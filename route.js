@@ -1,19 +1,18 @@
 (function (define) { 'use strict';
   define(function (require) {
 
-    var uniqueId = require('./lib/util/unique_id');
-    var extend = require('./lib/util/extend');
+    var _ = require('./lib/util');
     var inherit = require('./lib/inherit');
     var noop = function () {};
 
     var Route = function (options) {
       this.name = options.name;
       this.router = options.router;
-      this.id = uniqueId();
+      this.id = _.uniqueId();
       this.initialize();
     };
 
-    extend(Route.prototype, {
+    _.extend(Route.prototype, {
 
       /**
        * A hook for your own initialization logic.

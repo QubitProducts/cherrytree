@@ -1,15 +1,15 @@
 (function (define) { 'use strict';
   define(function (require) {
 
-    var extend      = require('../lib/util/extend');
+    var _ = require('../lib/util');
     var LocationBar = require('location-bar');
 
     var HistoryLocation = function (options) {
-      this.options = extend({}, this.options);
-      this.options = extend(this.options, options);
+      this.options = _.extend({}, this.options);
+      this.options = _.extend(this.options, options);
       this.initialize(this.options);
     };
-    extend(HistoryLocation.prototype, {
+    _.extend(HistoryLocation.prototype, {
       path: '',
 
       options: {
@@ -23,7 +23,7 @@
         this.locationBar.onChange(function (path) {
           self.handleURL('/' + (path || ''));
         });
-        this.locationBar.start(extend(options));
+        this.locationBar.start(_.extend(options));
       },
 
       usesPushState: function () {

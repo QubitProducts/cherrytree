@@ -182,7 +182,6 @@ define(function (require) {
           sequence = [];
           return router.transitionTo("settings.permissions", 1, 3);
         }).then(function () {
-          console.log(sequence);
           sequence.should.deep.equal([
             'model settings.permissions',
             'destroy settings.permissions',

@@ -1,14 +1,11 @@
 (function (define) { 'use strict';
   define(function (require) {
-
-    var _ = require("underscore");
+    
+    var _ = require("./lib/util");
     var Router = require("router").default;
     var RouterDSL = require("./lib/dsl");
     var getHandler = require("./lib/get_handler_function");
-
-    var locations = {
-      "none": require("./location/none_location")
-    };
+    var noneLocation = require("./location/none_location");
 
     var assert = function (desc, test) {
       if (!test) throw new Error("assertion failed: " + desc);
@@ -25,7 +22,7 @@
     };
     CherryTreeRouter.prototype = {
       options: {
-        location: "none",
+        location: null,
         logging: false
       },
 
@@ -64,17 +61,7 @@
       startRouting: function () {
         var self = this;
         var router = this.router;
-        var location;
-
-        // location can be a string id of one of the predefined locations
-        // or a full implementation of the location can be passed in
-        if (_.isString(this.options.location)) {
-          assert("Specified location type does not exist", locations[this.options.location]);
-          location = locations[this.options.location]();
-        } else {
-          location = this.options.location;
-        }
-        this.location = location;
+        var location = this.location = this.options.location || noneLocation();
 
         setupRouter(this, router, location);
 
@@ -162,39 +149,21 @@
         this.router.reset();
       },
 
-      activeStates: function () {
-        return _.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route");
-      },
-
-      activeStateNames: function () {
-        return _.pluck(_.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route"), "name");
-      },
-
-      activeState: function (id) {
-        var states = this.activeStates();
-        return _.find(states, function (state) {
-          return state.id === id || state.name === id;
-        });
-      },
-
-      _lookupActiveView: function(templateName) {
-        var active = this._activeViews[templateName];
-        return active && active[0];
-      },
-
-      _connectActiveView: function(templateName, view) {
-        var existing = this._activeViews[templateName];
-
-        if (existing) {
-          existing[0].off('willDestroyElement', this, existing[1]);
+      activeRoutes: function (name) {
+        var activeRoutes = _.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route");
+        if (name) {
+          for (var i = 0, length = activeRoutes.length; i < length; i++) {
+            if (activeRoutes[i].name === name) {
+              return activeRoutes[i];
+            }
+          }
+        } else {
+          return activeRoutes;
         }
+      },
 
-        var disconnect = function() {
-          delete this._activeViews[templateName];
-        };
-
-        this._activeViews[templateName] = [view, disconnect];
-        view.one('willDestroyElement', this, disconnect);
+      activeRouteNames: function () {
+        return _.pluck(_.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route"), "name");
       },
 
       destroy: function () {
@@ -313,9 +282,9 @@
       if (router._loadingRouteActive) { return; }
       router._shouldEnterLoadingRoute = true;
       // Ember.run.scheduleOnce('routerTransitions', null, enterLoadingRoute, router);
-      _.defer(function () {
+      setTimeout(function () {
         enterLoadingRoute(router);
-      });
+      }, 1);
     }
 
     function enterLoadingRoute(router) {
