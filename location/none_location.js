@@ -12,19 +12,22 @@
           this.path = path;
         },
 
-        onUpdateURL: function(callback) {
-          this.updateCallback = callback;
+        replaceURL: function (path) {
+          this.setURL(path);
+        },
+
+        onChange: function(callback) {
+          this.changeCallback = callback;
         },
 
         handleURL: function(url) {
           this.path = url;
-          this.updateCallback(url);
+          if (this.changeCallback) {
+            this.changeCallback(url);
+          }
         },
 
         formatURL: function(url) {
-          // The return value is not overly meaningful, but we do not want to throw
-          // errors when test code renders templates containing {{action href=true}}
-          // helpers.
           return url;
         }
       };

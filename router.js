@@ -3,36 +3,38 @@
     
     var _ = require("./lib/util");
     var Router = require("router").default;
+    var BaseRoute = require("./route");
     var RouterDSL = require("./lib/dsl");
-    var getHandler = require("./lib/get_handler_function");
+    var handlerCreator = require("./lib/handler_creator");
     var noneLocation = require("./location/none_location");
 
-    var assert = function (desc, test) {
-      if (!test) throw new Error("assertion failed: " + desc);
-    };
-
-    var CherryTreeRouter = function (options) {
-      this.options = _.extend({}, this.options, options);
+    var CherrytreeRoute = function (options) {
+      this.options = _.extend({
+        location: noneLocation(),
+        logging: false,
+        onDidTransition: null,
+        onURLChanged: null,
+        BaseRoute: BaseRoute
+      }, options);
+      
       this.routeClasses = {};
       this.prepares = {};
 
-      if (this.options.BaseRoute) {
-        this.BaseRoute = this.options.BaseRoute;
+      if (this.options.logging) {
+        this.log = function () {
+          console && console.log.apply(console, arguments);
+        };
       }
+
+      // the underlying router.js ember microlib
+      this.router = new Router();
+      this.router.log = this.log;
     };
-    CherryTreeRouter.prototype = {
-      options: {
-        location: null,
-        logging: false
-      },
+
+    _.extend(CherrytreeRoute.prototype, {
 
       map: function (callback) {
-        var router = this.router = new Router();
-        if (this.options.logging) {
-          router.log = function (msg) {
-            console.log(msg);
-          };
-        }
+        var router = this.router;
 
         var dsl = RouterDSL.map(this, function () {
           this.resource("application", { path: "/" }, function () {
@@ -44,18 +46,17 @@
 
         this.prepares = dsl.prepares;
 
-        // return router;
         return this;
+      },
+
+      addRoute: function (name, route) {
+        this.routeClasses[name] = route;
       },
 
       addRoutes: function (map) {
         _.each(map, function (route, name) {
           this.addRoute(name, route);
         }, this);
-      },
-
-      addRoute: function (name, route) {
-        this.routeClasses[name] = route;
       },
 
       startRouting: function () {
@@ -65,48 +66,11 @@
 
         setupRouter(this, router, location);
 
-        location.onUpdateURL(function(url) {
+        location.onChange(function(url) {
           self.handleURL(url);
         });
 
         return this.handleURL(location.getURL());
-      },
-
-      // didTransition: function (infos) {
-      //   var path = routePath(infos);
-      //   // announce we transitioned somehow?
-      // },
-
-      handleURL: function(url) {
-        scheduleLoadingRouteEntry(this);
-
-        var self = this;
-
-        return this.router.handleURL(url).then(function() {
-          transitionCompleted(self);
-        }, function(err) {
-          // we want to complete the transition
-          // * we want to notify everyone that url changed
-          // * we want to exit the loading route
-          transitionFailed(err, self);
-          return err;
-        });
-      },
-
-      /**
-        Transition to another route via the `routeTo` event which
-        will by default be handled by ApplicationRoute.
-
-        @method routeTo
-        @param {TransitionEvent} transitionEvent
-       */
-      routeTo: function(transitionEvent) {
-        var handlerInfos = this.router.currentHandlerInfos;
-        if (handlerInfos) {
-          transitionEvent.sourceRoute = handlerInfos[handlerInfos.length - 1].handler;
-        }
-
-        this.send('routeTo', transitionEvent);
       },
 
       transitionTo: function() {
@@ -137,18 +101,6 @@
         return this.router.hasRoute(route);
       },
 
-      /**
-        @private
-
-        Resets the state of the router by clearing the current route
-        handlers and deactivating them.
-
-        @method reset
-       */
-      reset: function() {
-        this.router.reset();
-      },
-
       activeRoutes: function (name) {
         var activeRoutes = _.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route");
         if (name) {
@@ -170,8 +122,61 @@
         if (this.location.destroy) {
           this.location.destroy();
         }
+      },
+
+      /**
+       * @private
+       */
+      log: function () {},
+
+      /**
+       * @private
+       */
+      didTransition: function (infos) {
+        if (this.options.onDidTransition) {
+          this.options.onDidTransition(routePath(infos));
+        }
+      },
+
+      /**
+       * @private
+       */
+      handleURL: function(url) {
+        scheduleLoadingRouteEntry(this);
+
+        var self = this;
+
+        return this.router.handleURL(url).then(function() {
+          transitionCompleted(self);
+        }, function(err) {
+          transitionFailed(err, self);
+          return err;
+        });
+      },
+
+      /**
+        @private
+
+        Resets the state of the router by clearing the current route
+        handlers and deactivating them.
+
+        @method reset
+       */
+      reset: function() {
+        this.router.reset();
       }
-    };
+    });
+
+    return CherrytreeRoute;
+
+
+    /**
+     * 
+     */
+
+    function assert(desc, test) {
+      if (!test) throw new Error("assertion failed: " + desc);
+    }
 
     function routePath(handlerInfos) {
       var path = [];
@@ -187,41 +192,16 @@
     }
 
     function setupRouter(cherrytree, router, location) {
-      var lastURL;
-
-      router.getHandler = getHandler(cherrytree);
-
-      var doUpdateURL = function() {
-        location.setURL(lastURL);
-      };
-
+      router.getHandler = handlerCreator(cherrytree);
       router.updateURL = function(path) {
-        lastURL = path;
-        // Ember.run.once(doUpdateURL);
-        doUpdateURL();
+        location.setURL(path);
       };
-
-      if (location.replaceURL) {
-        var doReplaceURL = function() {
-          location.replaceURL(lastURL);
-        };
-
-        router.replaceURL = function(path) {
-          lastURL = path;
-          // Ember.run.once(doReplaceURL);
-          doReplaceURL();
-        };
-      }
-
-      // if (location.onChangeURL && cherrytree.urlChanged) {
-      //   location.onChangeURL(function (url) {
-      //     cherrytree.urlChanged(url);
-      //   });
-      // }
-
-      // router.didTransition = function(infos) {
-      //   cherrytree.didTransition(infos);
-      // };
+      router.replaceURL = function(path) {
+        location.replaceURL(path);
+      };
+      router.didTransition = function(infos) {
+        cherrytree.didTransition(infos);
+      };
     }
 
     function doTransition(router, method, args) {
@@ -249,34 +229,15 @@
       transitionPromise.then(function() {
         transitionCompleted(router);
       }, function(err) {
-        // we want to complete the transition
-        // * we want to notify everyone that url changed
-        // * we want to exit the loading route
         transitionFailed(err, router);
         return err;
       });
-
-      // TODO: figure out why I had to generate the URL here instead of just
-      // using the transitions...
-      // var url = router.generate.apply(router, args);
-      // // router.handle
-      // var transitionPromise = router.router.handleURL(url).then(function () {
-      //   if (method === 'replaceWith') {
-      //     router.router.replaceURL(url);
-      //   } else {
-      //     // Assume everything else is just a URL update for now.
-      //     router.router.updateURL(url);
-      //   }
-      //   transitionCompleted(router);
-      // });
 
       // We want to return the configurable promise object
       // so that callers of this function can use `.method()` on it,
       // which obviously doesn't exist for normal RSVP promises.
       return transitionPromise;
     }
-
-    return CherryTreeRouter;
 
     function scheduleLoadingRouteEntry(router) {
       if (router._loadingRouteActive) { return; }
@@ -309,13 +270,17 @@
     }
 
     function transitionCompleted(router) {
-      // router.notifyPropertyChange('url');
       exitLoadingRoute(router);
-      if (router.urlChanged) {
-        router.urlChanged(router.location.getURL());
+      if (router.options.onURLChanged) {
+        router.options.onURLChanged(router.location.getURL());
       }
     }
 
+    /**
+      we want to complete the transition
+      we want to notify everyone that url changed TODO (?)
+      we want to exit the loading route
+    */
     function transitionFailed(err, router) {
       transitionCompleted(router);
       if (err.name !== "TransitionAborted") {

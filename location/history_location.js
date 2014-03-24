@@ -42,9 +42,6 @@
         if (this.path !== path) {
           this.path = path;
           this.locationBar.update(path, {trigger: false});
-          if (this.changeCallback) {
-            this.changeCallback(this.path);
-          }
         }
       },
 
@@ -52,32 +49,26 @@
         if (this.path !== path) {
           this.path = path;
           this.locationBar.update(path, {trigger: false, replace: true});
-          if (this.changeCallback) {
-            this.changeCallback(this.path);
-          }
         }
-      },
-
-      // when the url
-      onChangeURL: function (callback) {
-        this.changeCallback = callback;
       },
 
       // callback for what to do when backbone router handlers a URL
       // change
-      onUpdateURL: function (callback) {
-        this.updateCallback = callback;
+      onChange: function (callback) {
+        this.changeCallback = callback;
       },
 
+      /**
+        initially, the changeCallback won't be defined yet, but that's good 
+        because we dont' want to kick off routing right away, the router
+        does that later by manually calling this handleURL method with the
+        url it reads of the location. But it's important this is called
+        first by Backbone, because we wanna set a correct this.path value
+       */
       handleURL: function (url) {
         this.path = url;
-        // initially, the updateCallback won't be defined yet, but that's good
-        // because we dont' want to kick off routing right away, the router
-        // does that later by manually calling this handleURL method with the
-        // url it reads of the location. But it's important this is called
-        // first by Backbone, because we wanna set a correct this.path value
-        if (this.updateCallback) {
-          this.updateCallback(url);
+        if (this.changeCallback) {
+          this.changeCallback(url);
         }
       },
 
