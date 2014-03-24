@@ -47,7 +47,7 @@ define(function (require) {
     abortModel: function () {
       window.clearTimeout(this.timeout);
     },
-    destroy: function () {
+    deactivate: function () {
       window.clearTimeout(this.timeout);
       if (this.$view) {
         this.$view.remove();

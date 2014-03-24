@@ -25,8 +25,8 @@ define(function (require) {
     activate: function () {
       sequence.push("activate " + this.name);
     },
-    destroy: function () {
-      sequence.push("destroy " + this.name);
+    deactivate: function () {
+      sequence.push("deactivate " + this.name);
     }
   });
 
@@ -102,8 +102,8 @@ define(function (require) {
           this.postId = context.postId;
           sequence.push("activate " + this.name + " " + context.postId);
         },
-        destroy: function () {
-          sequence.push("destroy " + this.name + " " + this.postId);
+        deactivate: function () {
+          sequence.push("deactivate " + this.name + " " + this.postId);
         }
       }));
       router.transitionTo("about").then(function () {
@@ -125,17 +125,17 @@ define(function (require) {
           'model posts.show 1',
           'model posts.show 2',
           'model posts.show 3',
-          'destroy about',
+          'deactivate about',
           'activate posts',
           'activate posts.show 3',
           'model posts.show 4',
-          'destroy posts.show 3',
+          'deactivate posts.show 3',
           'activate posts.show 4',
         ]);
       }).then(done, done);
     });
 
-    it("should destroy all abandoned states when changing target route midst transition", function (done) {
+    it("should deactivate all abandoned states when changing target route midst transition", function (done) {
       router.transitionTo("about").then(function () {
         sequence = [];
         router.transitionTo("posts.popular");
@@ -155,7 +155,7 @@ define(function (require) {
           'model posts.latest',
           'initialize posts.best',
           'model posts.best',
-          'destroy about',
+          'deactivate about',
           'activate posts',
           'activate posts.best'
         ]);
@@ -184,7 +184,7 @@ define(function (require) {
         }).then(function () {
           sequence.should.deep.equal([
             'model settings.permissions',
-            'destroy settings.permissions',
+            'deactivate settings.permissions',
             'activate settings.permissions'
           ]);
         }).then(done, done);
@@ -196,7 +196,7 @@ define(function (require) {
         }).then(function () {
           sequence.should.deep.equal([
             'model settings.permissions',
-            'destroy settings.permissions',
+            'deactivate settings.permissions',
             'activate settings.permissions'
           ]);
         }).then(done, done);
@@ -214,11 +214,11 @@ define(function (require) {
             'model account',
             'model settings',
             'model settings.password',
-            'destroy account',
+            'deactivate account',
             'activate account',
-            'destroy settings',
+            'deactivate settings',
             'activate settings',
-            'destroy settings.password',
+            'deactivate settings.password',
             'activate settings.password'
           ]);
         }).then(done, done);
@@ -240,11 +240,11 @@ define(function (require) {
             'model account',
             'model settings',
             'model settings.photo',
-            'destroy account',
+            'deactivate account',
             'activate account',
-            'destroy settings',
+            'deactivate settings',
             'activate settings',
-            'destroy settings.photo',
+            'deactivate settings.photo',
             'activate settings.photo'
           ]);
         }).then(done, done);
@@ -252,7 +252,7 @@ define(function (require) {
     });
 
     describe("only changing params", function () {
-      it("should still destroy the previous state with the same name", function (done) {
+      it("should still deactivate the previous state with the same name", function (done) {
         router.addRoute("posts.show", BaseRoute.extend({
           initialize: function () {
             sequence.push("initialize " + this.name);
@@ -267,8 +267,8 @@ define(function (require) {
           activate: function (context) {
             sequence.push("activate " + this.name + " " + context.postId);
           },
-          destroy: function () {
-            sequence.push("destroy " + this.name);
+          deactivate: function () {
+            sequence.push("deactivate " + this.name);
           }
         }));
         router.transitionTo("about").then(function () {
@@ -282,11 +282,11 @@ define(function (require) {
             'model posts',
             'initialize posts.show',
             'model posts.show 1',
-            'destroy about',
+            'deactivate about',
             'activate posts',
             'activate posts.show 1',
             'model posts.show 2',
-            'destroy posts.show',
+            'deactivate posts.show',
             'activate posts.show 2',
           ]);
         }).then(done, done);
