@@ -153,7 +153,7 @@
       /**
         This hook is executed when the context of the route changes. Return false
         to indicate that the update of the route has been handled and route shouldn't
-        be reactivated. Any other return value will proceed with destroying and activating
+        be reactivated. Any other return value will proceed with reactivating
         the route.
         @method update
       */
@@ -167,7 +167,7 @@
         @method deactivate
       */
       // TODO rename to deactivate
-      destroy: noop,
+      deactivate: noop,
 
       /**
         @private
@@ -181,7 +181,7 @@
         @private
       */
       exit: function () {
-        this.destroy.apply(this, arguments);
+        this.deactivate.apply(this, arguments);
       },
 
       /**
