@@ -15,6 +15,7 @@
   "sub": true,
   "expr": true,
   "es5": true,
+  "scripturl": true,
 
   "browser": true,
   "devel": true,
