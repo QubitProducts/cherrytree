@@ -2,7 +2,11 @@
 
 ![build status](https://www.codeship.io/projects/bb769230-5ec0-0131-1b78-16ee4fa09096/status)
 
-Cherrytree is a stateful hierarchical router for JavaScript applications. The main idea is to describe all the different parts of your application in a route map. Those could be the different pages if you have multiple pages in your app, or different states of your UI, some panel expanded, or lightbox displayed - anything that you want to have a URL for. URLs are very important for web apps - reloading the page should display the UI in the same state as it was before, people should be able to share urls, etc.(link to URL talk by tomdale).
+Cherrytree is a hierarchical router for JavaScript applications.
+
+# Motivation
+
+The main idea is to describe all the different parts of your application in a route map. Those could be the different pages if you have multiple pages in your app, or different states of your UI, some panel expanded, or lightbox displayed - anything that you want to have a URL for. URLs are very important for web apps - reloading the page should display the UI in the same state as it was before, people should be able to share urls, etc.(link to URL talk by tomdale).
 
 ```js
 router.map(function () {
@@ -207,19 +211,26 @@ Cherrytree can be configured to use differet implementations of libraries that m
 
 As you can see you can also provide your own implementation of location. For example, if you're already using `Backbone`, you might wanna use `Backbone.History` to manage the `hashChange` events and you could easily hook that into Cherrytree.
 
-### pushState
+### var location = new HistoryLocation(options)
+
+Create an instance of history location. Note that only one instance of HistoryLocation should be created per page since it's managing the browser's URL.
+
+* options.pushState - default is true. Whether to use pushState, set false for hashState.
+* options.root - default is `/`. Use this if your application is not being served from the root url /.
+* options.interceptLinks - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Appropriate link clicks are links that are clicked with the left mouse button with no cmd or shift key. External links, `javascript:` links, links with a `data-bypass` attribute and links starting with `#` are not intercepted.
+
 ### getURL
-### root
+
 
 
 ## Changelog
 
 ### 0.2.0
 
-* A major rewrite simplifying the code, the route lifecycle and hopefully the concepts. Route instances are now singletons that say around for the lifetime of the application. This rewrite fixes many issues such as redirection midst transition.
-* Upgrade to the latest versions of `router.js`, `route-recognizer` and `rsvp`
-* queryParam changes - queryParams are now passed via `params.queryParams` and for transitions that only change queryParams - that has to be handled with the new `queryParamsDidChange` event
-* `interceptLinks` feature for seamless pushState experience - previously this has to be implemented manually outside of the `cherrytree`
+* A major rewrite. Simplify code, route lifecycle, API and many other things. Route instances are now singletons that say around for the lifetime of the application. This rewrite fixes many issues such as redirecting midst transition and transitions between similar states with different params at the parent routes.
+* Upgrade to the latest versions of `router.js`, `route-recognizer` and `rsvp`.
+* queryParam changes - queryParams are now passed via `params.queryParams`. Transitions that only change queryParams fire a `queryParamsDidChange` event.
+* `interceptLinks` feature for a seamless pushState experience - previously this had to be implemented externally.
 
 ### 0.1.3.
 
@@ -228,26 +239,3 @@ As you can see you can also provide your own implementation of location. For exa
 ### 0.1.2
 
 * Fix query param support by updating to `location-bar@2.0.0-beta.1`.
-
-
-# TODO NOW
-
-* documentation
-* document how to do 404s using /*path
-* document how to do redirects in beforeModel (or anywhere else) using this.router.transitionTo
-* document transitionTo vs replaceWith
-* document get method - it's important to be able to access parent models, but not clear of the best way yet
-* publish to npm
-* publish to bower
-* cherrytree-reactjs-demo + webpack + npm
-* remove route.options.params - instead pass it into the various hooks as `router.js` does
-* consolidate router.js logging and cherrytree logging into the same system somehow
-* update semantics - existance of update method should indicate that the route won't be reloaded, returning false overrides that behaviour?
-
-# TODO SOMEDAY
-* ensure routes are exited right to left when something in the middle is reactivated
-* finish cherrytree-abyssa-demo + webpack + npm install
-* consider cherrytree-standalone.js for jsbins or so. Alternatively requirebin should be fine.
-* explore triggering events (actions?) on routes that bubble up (a bit like error and willTransition events), this way less need to access parent things like this.parent.view, etc.
-* explore a way to activate a state right after it's model is fetched without waiting for child states. Atm it's possible to just call `this.activate()` in the model manually, but if a transition away from this route occurs, cherrytree won't deactivate the route as it was never entered (?). Latest versions of router.js has the substates, so those might be the answer.
-* explore a way to call model on multiple routes at once - sometimes we can parallelize the model calls.
