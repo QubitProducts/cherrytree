@@ -237,7 +237,6 @@ As you can see you can also provide your own implementation of location. For exa
 * document how to do redirects in beforeModel (or anywhere else) using this.router.transitionTo
 * document transitionTo vs replaceWith
 * document get method - it's important to be able to access parent models, but not clear of the best way yet
-* add the link interception from leap into cherrytree for seamless pushState functionality
 * publish to npm
 * publish to bower
 * cherrytree-reactjs-demo + webpack + npm
