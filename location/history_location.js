@@ -2,14 +2,14 @@
   define(function (require) {
 
     var _ = require('../lib/util');
-    var links = require('../lib/link_delegate');
+    var links = require('./history_location/link_delegate');
     var LocationBar = require('location-bar');
 
     var HistoryLocation = function (options) {
-      this.options = _.extend({}, this.options);
-      this.options = _.extend(this.options, options);
+      this.options = _.extend({}, this.options, options);
       this.initialize(this.options);
     };
+
     _.extend(HistoryLocation.prototype, {
       path: '',
 
@@ -19,6 +19,9 @@
         root: '/'
       },
 
+      /**
+       * @private
+       */
       initialize: function (options) {
         var self = this;
         this.locationBar = new LocationBar();
@@ -36,6 +39,9 @@
         }
       },
 
+      /**
+       * @private
+       */
       interceptLinks: function () {
         var self = this;
         this.linkHandler = function (e, link) {
