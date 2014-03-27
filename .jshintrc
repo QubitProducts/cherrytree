@@ -15,13 +15,13 @@
   "sub": true,
   "expr": true,
   "es5": true,
+  "scripturl": true,
 
   "browser": true,
   "devel": true,
 
-  "indent": 2,
   "maxlen": 120,
-  "white": true,
+  "white": false,
 
   "predef": ["require", "define", "buster", "assert", "refute", "describe", "it", "expect", "before", "after", "module", "beforeEach", "afterEach"],
 
