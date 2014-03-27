@@ -1,7 +1,6 @@
 define(function (require) {
 
-  var RSVP = require("rsvp");
-  var Promise = RSVP.Promise;
+  var Promise = require("cherrytree/vendor/promise");
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
   var HistoryLocation = require("cherrytree/location/history_location");

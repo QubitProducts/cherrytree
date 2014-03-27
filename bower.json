@@ -11,10 +11,7 @@
     "tests"
   ],
   "dependencies": {
-    "router.js": "tildeio/router.js#c8fcabe226169a6600b7a32c7ef787b6e4078abe",
-    "route-recognizer": "tildeio/route-recognizer#fe8d680a6356d8c267cdc49846751e9a5b80945d",
-    "location-bar": "2.0.0-beta.1",
-    "rsvp": ">=3.0.0"
+    "location-bar": "2.0.0-beta.1"
   },
   "devDependencies": {
     "jquery": "~2.0.3"

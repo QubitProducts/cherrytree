@@ -2,7 +2,7 @@
   define(function (require) {
     
     var _ = require("./lib/util");
-    var Router = require("router").default;
+    var Router = require("./vendor/router");
     var BaseRoute = require("./route");
     var RouterDSL = require("./lib/dsl");
     var handlerCreator = require("./lib/handler_creator");

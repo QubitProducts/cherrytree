@@ -1,7 +1,7 @@
 define(function (require) {
 
   var $ = require("jquery");
-  var RSVP = require("rsvp");
+  var Promise = require("cherrytree/vendor/promise");
   var TestApp = require("test/test_app");
 
   var app, router;
@@ -62,24 +62,24 @@ define(function (require) {
         $(".application .outlet").html().should.equal("FAQ. Sorted By: user");
       }).then(function () {
         // we can also change the url directly to cause another transition to happen
-        var d = RSVP.defer();
-        router.options.onURLChanged = function (url) {
-          url.should.equal("/posts/filter/mine");
-          d.resolve();
-        };
-        window.location.hash = "#posts/filter/mine";
-        return d.promise;
+        return new Promise(function (resolve) {
+          router.options.onURLChanged = function (url) {
+            url.should.equal("/posts/filter/mine");
+            resolve();
+          };
+          window.location.hash = "#posts/filter/mine";
+        });
       }).then(function () {
         $(".application .outlet").html().should.equal("My posts...");
       }).then(function () {
         // let's try a different filter
-        var d = RSVP.defer();
-        router.options.onURLChanged = function (url) {
-          url.should.equal("/posts/filter/foo");
-          d.resolve();
-        };
-        window.location.hash = "#posts/filter/foo";
-        return d.promise;
+        return new Promise(function (resolve) {
+          router.options.onURLChanged = function (url) {
+            url.should.equal("/posts/filter/foo");
+            resolve();
+          };
+          window.location.hash = "#posts/filter/foo";
+        });
       }).then(function () {
         $(".application .outlet").html().should.equal("Filter not found");
       }).then(function () {
