@@ -217,7 +217,7 @@ The Route class should be extend to create specific routes.
 var route = Route.extend({...})
 ```
 
-## Route hooks
+## Route Hooks
 
 These are all of the hooks that you can implement in the routes.
 

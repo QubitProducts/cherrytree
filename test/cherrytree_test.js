@@ -63,7 +63,7 @@ define(function (require) {
       }).then(function () {
         // we can also change the url directly to cause another transition to happen
         var d = RSVP.defer();
-        router.onURLChanged = function (url) {
+        router.options.onURLChanged = function (url) {
           url.should.equal("/posts/filter/mine");
           d.resolve();
         };
@@ -74,7 +74,7 @@ define(function (require) {
       }).then(function () {
         // let's try a different filter
         var d = RSVP.defer();
-        router.onURLChanged = function (url) {
+        router.options.onURLChanged = function (url) {
           url.should.equal("/posts/filter/foo");
           d.resolve();
         };
