@@ -6,6 +6,8 @@ Cherrytree is a hierarchical router for clientside web applications. It allows m
 
 With cherrytree - routes become the central part of how you compose the application - routes are where you create models, views and manage their lifecycle.
 
+The whole of Cherrytree is something around 15.54KB gzipped (50.79KB uncompressed).
+
 # Motivation
 
 The main idea is to describe all the different parts of your application in a route map. Those could be the different pages if you have multiple pages in your app, or different states of your UI, some panel expanded, or lightbox displayed - anything that you want to have a URL for. URLs are very important for web apps - reloading the page should display the UI in the same state as it was before, people should be able to share urls, etc.(link to URL talk by tomdale).
