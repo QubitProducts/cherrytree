@@ -110,7 +110,7 @@
       if (el.target) return;
 
       // check for data-bypass attribute
-      if (el.getAttribute('data-bypass')) return;
+      if (el.getAttribute('data-bypass') !== null) return;
       
       // inspect the href
       var href = el.getAttribute('href');
