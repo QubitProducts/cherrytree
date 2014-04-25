@@ -1,6 +1,6 @@
 # Cherrytree
 
-![build status](https://www.codeship.io/projects/bb769230-5ec0-0131-1b78-16ee4fa09096/status)
+![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)
 
 Cherrytree is a hierarchical router for clientside web applications. It allows modelling your application as a tree of routes where a number of routes is active at any given time. A URL is deserialized into a set of routes  and each route gets a chance of performing a bit of work like loading in data and rendering some views. Sharing parent routes between the different pages of your application means you can share model instances or compose your page (nav, sidebar, content area, etc.) bit by bit in different routes and avoid having to rerender everything on each transition. It's heavily inspired by Ember.js router and is built on top of [tildeio/router.js](https://github.com/tildeio/router.js) - a library extracted from Ember. Cherrytree, however, does not depend on Ember or any other framework and so can be used with other libraries such as Backbone or React.js.
 
