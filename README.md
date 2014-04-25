@@ -2,15 +2,17 @@
 
 ![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)
 
-Cherrytree is a hierarchical router for clientside web applications. It allows modelling your application as a tree of routes where a number of routes is active at any given time. A URL is deserialized into a set of routes  and each route gets a chance of performing a bit of work like loading in data and rendering some views. Sharing parent routes between the different pages of your application means you can share model instances or compose your page (nav, sidebar, content area, etc.) bit by bit in different routes and avoid having to rerender everything on each transition. It's heavily inspired by Ember.js router and is built on top of [tildeio/router.js](https://github.com/tildeio/router.js) - a library extracted from Ember. Cherrytree, however, does not depend on Ember or any other framework and so can be used with other libraries such as Backbone or React.js.
+Cherrytree is a hierarchical router for clientside web applications. Using cherrytree applications can be modelled as a tree of routes where a number of routes are active at any given time. A URL is deserialized into a set of routes and each route gets a chance to perform some work like loading data and rendering views. Sharing parent routes between the different pages of your application means you can share data, model instances or compose your page with nested views (nav, sidebar, content area, etc.). It's heavily inspired by Ember.js router and is built on top of [tildeio/router.js](https://github.com/tildeio/router.js) - a library extracted from Ember. Cherrytree, however, does not depend on Ember or any other framework and so can be used with other libraries such as Backbone, React or Angular.
 
-With cherrytree - routes become the central part of how you compose the application - routes are where you create models, views and manage their lifecycle.
+With cherrytree - routes are the central part of the application - that's are where you create models, views and manage their lifecycle.
 
 The whole of Cherrytree is something around 15.54KB gzipped (50.79KB uncompressed).
 
 # Motivation
 
-The main idea is to describe all the different parts of your application in a route map. Those could be the different pages if you have multiple pages in your app, or different states of your UI, some panel expanded, or lightbox displayed - anything that you want to have a URL for. URLs are very important for web apps - reloading the page should display the UI in the same state as it was before, people should be able to share urls, etc.(link to URL talk by tomdale).
+The main idea in cherrytree is describing your application in a route map. Each route could be a different page if you have multiple pages in your app, or different states of your UI (like expanding panels or displaying lightboxes) - any state of your application that you want to have a URL for. URLs are very important for web apps - reloading a page should keep the UI in a similar state, urls of the app should be shareable and useful. Check out this [talk by Tom Dale about URLs in webapps](https://www.youtube.com/watch?v=OSEXpsVcTxI).
+
+Here is an example of a route map.
 
 ```js
 router.map(function () {
@@ -34,21 +36,23 @@ router.map(function () {
 });
 ```
 
-In Cherrytree, being in a certain state of your app means that several Routes are active. For example, if you're at `app.com/KidkArolis/cherrytree/commits` - the list of active routes would look like `['application', 'repository', 'commits', 'commits.index']`. You can define behaviour of each route by extending `cherrytree/route`. Application route could render the outer shell of the application, e.g. the nav and container for child routes, it could also initialize some base models, e.g. user model. The repository route would load in the repository model from the server based on the URL params, the `commits.index` would load the specific commit model and render that on the screen.
+In Cherrytree, being in a certain state of your app means that several Routes are active. For example, if you're at `app.com/QubitProducts/cherrytree/commits` - the list of active routes would look like `['application', 'repository', 'commits', 'commits.index']`. You can define behaviour of each route by extending `cherrytree/route` and registering the routes by `router.addRoute`. 
+
+Application route could render the outer shell of the application, e.g. the nav and container for child routes, it could also initialize some base models, e.g. user model. The repository route would load in the repository model from the server based on the URL params, the `commits.index` would load the specific commit model and render that out.
 
 # Benefits of using Cherrytree
 
-* switching between using pushState or hashState is trivial - all urls in your app are generated the right way depending on which mode you're in
-* generating links everywhere in your application is easy and systematic, e.g. `router.generate("commit.index", "1e2760")`
-* decoupled route ids from URL paths means renaming URL segments is easy (e.g. if you want `account` to be called `profile`)
-* easy to load parts of your app on demand
-* a missing peace in your MVC architecture - a place where model and view lifecycle is managed - e.g. destroy and cleanup views when navigating between different parts of the application 
+* switching between pushState or hashState is trivial - all urls in your app are generated the right way depending on which mode you're in
+* generating links everywhere in your application is simple and systematic, e.g. `router.generate("commit.index", "1e2760")`
+* route identifiers are decoupled from URL paths which means you can rename URL segments without having to change the names of routes and rewriting all links (e.g. if you want `account` to be called `profile`)
+* it's possible to load parts of your app on demand via `preload` hook in the route map
+* a router is a missing peace in an MVC architecture - a place where model and view lifecycle is managed - e.g. destroy and cleanup views when navigating between different parts of the application 
 * support for query params
 * flexible error handling and displaying of loading screens
-* transition is a first class citizen - abort, pause, resume, retry failed ones. E.g. display pause the transition to display "You have unsaved changes" message no matter if the user clicked another link on the page, or used browser back/forward buttons
-* it's not coupled to URLs - e.g. use multiple routers to manage substates of your application
-* it's possible to navigate around your app programatically - URL management is just an optional sideeffect
-* swappable URL management libraries - use none if you don’t need to touch the URL
+* transition is a first class citizen - abort, pause, resume, retry failed ones. E.g. display pause the transition to display "There are unsaved changes" message if the user clicked some link on the page or used browser's back/forward buttons
+* it's not coupled to browser URLs - e.g. use multiple routers to manage substates of your application
+* it's possible to navigate around your app programatically - URL management is just an optional side effect
+* you can replace the URL management library - use none if you don’t need to touch the URL
 * built on top of `router.js`, `route-recognizer` and `rsvp` from Ember
 
 # Installation
@@ -134,7 +138,7 @@ router.startRouting();
 router.transitionTo('post.show', 42);
 ```
 
-Check out http://requirebin.com/?gist=11292543 to see this example in action.
+Check out [http://requirebin.com/?gist=11292543](http://requirebin.com/?gist=11292543) to see this example in action.
 
 
 ## Router
