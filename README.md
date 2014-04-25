@@ -251,9 +251,9 @@ If the route is not needed anymore it will be deactivated. This is where you sho
 
 If the route is already active, but the context of the route or some parent route has changed, the update will be called first to check if the route wants to handle this update without having to `deactivate` and `activate` again. Return `false` in this hook to indicate that the change in context has been handled and the the route shouldn't be "reactivated" with via `deactivate` and `activate` hooks. By default this hook doesn't return anything which means the routes are usually "reactivated".
 
-### error(err)
+### queryParamsDidChange(changed, all, removed)
 
-Called when transitioning fails. This is an event that bubbles up to the root starting at the route that caused the error while transitioning meaning it's called on each route. Return false to stop propagation.
+If the right set of routes is already active and query params change, the queryParamsDidChange method will be called on each route to let them update. Return false to stop propagation of this event. Call `this.refresh()` if you just want to reactivate this route (including the model hook).
 
 ### willTransition(transition)
 
@@ -271,9 +271,9 @@ willTransition: function (transition) {
 
 This is also an event that bubbles up to the root starting at the child route - return false to stop propagation.
 
-### events.queryParamsDidChange
+### error(err)
 
-Called when a transition happens and the only thing that changed is the query params.
+Called when transitioning fails. This is an event that bubbles up to the root starting at the route that caused the error while transitioning meaning it's called on each route. Return false to stop propagation.
 
 ## Route Methods
 
