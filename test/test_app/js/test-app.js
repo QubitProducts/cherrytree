@@ -27,26 +27,27 @@ define(function (require) {
   var _ = require("underscore");
   var Promise = require("rsvp").Promise;
   var Router = require("cherrytree");
-  var State = require("cherrytree/state");
+  var Route = require("cherrytree/route");
   var HistoryLocation = require("cherrytree/location/history_location");
 
   var template = function (name) {
     return _.template("<div>" + $("script#" + name).html() + "</div>");
   };
 
-  var BaseState = State.extend({
-    model: function () {
+  var BaseRoute = Route.extend({
+    model: function (params) {
+      this.params = params;
       var self = this;
       return new Promise(function (resolve) {
         self.timeout = setTimeout(function () {
-          resolve();
+          resolve(params);
         }, 300);
       });
     },
     abortModel: function () {
       window.clearTimeout(this.timeout);
     },
-    destroy: function () {
+    deactivate: function () {
       window.clearTimeout(this.timeout);
       if (this.$view) {
         this.$view.remove();
@@ -59,7 +60,7 @@ define(function (require) {
       return $(template(this.getTemplateName())());
     },
     activate: function () {
-      this.$view = this.view();
+      this.$view = this.view.apply(this, arguments);
       this.$outlet = this.$view.find(".outlet");
       this.outlet().html(this.$view);
     },
@@ -80,7 +81,7 @@ define(function (require) {
       pushState: false
     }),
     logging: false,
-    BaseState: BaseState
+    BaseRoute: BaseRoute
   });
 
   // provide the route map
@@ -94,11 +95,11 @@ define(function (require) {
     });
   });
 
-  // provide the states
-  // first of all, we want an application state
-  router.state("application", BaseState.extend({
+  // provide the routes
+  // first of all, we want an application route
+  router.addRoute("application", BaseRoute.extend({
     // this is a cherrytree hook for "performing"
-    // actions upon entering this state
+    // actions upon entering this route
     model: function () {
       return 1;
     },
@@ -107,40 +108,49 @@ define(function (require) {
     }
   }));
 
-  // then we'll create an application.index state that
+  // then we'll create an application.index route that
   // will render out the welcome page
-  router.state("index", BaseState.extend({
+  router.addRoute("index", BaseRoute.extend({
     templateName: "home"
   }));
 
   // blog show
-  router.state("posts.show", BaseState.extend({
-    view: function () {
+  router.addRoute("posts.show", BaseRoute.extend({
+    model: function (params) {
+      if (!this.sessionStore) {
+        this.sessionStore = 1;
+      } else {
+        this.sessionStore++;
+      }
+      return "Blog " + params.id;
+    },
+    view: function (model) {
       return $(template("posts-show")({
-        title: "Blog post #" + this.options.id
+        title: "Blog post #" + model
       }));
     }
   }));
 
   // blog page
-  router.state("posts.filter", BaseState.extend({
-    activate: function () {
+  router.addRoute("posts.filter", BaseRoute.extend({
+    activate: function (params, queryParams) {
+      this.queryParams = queryParams;
       this.render();
     },
     update: function (params, queryParams) {
-      this.options.queryParams = queryParams;
+      this.queryParams = queryParams;
       this.render();
       // don't reload the state
       return false;
     },
     render: function () {
-      if (this.options.filterId === "mine") {
-        this.parent.parent.$outlet.html("My posts...");
+      if (this.params.filterId === "mine") {
+        this.outlet().html("My posts...");
       } else {
-        this.parent.parent.$outlet.html("Filter not found");
+        this.outlet().html("Filter not found");
       }
-      if (this.options.queryParams.sortBy) {
-        this.parent.parent.$outlet.append("<div>Sorting by:" + this.options.queryParams.sortBy + "</div>");
+      if (this.queryParams.sortBy) {
+        this.outlet().append("<div>Sorting by:" + this.queryParams.sortBy + "</div>");
       }
     }
   }));

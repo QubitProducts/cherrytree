@@ -8,8 +8,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/amd-module-config.js',
-      'test/test-main.js',
+      'test/setup/amd-module-config.js',
+      'test/setup/test-main.js',
       {pattern: '**/*.js', included: false}
     ],
 

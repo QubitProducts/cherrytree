@@ -1,137 +1,165 @@
-define(function (require) {
+(function (define) { 'use strict';
+  define(function (require) {
 
-  var extend      = require("../util/extend");
-  var LocationBar = require("location-bar");
+    var _ = require('../lib/util');
+    var links = require('./history_location/link_delegate');
+    var LocationBar = require('location-bar');
 
-  // save the current scroll position at all times
-  // for use when back/forward buttons are used
-  var $ = require("jquery");
-  var currentScroll;
-  $(window).scroll(function () {
-    currentScroll = window.scrollY;
-  });
+    /**
+     * Constructor
+     */
 
-  var HistoryLocation = function (options) {
-    this.options = extend({}, this.options);
-    this.options = extend(this.options, options);
-    this.initialize(this.options);
-  };
-  HistoryLocation.prototype = {
-    path: "",
+    var HistoryLocation = function (options) {
+      this.path = '';
 
-    options: {
-      pushState: false,
-      root: "/"
-    },
-
-    initialize: function (options) {
+      this.options = _.extend({
+        pushState: false,
+        interceptLinks: true,
+        root: '/'
+      }, options);
+      
+      // we're using the location-bar module for actual
+      // URL management
       var self = this;
-
       this.locationBar = new LocationBar();
-
       this.locationBar.onChange(function (path) {
-        path = path || "";
-
-        // experimental feature: preserving scroll upon
-        // navigation
-        window.scrollTo(0, currentScroll);
-        setTimeout(function () {
-          window.scrollTo(0, currentScroll);
-        }, 0);
-        setTimeout(function () {
-          window.scrollTo(0, currentScroll);
-        }, 1);
-
-        // var query = path.split("?")[1];
-        // path = path.split("?")[0];
-        self.handleURL("/" + path);
-
-        // for now, we publish the url:params via mediator
-        // we should get some better inspiration from ember-query
-        // about how we could pass these in via the router into the
-        // states
-        // var mediator = require("leap/mediator");
-        // mediator.publish("url:params", query);
+        self.handleURL('/' + (path || ''));
       });
-      this.locationBar.start(extend(options));
-    },
+      this.locationBar.start(_.extend({}, options));
 
-    usesPushState: function () {
-      return this.options.pushState;
-    },
+      // we want to intercept all link clicks in case we're using push state,
+      // because all link clicks should be handled via the router instead of
+      // browser reloading the page
+      if (this.usesPushState() && this.options.interceptLinks) {
+        this.interceptLinks();
+      }
+    };
 
-    getURL: function () {
+    /**
+     * Check if we're actually using pushState. For browsers
+     * that don't support it this would return false since
+     * it would fallback to using hashState / polling
+     * @return {Bool} 
+     */
+    
+    HistoryLocation.prototype.usesPushState = function () {
+      return this.options.pushState && this.locationBar.hasPushState();
+    };
+
+    /**
+     * Get the current URL
+     */
+
+    HistoryLocation.prototype.getURL= function () {
       return this.path;
-    },
+    };
 
-    navigate: function (url) {
-      this.locationBar.update(url, {trigger: true});
-    },
+    /**
+     * Set the current URL without triggering any events
+     * back to the router. Add a new entry in browser's history.
+     */
 
-    setURL: function (path) {
+    HistoryLocation.prototype.setURL = function (path) {
       if (this.path !== path) {
         this.path = path;
         this.locationBar.update(path, {trigger: false});
-        if (this.changeCallback) {
-          this.changeCallback(this.path);
-        }
       }
-    },
+    };
 
-    replaceURL: function (path) {
+    /**
+     * Set the current URL without triggering any events
+     * back to the router. Replace the latest entry in broser's history.
+     */
+
+    HistoryLocation.prototype.replaceURL = function (path) {
       if (this.path !== path) {
         this.path = path;
         this.locationBar.update(path, {trigger: false, replace: true});
-        if (this.changeCallback) {
-          this.changeCallback(this.path);
-        }
       }
-    },
+    };
 
-    // when the url
-    onChangeURL: function (callback) {
+    /**
+     * Setup a URL change handler
+     * @param  {Function} callback
+     */
+    HistoryLocation.prototype.onChange = function (callback) {
       this.changeCallback = callback;
-    },
+    };
 
-    // callback for what to do when backbone router handlers a URL
-    // change
-    onUpdateURL: function (callback) {
-      this.updateCallback = callback;
-    },
-
-    handleURL: function (url) {
-      this.path = url;
-      // initially, the updateCallback won't be defined yet, but that's good
-      // because we dont' want to kick off routing right away, the router
-      // does that later by manually calling this handleURL method with the
-      // url it reads of the location. But it's important this is called
-      // first by Backbone, because we wanna set a correct this.path value
-      if (this.updateCallback) {
-        this.updateCallback(url);
-      }
-    },
-
-    formatURL: function (url) {
+    /**
+     * Given a path, generate a URL appending root
+     * if pushState is used and # if hash state is used
+     */
+    HistoryLocation.prototype.formatURL = function (path) {
       if (this.locationBar.hasPushState()) {
         var rootURL = this.options.root;
 
-        if (url !== "") {
+        if (path !== '') {
           rootURL = rootURL.replace(/\/$/, '');
         }
 
-        return rootURL + url;
+        return rootURL + path;
       } else {
-        if (url[0] === "/") {
-          url = url.substr(1);
+        if (path[0] === '/') {
+          path = path.substr(1);
         }
-        return "#" + url;
+        return '#' + path;
       }
-    },
+    };
 
-    destroy: function () {
+    /**
+     * Stop listening to URL changes and link clicks
+     */
+    HistoryLocation.prototype.destroy = function () {
       this.locationBar.stop();
-    }
-  };
+      if (this.linkHandler) {
+        links.undelegate(this.linkHandler);
+      }
+    };
 
-  return HistoryLocation;
-});
+    /**
+     * @private
+     */
+    
+    HistoryLocation.prototype.interceptLinks = function () {
+      var self = this;
+      this.linkHandler = function (e, link) {
+        e.preventDefault();
+        // TODO use router.transitionTo instead, because
+        // that way we're handling errors and what not? and don't
+        // update url on failed requests or smth?
+        self.navigate(link.getAttribute('href'));
+      };
+      links.delegate(this.linkHandler);
+    };
+
+    /**
+     * Update the browser's location bar with a new URL.
+     * Trigger an event so that we would inform the router
+     * of the new URL.
+     * @private
+     */
+
+    HistoryLocation.prototype.navigate = function (url) {
+      this.locationBar.update(url, {trigger: true});
+    };
+
+    /**
+      initially, the changeCallback won't be defined yet, but that's good 
+      because we dont' want to kick off routing right away, the router
+      does that later by manually calling this handleURL method with the
+      url it reads of the location. But it's important this is called
+      first by Backbone, because we wanna set a correct this.path value
+
+      @private
+     */
+    HistoryLocation.prototype.handleURL = function (url) {
+      this.path = url;
+      if (this.changeCallback) {
+        this.changeCallback(url);
+      }
+    };
+
+    return HistoryLocation;
+  });
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

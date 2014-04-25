@@ -26,12 +26,13 @@ define(function (require) {
 
   var $ = require("jquery");
   var Router = require("cherrytree");
-  var State = require("cherrytree/state");
+  var State = require("cherrytree/route");
   var HistoryLocation = require("cherrytree/location/history_location");
 
   function TestApp() {
     // create the router
     var router = this.router = new Router({
+      // logging: true,
       location: new HistoryLocation()
     });
 
@@ -48,7 +49,7 @@ define(function (require) {
 
     // provide the states
     // first of all, we want an application state
-    router.state("application", State.extend({
+    router.addRoute("application", State.extend({
       // this is a cherrytree hook for "performing"
       // actions upon entering this state
       activate: function () {
@@ -69,35 +70,44 @@ define(function (require) {
     }));
     // then we'll create an application.index state that
     // will render out the welcome page
-    router.state("index", State.extend({
+    router.addRoute("index", State.extend({
       activate: function () {
         this.parent.$outlet.html("Welcome to this application");
       }
     }));
     // about page
-    router.state("about", State.extend({
+    router.addRoute("about", State.extend({
       activate: function () {
         this.parent.$outlet.html("This is about page");
       }
     }));
     // faq page
-    router.state("faq", State.extend({
+    router.addRoute("faq", State.extend({
+      model: function (params) {
+        this.params = params;
+      },
       activate: function () {
         this.render();
       },
       render: function () {
         this.parent.$outlet.html("FAQ.");
-        this.parent.$outlet.append(" Sorted By: " + this.options.queryParams.sortBy);
+        this.parent.$outlet.append(" Sorted By: " + this.params.queryParams.sortBy);
       },
-      update: function (params, queryParams) {
-        this.options.queryParams = queryParams;
+      update: function () {
         this.render();
+        return false;
+      },
+      queryParamsDidChange: function () {
+        this.refresh();
       }
     }));
     // posts page
-    router.state("posts.filter", State.extend({
-      activate: function () {
-        if (this.options.filterId === "mine") {
+    router.addRoute("posts.filter", State.extend({
+      model: function (params) {
+        return params;
+      },
+      activate: function (context) {
+        if (context.filterId === "mine") {
           this.parent.parent.$outlet.html("My posts...");
         } else {
           this.parent.parent.$outlet.html("Filter not found");

@@ -28,6 +28,10 @@ define(function (require) {
       }).should.equal("#posts/filter/foo?sortBy=name");
     });
 
+    it.skip("should reuse existing params if only a subset of params are provided", function () {
+
+    });
+
   });
 
 });
