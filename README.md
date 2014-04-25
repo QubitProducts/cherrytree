@@ -62,9 +62,10 @@ This covers the basic usage and the API of Cherrytree. For introduction to more 
 ## Basic Example
 
 ```js
+var $ = require("jquery");
 var Router = require("cherrytree");
 var Route = require("cherrytree/route");
-var HistoryLocation = require("cherrytree/locations/history");
+var HistoryLocation = require("cherrytree/location/history_location");
 
 // for router to keep the app's state in sync with the url
 // we need to use a custom location, the default `none` location
@@ -76,6 +77,10 @@ var HistoryLocation = require("cherrytree/locations/history");
 // can automatically fallback to hashState for browsers that don't
 // support pushState
 
+var Post = function () {};
+Post.prototype.fetch = function () {};
+Post.prototype.get = function () { return "Hello cherrytree"; };
+
 // create the router
 var router = new Router({
   location: new HistoryLocation({
@@ -85,8 +90,8 @@ var router = new Router({
 
 // your route map
 router.map(function () {
-  this.resource("post", {path: "/:postId"}, function () {
-    this.route("show");
+  this.resource("post", {path: "/post/:postId"}, function () {
+    this.route("show", {path: "/"});
     this.route("edit")
   });
 });
@@ -95,7 +100,7 @@ router.map(function () {
 // application route is always the root route
 router.addRoute("application", Route.extend({
   activate: function () {
-    this.view = $("<h1>My Blog</h1><div class='outlet'></div>");
+    this.view = $("<div><h1>My Blog</h1><div class='outlet'></div></div>");
     $(document.body).html(this.view);
   }
 }));
@@ -106,13 +111,16 @@ router.addRoute("post", Route.extend({
       id: params.postId
     });
     return this.post.fetch();
+  },
+  activate: function () {
+    this.outlet = this.parent.view.find(".outlet");
   }
 }));
 // and display it
 router.addRoute("post.show", Route.extend({
   activate: function () {
     this.view = $("<p>" + this.get("post").get("content") + "</p>");
-    this.parent.view.$(".outlet").html(this.view);
+    this.parent.outlet.html(this.view);
   },
   deactivate: function () {
     this.view.remove();
@@ -123,10 +131,10 @@ router.addRoute("post.show", Route.extend({
 router.startRouting();
 
 // programatically navigate to the `posts.show` page.
-router.transitionTo('posts.show', 42);
+router.transitionTo('post.show', 42);
 ```
 
-Go to the `cherrytree-reactjs-demo` for a more realistic example.
+Check out http://requirebin.com/?gist=11292543 to see this example in action.
 
 
 ## Router
