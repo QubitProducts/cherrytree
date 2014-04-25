@@ -18,6 +18,13 @@
   "dependencies": {
     "location-bar": "^2.0.0-beta.1"
   },
+  "keywords": [
+    "router",
+    "history",
+    "browser",
+    "pushState",
+    "hierarchical"
+  ],
   "devDependencies": {
     "karma": "~0.10.9",
     "karma-firefox-launcher": "~0.1.0",
