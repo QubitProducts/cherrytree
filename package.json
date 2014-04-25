@@ -16,8 +16,7 @@
     "url": "https://github.com/KidkArolis/cherrytree/issues"
   },
   "dependencies": {
-    "location-bar": "2.0.0-beta.1",
-    "when": "^3.1.0"
+    "location-bar": "2.0.0-beta.1"
   },
   "devDependencies": {
     "karma-firefox-launcher": "~0.1.0",
