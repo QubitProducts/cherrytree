@@ -282,9 +282,13 @@
       we want to exit the loading route
     */
     function transitionFailed(err, router) {
-      transitionCompleted(router);
+      // only complete transition if it's not a redirect
+      if (!router.router.activeTransition) {
+        transitionCompleted(router);
+      }
+      // only log if it wasn't a redirect
       if (err.name !== "TransitionAborted") {
-        console.error(err.stack ? err.stack : err);
+        console && console.error(err.stack ? err.stack : err);
       }
     }
 

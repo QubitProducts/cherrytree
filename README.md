@@ -366,6 +366,10 @@ Create an instance of history location. Note that only one instance of HistoryLo
 
 # Changelog
 
+## 0.2.1
+
+* Fix: don't exit the loading route during redirects
+
 ## 0.2.0
 
 * A major rewrite. Simplify code, route lifecycle, API and many other things. Route instances are now singletons that say around for the lifetime of the application. This rewrite fixes many issues such as redirecting midst transition and transitions between similar states with different params at the parent routes.
