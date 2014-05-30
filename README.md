@@ -87,9 +87,7 @@ Post.prototype.get = function () { return "Hello cherrytree"; };
 
 // create the router
 var router = new Router({
-  location: new HistoryLocation({
-    pushState: false
-  })
+  location: new HistoryLocation()
 });
 
 // your route map
@@ -360,8 +358,8 @@ As you can see you can also provide your own implementation of location. For exa
 
 Create an instance of history location. Note that only one instance of HistoryLocation should be created per page since it's managing the browser's URL.
 
-* options.pushState - default is true. Whether to use pushState, set false for hashState.
-* options.root - default is `/`. Use this if your application is not being served from the root url /.
+* options.pushState - default is false, which means using hashchange events. Set to true to use pushState.
+* options.root - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * options.interceptLinks - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Appropriate link clicks are links that are clicked with the left mouse button with no cmd or shift key. External links, `javascript:` links, links with a `data-bypass` attribute and links starting with `#` are not intercepted.
 
 # Changelog
