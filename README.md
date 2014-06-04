@@ -211,6 +211,19 @@ router.transitionTo('posts.show', 2, {queryParams: {commentId: null}});
 
 Same as transitionTo, but don't add an entry in browser's history, instead replace the current entry. Useful if you don't want this transition to be accessible via browser's Back button, e.g. if you're redirecting, or if you're navigating upon clicking tabs in the UI, etc.
 
+### router.generate(name, ...params)
+
+Generate a URL for a route, e.g.
+
+```js
+router.generate('about');
+router.generate('posts.show', 1);
+router.generate('posts.show', 2, {queryParams: {commentId: 2}});
+router.generate('posts.show', 2, {queryParams: {commentId: null}});
+```
+
+It generates a URL with # if router is in hashChange mode and with no # if router is in pushState mode.
+
 
 ### router.activeRoutes()
 
@@ -228,6 +241,8 @@ The Route class should be extend to create specific routes.
 ```js
 var route = Route.extend({...})
 ```
+
+Within a route you can access the router via `this.router`.
 
 ## Route Hooks
 
