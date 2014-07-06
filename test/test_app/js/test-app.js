@@ -25,7 +25,7 @@ define(function (require) {
 
   var $ = require("jquery");
   var _ = require("underscore");
-  var Promise = require("rsvp").Promise;
+  var Promise = require("cherrytree/vendor/promise");
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
   var HistoryLocation = require("cherrytree/location/history_location");
@@ -97,7 +97,7 @@ define(function (require) {
 
   // provide the routes
   // first of all, we want an application route
-  router.addRoute("application", BaseRoute.extend({
+  router.routes["application"] = BaseRoute.extend({
     // this is a cherrytree hook for "performing"
     // actions upon entering this route
     model: function () {
@@ -106,16 +106,16 @@ define(function (require) {
     outlet: function () {
       return $(document.body);
     }
-  }));
+  });
 
   // then we'll create an application.index route that
   // will render out the welcome page
-  router.addRoute("index", BaseRoute.extend({
+  router.routes["index"] = BaseRoute.extend({
     templateName: "home"
-  }));
+  });
 
   // blog show
-  router.addRoute("posts.show", BaseRoute.extend({
+  router.routes["posts.show"] = BaseRoute.extend({
     model: function (params) {
       if (!this.sessionStore) {
         this.sessionStore = 1;
@@ -129,10 +129,10 @@ define(function (require) {
         title: "Blog post #" + model
       }));
     }
-  }));
+  });
 
   // blog page
-  router.addRoute("posts.filter", BaseRoute.extend({
+  router.routes["posts.filter"] = BaseRoute.extend({
     activate: function (params, queryParams) {
       this.queryParams = queryParams;
       this.render();
@@ -153,7 +153,7 @@ define(function (require) {
         this.outlet().append("<div>Sorting by:" + this.queryParams.sortBy + "</div>");
       }
     }
-  }));
+  });
 
   // start routing
   router.startRouting();

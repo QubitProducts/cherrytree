@@ -26,13 +26,13 @@
     "hierarchical"
   ],
   "devDependencies": {
-    "karma": "~0.10.9",
-    "karma-firefox-launcher": "~0.1.0",
-    "karma-chrome-launcher": "~0.1.0",
-    "karma-requirejs": "~0.2.1",
     "chai": "~1.8.0",
-    "mocha": "~1.17.0",
+    "karma": "~0.10.9",
+    "karma-chrome-launcher": "~0.1.0",
+    "karma-firefox-launcher": "~0.1.0",
+    "karma-mocha": "~0.1.0",
+    "karma-requirejs": "~0.2.1",
     "karma-sinon-chai": "~0.1.0",
-    "karma-mocha": "~0.1.0"
+    "mocha": "^1.20.1"
   }
 }
