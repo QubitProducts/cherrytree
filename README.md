@@ -36,7 +36,7 @@ router.map(function () {
 });
 ```
 
-In Cherrytree, being in a certain state of your app means that several Routes are active. For example, if you're at `app.com/QubitProducts/cherrytree/commits` - the list of active routes would look like `['application', 'repository', 'commits', 'commits.index']`. You can define behaviour of each route by extending `cherrytree/route` and registering the routes by `router.addRoute`. 
+In Cherrytree, being in a certain state of your app means that several Routes are active. For example, if you're at `app.com/QubitProducts/cherrytree/commits` - the list of active routes would look like `['application', 'repository', 'commits', 'commits.index']`. You can define behaviour of each route by extending `cherrytree/route` and registering the routes in the `router.routes` hash. 
 
 Application route could render the outer shell of the application, e.g. the nav and container for child routes, it could also initialize some base models, e.g. user model. The repository route would load in the repository model from the server based on the URL params, the `commits.index` would load the specific commit model and render that out.
 
@@ -100,14 +100,14 @@ router.map(function () {
 
 // your routes
 // application route is always the root route
-router.addRoute("application", Route.extend({
+router.routes["application"] = Route.extend({
   activate: function () {
     this.view = $("<div><h1>My Blog</h1><div class='outlet'></div></div>");
     $(document.body).html(this.view);
   }
-}));
+});
 // let's load in the model
-router.addRoute("post", Route.extend({
+router.routes["post"] = Route.extend({
   model: function (params) {
     this.post = new Post({
       id: params.postId
@@ -117,9 +117,9 @@ router.addRoute("post", Route.extend({
   activate: function () {
     this.outlet = this.parent.view.find(".outlet");
   }
-}));
+});
 // and display it
-router.addRoute("post.show", Route.extend({
+router.routes["post.show"] = Route.extend({
   activate: function () {
     this.view = $("<p>" + this.get("post").get("content") + "</p>");
     this.parent.outlet.html(this.view);
@@ -127,7 +127,7 @@ router.addRoute("post.show", Route.extend({
   deactivate: function () {
     this.view.remove();
   }
-}));
+});
 
 // let's do this!
 router.startRouting();
@@ -146,10 +146,13 @@ Check out [http://requirebin.com/?gist=11292543](http://requirebin.com/?gist=112
 Create a router.
 
 * options.location - default is NoneLocation. Use HistoryLocation if you want router to hook into the URL (see example above)
-* options.logging - default is false.
-* options.BaseRoute - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class configured.
-* onURLChanged - e.g. function (url) {}
-* onDidTransition: function (path) {}
+* options.logging - default is false
+* options.BaseRoute - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class configured
+* options.map - specify the route map
+* options.resolver - specify a custom route resolver. Default resolver loads the routes from the router.routes by name `function (name, cb) { cb(router.routes[name]); }`
+* options.routes - a hash specifying your route classes. Key is the name of the route, value is the route class
+* options.onURLChanged - e.g. function (url) {}
+* options.onDidTransition: function (path) {}
 
 ### router.map(fn)
 
@@ -165,31 +168,21 @@ router.map(function () {
 })
 ```
 
-### router.addRoute(name, obj)
+### router.routes hash
 
-Each route in your route map can have specific behaviour, such as loading data and specifying how to render the views. Each resource in the map can have an associated route class, the name of the resource what you use to attach the route class to it, e.g. `post`. Each route in the map has a name that can be created by combining the name of the resource and the route, e.g. `post.show`. Top level route names don't include a prefix, e.g. `about`. There are a couple of special routes that are always available - `application` and `loading`.
+This is where you register all your custom route classes. Each route in your route map can have specific behaviour, such as loading data and specifying how to render the views. Each resource in the map can have an associated route class, the name of the resource is what you use to attach the route class to it, e.g. `post`. Each route in the map has a name that can be created by combining the name of the resource and the route, e.g. `post.show`. Top level route names don't include a prefix, e.g. `about`. There are a couple of special routes that are always available - `application` and `loading`.
 
 ```js
 var Route = require('cherrytree/route');
-router.addRoute('post.show', Route.extend({
+
+router.routes['post.show'] = Route.extend({
   model: function () {
     return $.getJSON('/url');
   },
   activate: function (data) {
     // render data
   }
-}));
-```
-
-### router.addRoutes(obj)
-
-Register multiple route classes at once, example:
-
-```js
-router.addRoutes({
-  'posts.show': require('./routes/posts_show_route'),
-  'posts.edit': require('./routes/posts_edit_route')
-})
+});
 ```
 
 ### router.startRouting()
@@ -377,7 +370,35 @@ Create an instance of history location. Note that only one instance of HistoryLo
 * options.root - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * options.interceptLinks - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Appropriate link clicks are links that are clicked with the left mouse button with no cmd or shift key. External links, `javascript:` links, links with a `data-bypass` attribute and links starting with `#` are not intercepted.
 
+
+## Custom resolvers
+
+By default, cherrytree always look at your `router.routes` hash to find all the route classes. However, you can override the resolver to load routes from anywhere else. That is especially useful if you want to be loading your routes asynchronously. It's possible to override the global resolver or specify a per route/resource resolver in the route map. For example, if we wanted to load each route asynchronously using AMD style require, we could do this:
+
+```js
+var router = new Router({
+  resolver: function (name, cb) {
+    require(["app/routes/" + name + ".route.js"], function (Route) {
+      cb(Route);
+    });
+  },
+  map: function () {
+    this.resource("branches", function () {
+      this.route("stale");
+      this.route("merged");
+    });
+  }
+});
+```
+
+Now the right routes will only be resolved if needed by a given transition, e.g. `router.transitionTo('branches.merged')` would load `app/routes/application.route.js`, `app/routes/branches.route.js` and `app/routes/branches.merged.route.js`, but would not load the `app/routes/branches.stale.route.js`. This allows splitting your application into multiple bundles.
+
+
 # Changelog
+
+## 0.3.0
+
+* Global and per route/resource resolvers allow loading in each route asyncronously on demand. Read more about it in the "Custom resolvers" section. `addRoute` and `addRoutes` methods have been removed. The default global resolver expects the routes to be added to the `router.routes` hash.
 
 ## 0.2.1
 

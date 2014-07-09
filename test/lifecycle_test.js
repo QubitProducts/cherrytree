@@ -59,7 +59,7 @@ define(function (require) {
         });
       });
 
-      router.addRoute("postsAdmin.create", BaseRoute.extend({
+      router.routes["postsAdmin.create"] = BaseRoute.extend({
         update: function () {
           sequence.push("update " + this.name);
           return false;
@@ -67,9 +67,9 @@ define(function (require) {
         queryParamsDidChange: function () {
           this.refresh();
         }
-      }));
+      });
 
-      router.addRoute("settings.photo", BaseRoute.extend({
+      router.routes["settings.photo"] = BaseRoute.extend({
         update: function () {
           sequence.push("update " + this.name);
           return false;
@@ -77,7 +77,7 @@ define(function (require) {
         queryParamsDidChange: function () {
           this.refresh();
         }
-      }));
+      });
 
       router.startRouting().then(done, done);
     });
@@ -87,7 +87,7 @@ define(function (require) {
     });
 
     it("should handle rapid retransitioning", function (done) {
-      router.addRoute("posts.show", BaseRoute.extend({
+      router.routes["posts.show"] = BaseRoute.extend({
         initialize: function () {
           sequence.push("initialize " + this.name);
         },
@@ -104,7 +104,7 @@ define(function (require) {
         deactivate: function () {
           sequence.push("deactivate " + this.name + " " + this.postId);
         }
-      }));
+      });
       router.transitionTo("about").then(function () {
         sequence = [];
         router.transitionTo("posts.show", 1);
@@ -252,7 +252,7 @@ define(function (require) {
 
     describe("only changing params", function () {
       it("should still deactivate the previous state with the same name", function (done) {
-        router.addRoute("posts.show", BaseRoute.extend({
+        router.routes["posts.show"] = BaseRoute.extend({
           initialize: function () {
             sequence.push("initialize " + this.name);
           },
@@ -269,7 +269,7 @@ define(function (require) {
           deactivate: function () {
             sequence.push("deactivate " + this.name);
           }
-        }));
+        });
         router.transitionTo("about").then(function () {
           sequence = [];
           return router.transitionTo("posts.show", 1);

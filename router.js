@@ -1,6 +1,6 @@
 (function (define) { 'use strict';
   define(function (require) {
-    
+
     var _ = require("./lib/util");
     var Router = require("./vendor/router");
     var BaseRoute = require("./route");
@@ -8,55 +8,65 @@
     var handlerCreator = require("./lib/handler_creator");
     var noneLocation = require("./location/none_location");
 
-    var CherrytreeRoute = function (options) {
-      this.options = _.extend({
-        location: noneLocation(),
-        logging: false,
-        onDidTransition: null,
-        onURLChanged: null,
-        BaseRoute: BaseRoute
-      }, options);
-      
-      this.routeClasses = {};
-      this.prepares = {};
-
-      if (this.options.logging) {
-        this.log = function () {
-          console && console.log.apply(console, arguments);
-        };
-      }
-
-      // the underlying router.js ember microlib
-      this.router = new Router();
-      this.router.log = this.log;
+    var CherrytreeRoute = function () {
+      this.initialize.apply(this, arguments);
     };
 
     _.extend(CherrytreeRoute.prototype, {
 
+      initialize: function (options) {
+        var router = this;
+
+        // the underlying router.js ember microlib
+        this.router = new Router();
+        this.router.log = this.log;
+        this.resolvers = {};
+        this.routes = {};
+
+        this.options = _.extend({
+          location: noneLocation(),
+          logging: false,
+          onDidTransition: null,
+          onURLChanged: null,
+          BaseRoute: BaseRoute,
+          resolver: function (name, cb) {
+            cb(router.routes[name]);
+          },
+          map: null
+        }, options);
+
+        if (this.options.routes) {
+          this.routes = this.options.routes;
+        }
+
+        if (this.options.resolver) {
+          this.resolvers["application"] = this.options.resolver;
+        }
+
+        if (this.options.logging) {
+          this.log = function () {
+            console && console.log.apply(console, arguments);
+          };
+        }
+
+        if (this.options.map) {
+          this.map(this.options.map);
+        }
+      },
+
       map: function (callback) {
         var router = this.router;
 
-        var dsl = RouterDSL.map(this, function () {
+        var dsl = RouterDSL.map(function () {
           this.resource("application", { path: "/" }, function () {
             callback.call(this);
           });
         });
 
         router.map(dsl.generate());
-
-        this.prepares = dsl.prepares;
+        _.extend(this.resolvers, dsl.resolvers);
 
         return this;
-      },
-
-      addRoute: function (name, route) {
-        this.routeClasses[name] = route;
-      },
-
-      addRoutes: function (map) {
-        _.each(map, function (route, name) {
-          this.addRoute(name, route);
-        }, this);
       },
 
       startRouting: function () {
@@ -99,6 +109,17 @@
 
       hasRoute: function(route) {
         return this.router.hasRoute(route);
+      },
+
+      getBranchNames: function (name) {
+        if (name === "application") {
+          return ["application"];
+        } else if (name === "loading") {
+          return ["application", "loading"];
+        } else {
+          var names = this.router.recognizer.names[name];
+          return _.pluck(names.handlers, "handler");
+        }
       },
 
       activeRoutes: function (name) {
@@ -171,7 +192,7 @@
 
 
     /**
-     * 
+     *
      */
 
     function assert(desc, test) {

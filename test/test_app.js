@@ -49,7 +49,7 @@ define(function (require) {
 
     // provide the states
     // first of all, we want an application state
-    router.addRoute("application", State.extend({
+    router.routes["application"] = State.extend({
       // this is a cherrytree hook for "performing"
       // actions upon entering this state
       activate: function () {
@@ -67,22 +67,22 @@ define(function (require) {
 
         $(document.body).append(this.$view);
       }
-    }));
+    });
     // then we'll create an application.index state that
     // will render out the welcome page
-    router.addRoute("index", State.extend({
+    router.routes["index"] = State.extend({
       activate: function () {
         this.parent.$outlet.html("Welcome to this application");
       }
-    }));
+    });
     // about page
-    router.addRoute("about", State.extend({
+    router.routes["about"] = State.extend({
       activate: function () {
         this.parent.$outlet.html("This is about page");
       }
-    }));
+    });
     // faq page
-    router.addRoute("faq", State.extend({
+    router.routes["faq"] = State.extend({
       model: function (params) {
         this.params = params;
       },
@@ -100,9 +100,9 @@ define(function (require) {
       queryParamsDidChange: function () {
         this.refresh();
       }
-    }));
+    });
     // posts page
-    router.addRoute("posts.filter", State.extend({
+    router.routes["posts.filter"] = State.extend({
       model: function (params) {
         return params;
       },
@@ -113,7 +113,7 @@ define(function (require) {
           this.parent.parent.$outlet.html("Filter not found");
         }
       }
-    }));
+    });
   }
 
   TestApp.prototype.start = function () {
