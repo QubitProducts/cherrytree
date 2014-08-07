@@ -16,7 +16,7 @@
     "url": "https://github.com/QubitProducts/cherrytree/issues"
   },
   "dependencies": {
-    "location-bar": "^2.0.0-beta.1"
+    "location-bar": "^2.0.0"
   },
   "keywords": [
     "router",
