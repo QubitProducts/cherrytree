@@ -104,7 +104,7 @@ define(function (require) {
     // posts page
     router.routes["posts.filter"] = State.extend({
       model: function (params) {
-        return params;
+        this.setContext(params);
       },
       activate: function (context) {
         if (context.filterId === "mine") {

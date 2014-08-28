@@ -69,7 +69,6 @@ This covers the basic usage and the API of Cherrytree. For introduction to more 
 var $ = require("jquery");
 var Router = require("cherrytree");
 var Route = require("cherrytree/route");
-var HistoryLocation = require("cherrytree/location/history_location");
 
 // for router to keep the app's state in sync with the url
 // we need to use a custom location, the default `none` location
@@ -80,6 +79,7 @@ var HistoryLocation = require("cherrytree/location/history_location");
 // backbone's router - it supports pushState, hashState and
 // can automatically fallback to hashState for browsers that don't
 // support pushState
+var HistoryLocation = require("cherrytree/location/history_location");
 
 var Post = function () {};
 Post.prototype.fetch = function () {};
@@ -109,10 +109,11 @@ router.routes["application"] = Route.extend({
 // let's load in the model
 router.routes["post"] = Route.extend({
   model: function (params) {
-    this.post = new Post({
+    var post = new Post({
       id: params.postId
     });
-    return this.post.fetch();
+    this.setContext({post: post});
+    return post.fetch();
   },
   activate: function () {
     this.outlet = this.parent.view.find(".outlet");
@@ -255,11 +256,11 @@ Useful for loading in data. Query params can be found at `params.queryParams`. R
 
 ### afterModel(context, transition)
 
-The first param is resolved promise value returned in the model hook.
+The first param is the context of the route.
 
 ### activate(context, transition)
 
-The first param is resolved promise value returned in the model hook. This is called on each route starting at the root after all model hooks have been resolved. If during a transition the route is already active and the params/context hasn't changed - activate won't be called for those routes. This is where you should render your views (if any)
+The first param is the route's context. This is called on each route starting at the root after all model hooks have been resolved. If during a transition the route is already active and the params/context hasn't changed - activate won't be called for those routes. This is where you should render your views (if any)
 
 ### deactivate()
 
@@ -297,24 +298,29 @@ Called when transitioning fails. This is an event that bubbles up to the root st
 
 These are all of the methods that you can call on your route (e.g. from within the route hooks)
 
+### route.setContext
+
+Set route's context. It's useful to set route's context when you want it to be accessible by children routes. `route.get` method makes it easy to access context of parent routes. The context is also passed as the first argument to the `route.activate` hook.
+
+### route.getContext
+
+Get the route's context.
+
 ### route.get(field)
 
-Get a field from the context of any of the parent routes (including this route). For example, if you fetched the `post` model in the `post` resource and returned it in the model hook as `{post: model}` you can retrieve in in all child routes via `this.get('post')`. In addition to looking at the context objects (objects returned in the model hook), `get` also looks at the members of each route, so if you've assigned something to the route instance, e.g. `this.postId = params.postId`, you can retrieve that in all child routes using get as well with `this.get('postId')`.
+Get a field from the context of this route or any of the parent routes. For example, if you fetched the `post` model in the `post` resource and set it as context using `this.setContext({post: model})` you can retrieve it in all child routes with `this.get('post')`.
 
 Example
 
 ```js
 var PostRoute = Route.extend({
   model: function (params) {
-    this.postId = params.postId;
     var post = new Post();
-    return post.fetch().then(function () {
-      // this will become the context of the route
-      // e.g. this is what's passed into the `activate` hook
-      return {
-        post: post
-      };
+    this.setContext({
+      postId: params.postId,
+      post: post
     });
+    return post.fetch();
   }
 })
 
@@ -395,6 +401,12 @@ Now the right routes will only be resolved if needed by a given transition, e.g.
 
 
 # Changelog
+
+## 0.4.0
+
+* Simplified how route contexts are handled. Route's context should now be set using the new `route.setContext` method. It can then be retrieved using `route.getContext` or individual fields can be accessed by using `route.get`. `route.get` also traverses all parent routes when looking for a context field. The context is also passed into the activate hook as the first argument. Breaking changes:
+  * `route.get` no longer looks at route attributes when looking up fields
+  * the return value of `route.model` hook is not set as context any longer, it's only used to block the loading of children routes
 
 ## 0.3.0
 
