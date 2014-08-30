@@ -20,7 +20,6 @@ router.map(function () {
   this.resource("user");
   this.resource("repository", {path: "/:owner/:repository"}, function () {
     this.resource("commits", function () {
-      this.route("index");
       this.route("commit", {path: "/:sha"})
     });
     this.resource("settings", function () {
@@ -180,6 +179,8 @@ An ID of a resource route is constructed by joining resource name with the route
 The nested resource IDs don't inherit the names of the parent resources. So in this case the IDs of the nested resource and nested resource routes are `tokens`, `tokens.applications` and `tokens.integrations`.
 
 Every resource has an implicit `index` route. Generating a link or transitioning to a resource is equivalent of generating the link to the `index` route of that resource. For example `router.transitionTo("tokens")` is the same as `router.transitionTo("tokens.index")`.
+
+NOTE: If you define a resource using this.resource and do not supply a function, then the implicit `resource.index` route is not created.
 
 ## Router
 
