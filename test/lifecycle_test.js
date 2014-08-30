@@ -62,7 +62,6 @@ define(function (require) {
       router.routes["postsAdmin.create"] = BaseRoute.extend({
         update: function () {
           sequence.push("update " + this.name);
-          return false;
         },
         queryParamsDidChange: function () {
           this.refresh();
@@ -72,7 +71,6 @@ define(function (require) {
       router.routes["settings.photo"] = BaseRoute.extend({
         update: function () {
           sequence.push("update " + this.name);
-          return false;
         },
         queryParamsDidChange: function () {
           this.refresh();

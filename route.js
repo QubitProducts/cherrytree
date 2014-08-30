@@ -158,7 +158,9 @@
         the route.
         @method update
       */
-      update: noop,
+      update: function () {
+        return false;
+      },
 
       /**
         This hook is executed when the router exits this route or when the context changes
@@ -213,7 +215,7 @@
         }
 
         // give route.update a chance to deal with the change in context / params
-        if (shouldTryUpdate() && this.update && this.update.apply(this, args) === false) {
+        if (shouldTryUpdate() && this.update && this.update.apply(this, args) !== false) {
           // inform child routes that actually this route didn't need reactivation
           // so they can also use their update methods
           route.needsReactivation = false;
