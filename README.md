@@ -139,6 +139,47 @@ router.transitionTo('post.show', 42);
 
 Check out [http://requirebin.com/?gist=11292543](http://requirebin.com/?gist=11292543) to see this example in action.
 
+## Route IDs
+
+After the router is initialized every route gets an ID generated based on the hierarchy of the routes. These IDs can be used when registering route handlers, performing transitions or generating links.
+
+Every cherrytree application has the default topmost route with an ID `application`. That's a good spot for implementing application wide behaviour, creating global models, e.g. user model. You can specify an application route handler like so
+
+```js
+router.routes["application"] = Route.extend({
+  model: function () {
+    this.setContext({user: new User()})
+  }
+});
+```
+
+Now all child routes can access the user object by calling `this.get("user")`.
+
+In the route map, we can define top level routes, resources and resource routes. Resources can be nested. Here's an example of all possible types of routes.
+
+```js
+router.map(function () {
+  this.route("issues");
+  this.resource("settings", function () {
+    this.route("teams");
+    this.route("integrations");
+    this.resource("tokens", function () {
+      this.route("applications");
+      this.route("integrations");
+    })
+  });
+});
+```
+
+An ID of a top level route is just the name of the route, e.g. `issues`. To generate a link to that route call `router.generate("issues");`.
+
+An ID of a top level resource is also the name - for example `settings`.
+
+An ID of a resource route is constructed by joining resource name with the route name, e.g. `settings.teams` and `settings.integrations`.
+
+The nested resource IDs don't inherit the names of the parent resources. So in this case the IDs of the nested resource and nested resource routes are `tokens`, `tokens.applications` and `tokens.integrations`.
+
+Every resource has an implicit `index` route. Generating a link or transitioning to a resource is equivalent of generating the link to the `index` route of that resource. For example `router.transitionTo("tokens")` is the same as `router.transitionTo("tokens.index")`.
 
 ## Router
 
