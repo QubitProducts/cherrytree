@@ -268,7 +268,7 @@ If the route is not needed anymore it will be deactivated. This is where you sho
 
 ### update(context, transition)
 
-If the route is already active, but the context of the route or some parent route has changed, the update will be called first to check if the route wants to handle this update without having to `deactivate` and `activate` again. Return `false` in this hook to indicate that the change in context has been handled and the the route shouldn't be "reactivated" with via `deactivate` and `activate` hooks. By default this hook doesn't return anything which means the routes are usually "reactivated".
+If the route is already active, but the context of the route or some parent route has changed, the update will be called first to check if the route wants to handle this update without having to `deactivate` and `activate` again. That is useful when you can rerender the view when data updates instead of destroying it and recreating it. Return `false` in this hook if you want to indicate that you can't handle the graceful update and want to fallback to reactivating the route.
 
 ### queryParamsDidChange(changed, all, removed)
 
@@ -407,6 +407,7 @@ Now the right routes will only be resolved if needed by a given transition, e.g.
 * Simplified how route contexts are handled. Route's context should now be set using the new `route.setContext` method. It can then be retrieved using `route.getContext` or individual fields can be accessed by using `route.get`. `route.get` also traverses all parent routes when looking for a context field. The context is also passed into the activate hook as the first argument. Breaking changes:
   * `route.get` no longer looks at route attributes when looking up fields
   * the return value of `route.model` hook is not set as context any longer, it's only used to block the loading of children routes
+* Made update hook simple for common cases by flipping the meaning of the return value - returning false now continues with reactivating the route, returning anything else assumes update handled the reactivation.
 
 ## 0.3.0
 
