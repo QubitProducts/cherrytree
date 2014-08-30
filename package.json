@@ -1,6 +1,6 @@
 {
   "name": "cherrytree",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Cherrytree is a hierarchical router for clientside web applications.",
   "main": "router",
   "scripts": {
@@ -34,6 +34,7 @@
     "karma-requirejs": "~0.2.1",
     "karma-sauce-launcher": "^0.2.10",
     "karma-sinon-chai": "~0.1.0",
-    "mocha": "^1.20.1"
+    "mocha": "^1.20.1",
+    "rf-release": "^0.3.1"
   }
 }

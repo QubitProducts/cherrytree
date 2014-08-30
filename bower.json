@@ -1,6 +1,6 @@
 {
   "name": "cherrytree",
-  "version": "0.2.1",
+  "version": "0.4.0",
   "description": "Cherrytree is a hierarchical router for clientside web applications.",
   "main": "router.js",
   "ignore": [
