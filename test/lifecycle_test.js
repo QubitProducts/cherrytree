@@ -93,9 +93,8 @@ define(function (require) {
         },
         model: function (params) {
           sequence.push("model " + this.name + " " + params.postId);
-          return delay(30).then(function () {
-            return params;
-          });
+          this.setContext(params);
+          return delay(30);
         },
         activate: function (context) {
           this.postId = context.postId;
@@ -259,9 +258,8 @@ define(function (require) {
           model: function (params) {
             this.postId = params.postId;
             sequence.push("model " + this.name + " " + this.postId);
-            return delay(30).then(function () {
-              return params;
-            });
+            this.setContext(params);
+            return delay(30);
           },
           activate: function (context) {
             sequence.push("activate " + this.name + " " + context.postId);

@@ -9,6 +9,7 @@
       this.name = options.name;
       this.router = options.router;
       this.id = _.uniqueId();
+      this._context = {};
       this.initialize();
     };
 
@@ -231,12 +232,44 @@
       },
 
       /**
-        This is overwriten by the handler with the real function
-        that returns the right context right after the model
-        of the route has resolved.
-        @private
+        Get the context of this route
+        Context is typically stateful data, often deserialized from URL, that affects the behaviour
+        of the route and child routes.
+        @public
       */
-      getContext: noop,
+      getContext: function () {
+        return this._context;
+      },
+
+      /**
+       * Set the context of this route - overwrites the previous context
+       * @param {Object} context
+       */
+      setContext: function (context) {
+        this._context = context;
+        return this;
+      },
+
+      /**
+       * A fancy helper for retrieving a field from route's or it's parent's context.
+       * It first tries accessing the context of this route, but if the field is not found there
+       * the parent routes are traversed to try and find context containing the required field
+       * 
+       * @param  {String} field
+       * @return {*}
+       */
+      get: function (field) {
+        var context;
+        var route = this;
+        while (route) {
+          context = route.getContext();
+          if (context && context[field]) {
+            return context[field];
+          } else {
+            route = route.parent;
+          }
+        }
+      },
 
       /**
         Transition into another route. Optionally supply params for the
@@ -346,31 +379,6 @@
       replaceWith: function () {
         var router = this.router;
         return router.replaceWith.apply(router, arguments);
-      },
-
-      /**
-       * Retrieve a model from route's context or any of it's
-       * parents contexts.
-       * 
-       * @param  {String} modelName [description]
-       * @return {*}      
-       */
-      get: function (modelName) {
-        var context;
-        var route = this;
-        while (route) {
-          context = route.getContext();
-          if (context && context[modelName]) {
-            return context[modelName];
-          } else if (route[modelName]) { // TODO: use route.hasOwnProperty
-            // TODO: consider removing this, it should either be
-            // context or any attribute of the route. Context is a lot
-            // more explicit so probably a better choice.
-            return route[modelName];
-          } else {
-            route = route.parent;
-          }
-        }
       }
     });
 

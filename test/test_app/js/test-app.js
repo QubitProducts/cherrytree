@@ -36,11 +36,11 @@ define(function (require) {
 
   var BaseRoute = Route.extend({
     model: function (params) {
-      this.params = params;
       var self = this;
       return new Promise(function (resolve) {
         self.timeout = setTimeout(function () {
-          resolve(params);
+          self.setContext(params);
+          resolve();
         }, 300);
       });
     },
@@ -100,9 +100,7 @@ define(function (require) {
   router.routes["application"] = BaseRoute.extend({
     // this is a cherrytree hook for "performing"
     // actions upon entering this route
-    model: function () {
-      return 1;
-    },
+    model: function () {},
     outlet: function () {
       return $(document.body);
     }
@@ -122,11 +120,13 @@ define(function (require) {
       } else {
         this.sessionStore++;
       }
-      return "Blog " + params.id;
+      this.setContext({
+        title: "Blog " + params.id
+      });
     },
-    view: function (model) {
+    view: function (context) {
       return $(template("posts-show")({
-        title: "Blog post #" + model
+        title: "Blog post #" + context.title
       }));
     }
   });
