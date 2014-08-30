@@ -18,6 +18,7 @@
   "scripturl": true,
 
   "browser": true,
+  "node": true,
   "devel": true,
 
   "maxlen": 120,
