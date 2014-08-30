@@ -317,7 +317,7 @@ If the right set of routes is already active and query params change, the queryP
 
 ### willTransition(transition)
 
-Called when router is about to transition. You can abort the transition using `transition.abort()`, e.g.
+Called when router is about to transition away from this route. You can abort the transition using `transition.abort()`, e.g.
 
 ```js
 willTransition: function (transition) {
@@ -329,7 +329,7 @@ willTransition: function (transition) {
 }
 ```
 
-This is also an event that bubbles up to the root starting at the child route - return false to stop propagation.
+This is an event that bubbles up to the root starting at the child route - return false to stop the propagation.
 
 ### error(err)
 
