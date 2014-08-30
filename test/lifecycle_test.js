@@ -105,7 +105,7 @@ define(function (require) {
       router.transitionTo("about").then(function () {
         sequence = [];
         router.transitionTo("posts.show", 1);
-        return delay(40);
+        return delay(60);
       }).then(function () {
         router.transitionTo("posts.show", 2);
         return delay(10);
