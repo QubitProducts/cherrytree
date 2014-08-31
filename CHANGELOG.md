@@ -1,8 +1,10 @@
 # Changelog
 
-## 0.4.1
+## 0.5.0
 
 * New shiny docs.
+* Renamed `cherrytree/location/history_location` to `cherrytree/locations/history`
+* Renamed `cherrytree/location/none_location` to `cherrytree/locations/none`
 
 ## 0.4.0
 

@@ -27,7 +27,7 @@ define(function (require) {
   var $ = require("jquery");
   var Router = require("cherrytree");
   var State = require("cherrytree/route");
-  var HistoryLocation = require("cherrytree/location/history_location");
+  var HistoryLocation = require("cherrytree/locations/history");
 
   function TestApp() {
     // create the router

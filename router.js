@@ -6,7 +6,7 @@
     var BaseRoute = require("./route");
     var RouterDSL = require("./lib/dsl");
     var handlerCreator = require("./lib/handler_creator");
-    var noneLocation = require("./location/none_location");
+    var noneLocation = require("./locations/none");
 
     var CherrytreeRoute = function () {
       this.initialize.apply(this, arguments);

@@ -6,7 +6,7 @@ First you'll need to create an instance of the router.
 
 ```js
 var Router = require("cherrytree");
-var HistoryLocation = require("cherrytree/locations/history_location");
+var HistoryLocation = require("cherrytree/locations/history");
 
 var router = new Router({
   location: new HistoryLocation()
