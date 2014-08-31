@@ -4,7 +4,7 @@
 
 Create a router.
 
-* options.location - default is NoneLocation. Use HistoryLocation if you want router to hook into the URL (see an example in [the guide](docs/guide.md))
+* options.location - default is NoneLocation. Use HistoryLocation if you want router to hook into the URL (see an example in [the guide](guide.md))
 * options.map - specify the route map
 * options.resolver - specify a custom route resolver. Default resolver loads the routes from the `router.routes[routeName]` by name. The code of the default resolver is `function (name, cb) { cb(router.routes[name]); }`
 * options.BaseRoute - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class provided
