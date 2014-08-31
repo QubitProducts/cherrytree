@@ -4,7 +4,8 @@
   "description": "Cherrytree is a hierarchical router for clientside web applications.",
   "main": "router",
   "scripts": {
-    "test": "karma start --single-run"
+    "test": "karma start --single-run",
+    "release": "release"
   },
   "repository": {
     "type": "git",
@@ -34,7 +35,7 @@
     "karma-requirejs": "~0.2.1",
     "karma-sauce-launcher": "^0.2.10",
     "karma-sinon-chai": "~0.1.0",
-    "mocha": "^1.20.1",
-    "rf-release": "^0.3.1"
+    "kn-release": "^0.1.2",
+    "mocha": "^1.20.1"
   }
 }
