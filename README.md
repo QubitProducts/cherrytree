@@ -32,13 +32,11 @@ Read [the guide](docs/guide.md) or [the API docs](docs/api.md).
 
 # Features
 
-* generating links everywhere in your application is simple and systematic, e.g. `router.generate("commit.index", "1e2760")`
-* switching between pushState or hashState is trivial - all urls in your app are generated the right way depending on which mode you're in
-* route identifiers are decoupled from URL paths which means you can rename URL segments without having to change the names of routes and rewriting all links (e.g. if you want `account` to have url `/profile`)
+* generate links in your application in a simple, systematic way, e.g. `router.generate("commit.index", "1e2760")`
+* easily switch between pushState or hashState - all urls in your app are generated the right way depending on which mode you're in
 * load parts of the app on demand with custom resolvers
-* route is a good place to create models and views and manage their lifecycles
+* use routes for creating models, views and managing their lifecycles
 * dynamic segments and query params
-* transition is a first class citizen - abort, pause, resume, retry failed ones. E.g. display pause the transition to display "There are unsaved changes" message if the user clicked some link on the page or used browser's back/forward buttons
-* it's not coupled to browser URLs - e.g. use multiple routers to manage substates of your application
+* transition is a first class citizen - abort, pause, resume, retry failed ones. E.g. pause the transition to display "There are unsaved changes" message if the user clicked some link on the page or used browser's back/forward buttons
 * navigate around the app programatically, e.g. `router.transitionTo("commits")`
-* swappable URL management component
+* rename URL segments (e.g. /account -> /profile) without having to change route names or rewrite links
