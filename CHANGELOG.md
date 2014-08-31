@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+* New shiny docs.
+
 ## 0.4.0
 
 * Simplified how route contexts are handled. Route's context should now be set using the new `route.setContext` method. It can then be retrieved using `route.getContext` or individual fields can be accessed by using `route.get`. `route.get` also traverses all parent routes when looking for a context field. The context is also passed into the activate hook as the first argument. Breaking changes:
