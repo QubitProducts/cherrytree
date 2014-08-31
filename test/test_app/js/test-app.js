@@ -57,7 +57,13 @@ define(function (require) {
       return this.templateName || this.name.replace(/\./g, "-");
     },
     view: function () {
-      return $(template(this.getTemplateName())());
+      var tpl = template(this.getTemplateName())();
+      var router = this.router;
+      tpl = tpl.replace(/\{\{link\:(.*)\}\}/g, function (match, routeId) {
+        console.log("generating", routeId, router.generate(routeId));
+        return router.generate(routeId);
+      });
+      return $(tpl);
     },
     activate: function () {
       this.$view = this.view.apply(this, arguments);
