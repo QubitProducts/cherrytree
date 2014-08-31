@@ -210,11 +210,11 @@ An alias to `this.router.replaceWith`.
 
 ## HistoryLocation
 
-Cherrytree can be configured to use differet implementations of libraries that manage browser's URL/history. By default, Cherrytree will use `location/none_location` which means browser's URL/history won't be managed at all, and navigating around the application will only be possible programatically. However, Cherrytree also ships with a very versatile `location/history_location` which uses `location-bar` module to enable `pushState` or `hashChange` based URL management with graceful fallback of `pushState` -> `hashChange` -> `polling` depending on browser's capabilities. What his means is that out of the box cherrytree can hook into browser's URL for managing your application's state. Here's an example of how to use this functionality:
+Cherrytree can be configured to use differet implementations of libraries that manage browser's URL/history. By default, Cherrytree will use `locations/none` which means browser's URL/history won't be managed at all, and navigating around the application will only be possible programatically. However, Cherrytree also ships with a very versatile `locations/history` which uses `location-bar` module to enable `pushState` or `hashChange` based URL management with graceful fallback of `pushState` -> `hashChange` -> `polling` depending on browser's capabilities. What his means is that out of the box cherrytree can hook into browser's URL for managing your application's state. Here's an example of how to use this functionality:
 
 ```js
   var Router = require("cherrytree");
-  var HistoryLocation = require("cherrytree/location/history_location");
+  var HistoryLocation = require("cherrytree/locations/history");
 
   var router = new Router({
     location: new HistoryLocation({

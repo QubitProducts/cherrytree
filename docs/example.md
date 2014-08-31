@@ -14,7 +14,7 @@ var lorem = require("lorem-ipsum");
 // state in sync with browser's address bar.
 var Router = require("cherrytree");
 var Route = require("cherrytree/route");
-var HistoryLocation = require("cherrytree/location/history_location");
+var HistoryLocation = require("cherrytree/locations/history");
 
 // style this a little bit
 insert("http://yui.yahooapis.com/pure/0.5.0/pure-min.css");

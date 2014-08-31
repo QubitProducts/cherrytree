@@ -2,7 +2,7 @@
   define(function (require) {
 
     var _ = require('../lib/util');
-    var links = require('./history_location/link_delegate');
+    var links = require('./history/link_delegate');
     var LocationBar = require('location-bar');
 
     /**
