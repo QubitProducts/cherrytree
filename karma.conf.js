@@ -3,35 +3,42 @@
 
 module.exports = function(config) {
   config.set({
-    // frameworks to use
-    frameworks: ['requirejs', 'mocha', 'sinon-chai'],
 
-    // list of files / patterns to load in the browser
+    frameworks: ['mocha', 'sinon', 'sinon-chai'],
+
+    preprocessors: {
+      'test/index.js': ['webpack', 'sourcemap']
+    },
+
     files: [
-      'test/setup/amd-module-config.js',
-      'test/setup/test-main.js',
-      {pattern: '**/*.js', included: false}
+      'test/index.js'
     ],
 
-    // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
     reporters: ['progress'],
 
-    // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_INFO,
 
-    // enable / disable watching file and executing tests whenever any file changes
+    // this watcher watches when bundled files are updated
     autoWatch: true,
 
-    // Start these browsers, currently available:
-    // - Chrome
-    // - ChromeCanary
-    // - Firefox
-    // - Opera
-    // - Safari (only Mac)
-    // - PhantomJS
-    // - IE (only Windows)
+    webpack: {
+      cache: true,
+      // this watcher watches when source files are updated
+      watch: false,
+      resolve: {
+        alias: {
+          'cherrytree': __dirname
+        }
+      },
+      devtool: 'inline-source-map'
+    },
+
+    webpackServer: {
+      noInfo: true
+    },
+
     browsers: ['Chrome']
   });
 };

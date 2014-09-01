@@ -1,6 +1,7 @@
 define(function (require) {
 
-  var sinon = require("sinon");
+  // var sinon = require("sinon");
+  var sinon = window.sinon;
   var Router = require('cherrytree/router');
   var Route = require('cherrytree/route');
 
