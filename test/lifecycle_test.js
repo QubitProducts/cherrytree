@@ -3,7 +3,7 @@ define(function (require) {
   var Promise = require("cherrytree/vendor/promise");
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
-  var HistoryLocation = require("cherrytree/locations/history");
+
 
   var delay = function (time) {
     return new Promise(function (resolve) {
@@ -16,7 +16,7 @@ define(function (require) {
   var BaseRoute = Route.extend({
     model: function () {
       sequence.push("model " + this.name);
-      return delay(30);
+      return delay(10);
     },
     initialize: function () {
       sequence.push("initialize " + this.name);
@@ -32,9 +32,7 @@ define(function (require) {
   describe("route lifecycle", function () {
 
     beforeEach(function (done) {
-      window.location.hash = "/";
       router = new Router({
-        location: new HistoryLocation(),
         BaseRoute: BaseRoute
       });
 
@@ -92,7 +90,7 @@ define(function (require) {
         model: function (params) {
           sequence.push("model " + this.name + " " + params.postId);
           this.setContext(params);
-          return delay(30);
+          return delay(10);
         },
         activate: function (context) {
           this.postId = context.postId;
@@ -105,10 +103,10 @@ define(function (require) {
       router.transitionTo("about").then(function () {
         sequence = [];
         router.transitionTo("posts.show", 1);
-        return delay(60);
+        return delay(20);
       }).then(function () {
         router.transitionTo("posts.show", 2);
-        return delay(10);
+        return delay(5);
       }).then(function () {
         return router.transitionTo("posts.show", 3);
       }).then(function () {
@@ -135,10 +133,10 @@ define(function (require) {
       router.transitionTo("about").then(function () {
         sequence = [];
         router.transitionTo("posts.popular");
-        return delay(50);
+        return delay(20);
       }).then(function () {
         router.transitionTo("posts.latest");
-        return delay(20);
+        return delay(2);
       }).then(function () {
         return router.transitionTo("posts.best");
       }).then(function () {
@@ -257,7 +255,6 @@ define(function (require) {
             this.postId = params.postId;
             sequence.push("model " + this.name + " " + this.postId);
             this.setContext(params);
-            return delay(30);
           },
           activate: function (context) {
             sequence.push("activate " + this.name + " " + context.postId);
@@ -293,9 +290,8 @@ define(function (require) {
         var t1, t2;
         router.transitionTo("posts.show", 1).then(function () {
           t1 = router.transitionTo("posts.show", 2);
-          return delay(10);
+          return t1;
         }).then(function () {
-          // we can also transition via URL
           t2 = router.transitionTo("posts.show", 3);
           return t2;
         }).then(function () {

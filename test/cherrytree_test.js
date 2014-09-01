@@ -2,7 +2,7 @@ define(function (require) {
 
   var $ = require("jquery");
   var Promise = require("cherrytree/vendor/promise");
-  var TestApp = require("test/test_app");
+  var TestApp = require("./test_app");
 
   var app, router;
 
