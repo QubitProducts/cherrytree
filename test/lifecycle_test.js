@@ -112,7 +112,9 @@ define(function (require) {
       }).then(function () {
         return router.transitionTo("posts.show", 3);
       }).then(function () {
-        return router.transitionTo("posts.show", 4);
+        return delay(10).then(function () {
+          return router.transitionTo("posts.show", 4);
+        });
       }).then(function () {
         sequence.should.deep.equal([
           'initialize posts',
@@ -230,7 +232,7 @@ define(function (require) {
             'update settings.photo'
           ]);
           sequence = [];
-          return router.transitionTo("settings.photo", 2);
+          return router.transitionTo("settings.photo", 2, {queryParams: {size: 24}});
         }).then(function () {
           sequence.should.deep.equal([
             'model account',
