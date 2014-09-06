@@ -139,24 +139,29 @@ define(function (require) {
 
   // blog page
   router.routes["posts.filter"] = BaseRoute.extend({
-    activate: function (params, queryParams) {
-      this.queryParams = queryParams;
-      this.render();
+    model: function (params) {
+      this.setContext(params);
     },
-    update: function (params, queryParams) {
-      this.queryParams = queryParams;
-      this.render();
-      // don't reload the state
-      return false;
+    activate: function (context) {
+      this.render(context);
     },
-    render: function () {
-      if (this.params.filterId === "mine") {
+    update: function (context) {
+      this.render(context);
+    },
+    queryParamsDidChange: function (queryParams) {
+      var context = this.getContext();
+      context.queryParams = queryParams;
+      this.setContext(context);
+      this.render(context);
+    },
+    render: function (context) {
+      if (context.filterId === "mine") {
         this.outlet().html("My posts...");
       } else {
         this.outlet().html("Filter not found");
       }
-      if (this.queryParams.sortBy) {
-        this.outlet().append("<div>Sorting by:" + this.queryParams.sortBy + "</div>");
+      if (context.queryParams.sortBy) {
+        this.outlet().append("<div>Sorting by:" + context.queryParams.sortBy + "</div>");
       }
     }
   });
