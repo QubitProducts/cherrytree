@@ -24,9 +24,8 @@ module.exports = function(config) {
     autoWatch: true,
 
     webpack: {
-      cache: true,
       // this watcher watches when source files are updated
-      watch: false,
+      watch: true,
       resolve: {
         alias: {
           'cherrytree': __dirname
