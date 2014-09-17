@@ -35,7 +35,7 @@ define(function (require) {
     beforeEach(function (done) {
       router = new Router({
         location: new MemoryLocation(),
-        BaseRoute: BaseRoute
+        defaultRouteHandler: BaseRoute
       });
 
       // provide the route map

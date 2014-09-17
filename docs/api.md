@@ -21,7 +21,7 @@ Or a custom location
 Advanced options
 
 * **options.resolver** - specify a custom route resolver. Default resolver loads the routes from `router.routes[routeName]` by name. The code of the default resolver is `function (name, cb) { cb(router.routes[name]); }`
-* **options.BaseRoute** - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class provided
+* **options.defaultRouteHandler** - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class provided
 
 ### router.map(fn)
 
