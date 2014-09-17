@@ -6,6 +6,9 @@
 * Parameters to HistoryLocation cab be passed in to the router directly, e.g. `new Router({pushState: true})`
 * NoneLocation is now called MemoryLocation and is found at `cherrytree/locations/memory`.
 * options.BaseRoute is now called options.defaultRouteHandler
+* Upgrade to [router.js#03810a9](https://github.com/tildeio/router.js/compare/03810a915789549c4798c8eeb7d23e64b9789c75...master)
+* queryParamsDidChange event always fired when transitioning if query params change (previously only in noop transitions)
+* queryParams aren't remembered between transitions
 
 ## 0.5.0
 
