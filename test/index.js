@@ -1,5 +1,2 @@
-require("./cherrytree_test");
-require("./generate_test");
-require("./lifecycle_test");
-require("./resolver_test");
-require("./route_test");
+var testsContext = require.context(".", true, /_test$/);
+testsContext.keys().forEach(testsContext);
