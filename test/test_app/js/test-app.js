@@ -82,7 +82,7 @@ define(function (require) {
   });
 
   var router = new Router({
-    BaseRoute: BaseRoute,
+    defaultRouteHandler: BaseRoute,
     logging: false
   });
 

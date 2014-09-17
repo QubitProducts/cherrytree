@@ -3,7 +3,7 @@
 
     var _ = require("./lib/util");
     var Router = require("./vendor/router");
-    var BaseRoute = require("./route");
+    var defaultRouteHandler = require("./route");
     var RouterDSL = require("./lib/dsl");
     var handlerCreator = require("./lib/handler_creator");
     var HistoryLocation = require("./locations/history");
@@ -28,7 +28,7 @@
           logging: false,
           onDidTransition: null,
           onURLChanged: null,
-          BaseRoute: BaseRoute,
+          defaultRouteHandler: defaultRouteHandler,
           resolver: function (name, cb) {
             cb(router.routes[name]);
           },
