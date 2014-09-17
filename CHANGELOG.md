@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+* HistoryLocation is now the default location - this simplifies typical usage of Cherrytree.
+* Parameters to HistoryLocation cab be passed in to the router directly, e.g. `new Router({pushState: true})`
+
 ## 0.5.0
 
 * New shiny docs.
