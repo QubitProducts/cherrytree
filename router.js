@@ -6,7 +6,7 @@
     var BaseRoute = require("./route");
     var RouterDSL = require("./lib/dsl");
     var handlerCreator = require("./lib/handler_creator");
-    var noneLocation = require("./locations/none");
+    var HistoryLocation = require("./locations/history");
 
     var CherrytreeRoute = function () {
       this.initialize.apply(this, arguments);
@@ -24,7 +24,7 @@
         this.routes = {};
 
         this.options = _.extend({
-          location: noneLocation(),
+          location: false,
           logging: false,
           onDidTransition: null,
           onURLChanged: null,
@@ -34,6 +34,10 @@
           },
           map: null
         }, options);
+
+        if (!this.options.location) {
+          this.locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
+        }
 
         if (this.options.routes) {
           this.routes = this.options.routes;
@@ -72,7 +76,8 @@
       startRouting: function () {
         var self = this;
         var router = this.router;
-        var location = this.location = this.options.location || noneLocation();
+        var location = this.location = this.options.location ||
+          new HistoryLocation(this.options.locationOptions);
 
         setupRouter(this, router, location);
 

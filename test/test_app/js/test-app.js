@@ -28,7 +28,6 @@ define(function (require) {
   var Promise = require("cherrytree/vendor/promise");
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
-  var HistoryLocation = require("cherrytree/locations/history");
 
   var template = function (name) {
     return _.template("<div>" + $("script#" + name).html() + "</div>");
@@ -83,11 +82,8 @@ define(function (require) {
   });
 
   var router = new Router({
-    location: new HistoryLocation({
-      pushState: false
-    }),
-    logging: false,
-    BaseRoute: BaseRoute
+    BaseRoute: BaseRoute,
+    logging: false
   });
 
   // provide the route map
