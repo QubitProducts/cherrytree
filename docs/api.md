@@ -2,16 +2,26 @@
 
 ### var router = new Router(options)
 
-Create a router.
+* **options.map** - specify the [route map](#routermapfn)
+* **options.routes** - a hash specifying your [route classes](#routerroutes-hash). Key is the name of the route, value is the route class
+* **options.logging** - default is false
+* **options.onURLChanged** - called if URL changes. e.g. function (url) {}
+* **options.onDidTransition** - called if router transitioned. e.g. function (routeName) {}
 
-* options.location - default is NoneLocation. Use HistoryLocation if you want router to hook into the URL (see an example in [the guide](guide.md))
-* options.map - specify the route map
-* options.resolver - specify a custom route resolver. Default resolver loads the routes from the `router.routes[routeName]` by name. The code of the default resolver is `function (name, cb) { cb(router.routes[name]); }`
-* options.BaseRoute - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class provided
-* options.routes - a hash specifying your route classes. Key is the name of the route, value is the route class
-* options.onURLChanged - e.g. function (url) {}
-* options.onDidTransition: function (path) {}
-* options.logging - default is false
+Location related options
+
+* **options.pushState** - default is false, which means using hashchange events. Set to true to use pushState.
+* **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
+* **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
+
+Or a custom location
+
+* **options.location** - default is an instance of HistoryLocation
+
+Advanced options
+
+* **options.resolver** - specify a custom route resolver. Default resolver loads the routes from `router.routes[routeName]` by name. The code of the default resolver is `function (name, cb) { cb(router.routes[name]); }`
+* **options.BaseRoute** - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class provided
 
 ### router.map(fn)
 
@@ -210,12 +220,22 @@ An alias to `this.router.replaceWith`.
 
 ## HistoryLocation
 
-Cherrytree can be configured to use differet implementations of libraries that manage browser's URL/history. By default, Cherrytree will use `locations/none` which means browser's URL/history won't be managed at all, and navigating around the application will only be possible programatically. However, Cherrytree also ships with a very versatile `locations/history` which uses `location-bar` module to enable `pushState` or `hashChange` based URL management with graceful fallback of `pushState` -> `hashChange` -> `polling` depending on browser's capabilities. What his means is that out of the box cherrytree can hook into browser's URL for managing your application's state. Here's an example of how to use this functionality:
+Cherrytree can be configured to use differet implementations of libraries that manage browser's URL/history. By default, Cherrytree will use a very versatile implementation - `locations/history` which supports `pushState` and `hashChange` based URL management with graceful fallback of `pushState` -> `hashChange` -> `polling` depending on browser's capabilities.
+
+Configure HistoryLocation by passing options directly to the router.
+
+```js
+  var Router = require("cherrytree");
+  var router = new Router({
+    pushState: true
+  });
+```
+
+You can also pass the location in explicitly. This is how you could provide your own custom location implementation.
 
 ```js
   var Router = require("cherrytree");
   var HistoryLocation = require("cherrytree/locations/history");
-
   var router = new Router({
     location: new HistoryLocation({
       pushState: true
@@ -223,15 +243,17 @@ Cherrytree can be configured to use differet implementations of libraries that m
   });
 ```
 
-As you can see you can also provide your own implementation of location. For example, if you're already using `Backbone`, you might wanna use `Backbone.History` to manage the `hashChange` events and you could hook that into Cherrytree.
-
 ### var location = new HistoryLocation(options)
 
 Create an instance of history location. Note that only one instance of HistoryLocation should be created per page since it's managing the browser's URL.
 
+**Note** these options can be passed in as router options, since HistoryLocation is the default location.
+
 * options.pushState - default is false, which means using hashchange events. Set to true to use pushState.
 * options.root - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * options.interceptLinks - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router.
+
+### Intercepting Links
 
 The clicks **are** intercepted only if :
 
@@ -243,3 +265,19 @@ The clicks that **are never** intercepted:
   * `javascript:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
+
+
+
+# NoneLocation
+
+NoneLocation can be used if you don't want router to touch the address bar at all. Navigating around the application will only be possible programatically by calling `router.transitionTo` and similar methods.
+
+e.g.
+
+```js
+var Cherrytree = require("cherrytree");
+var NoneLocation = require("cherrytree/locations/none");
+var router = new Cherrytree({
+  location: new NoneLocation()
+});
+```

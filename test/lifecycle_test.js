@@ -1,8 +1,9 @@
 define(function (require) {
 
-  var Promise = require("cherrytree/vendor/promise");
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
+  var NoneLocation = require("cherrytree/locations/none");
+  var Promise = require("cherrytree/vendor/promise");
 
 
   var delay = function (time) {
@@ -33,6 +34,7 @@ define(function (require) {
 
     beforeEach(function (done) {
       router = new Router({
+        location: new NoneLocation(),
         BaseRoute: BaseRoute
       });
 

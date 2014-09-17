@@ -6,14 +6,10 @@ First you'll need to create an instance of the router.
 
 ```js
 var Router = require("cherrytree");
-var HistoryLocation = require("cherrytree/locations/history");
-
 var router = new Router({
-  location: new HistoryLocation()
+  pushState: true
 });
 ```
-
-Here we also create the HistoryLocation which is a browser address bar manager that ships with Cherrytree. It keeps the state of your app in sync with the URL and stores the navigation history in browser's history allowing users to use the back and forward buttons of the browser.
 
 The `map` method of the router can be invoked to define URL mappings. When calling `map`, you should pass a function that will be invoked with the value
 `this` set to an object which you can use to create and resources.
@@ -50,7 +46,7 @@ router.generate("index");
 // => /
 ```
 
-If you configure the HistoryLocation to use hashchange event instead of pushState, the links generated will have a `#` prepended.
+If you configure the HistoryLocation to use hashchange event (by setting `pushState: false`), the generated links will start with `#`.
 
 You can customize the behavior of a route by creating a `Route`
 subclass. For example, to customize what happens when your user visits

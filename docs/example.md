@@ -9,13 +9,6 @@ var insert = require("insert-stylesheet");
 var insertCss = require("insert-css");
 var lorem = require("lorem-ipsum");
 
-// when using cherrytree you need to create the router, many routes
-// and some location implementation. The HistoryLocation keeps router
-// state in sync with browser's address bar.
-var Router = require("cherrytree");
-var Route = require("cherrytree/route");
-var HistoryLocation = require("cherrytree/locations/history");
-
 // style this a little bit
 insert("http://yui.yahooapis.com/pure/0.5.0/pure-min.css");
 insertCss([
@@ -44,11 +37,7 @@ Post.prototype.fetch = function () {
 };
 
 // create the router
-var router = new Router({
-  location: new HistoryLocation({
-    pushState: false
-  })
-});
+var router = new Router();
 
 // create the route map
 router.map(function () {
