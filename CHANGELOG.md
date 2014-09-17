@@ -4,6 +4,7 @@
 
 * HistoryLocation is now the default location - this simplifies typical usage of Cherrytree.
 * Parameters to HistoryLocation cab be passed in to the router directly, e.g. `new Router({pushState: true})`
+* NoneLocation is now called MemoryLocation and is found at `cherrytree/locations/memory`.
 
 ## 0.5.0
 

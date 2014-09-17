@@ -268,16 +268,16 @@ The clicks that **are never** intercepted:
 
 
 
-# NoneLocation
+# MemoryLocation
 
-NoneLocation can be used if you don't want router to touch the address bar at all. Navigating around the application will only be possible programatically by calling `router.transitionTo` and similar methods.
+MemoryLocation can be used if you don't want router to touch the address bar at all. Navigating around the application will only be possible programatically by calling `router.transitionTo` and similar methods.
 
 e.g.
 
 ```js
 var Cherrytree = require("cherrytree");
-var NoneLocation = require("cherrytree/locations/none");
+var MemoryLocation = require("cherrytree/locations/memory");
 var router = new Cherrytree({
-  location: new NoneLocation()
+  location: new MemoryLocation()
 });
 ```
