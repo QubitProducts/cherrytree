@@ -99,7 +99,7 @@ define(function (require) {
 
   // provide the routes
   // first of all, we want an application route
-  router.routes["application"] = BaseRoute.extend({
+  router.handlers["application"] = BaseRoute.extend({
     // this is a cherrytree hook for "performing"
     // actions upon entering this route
     model: function () {},
@@ -110,12 +110,12 @@ define(function (require) {
 
   // then we'll create an application.index route that
   // will render out the welcome page
-  router.routes["index"] = BaseRoute.extend({
+  router.handlers["index"] = BaseRoute.extend({
     templateName: "home"
   });
 
   // blog show
-  router.routes["posts.show"] = BaseRoute.extend({
+  router.handlers["posts.show"] = BaseRoute.extend({
     model: function (params) {
       if (!this.sessionStore) {
         this.sessionStore = 1;
@@ -134,7 +134,7 @@ define(function (require) {
   });
 
   // blog page
-  router.routes["posts.filter"] = BaseRoute.extend({
+  router.handlers["posts.filter"] = BaseRoute.extend({
     model: function (params) {
       this.setContext(params);
     },

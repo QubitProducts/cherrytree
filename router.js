@@ -21,7 +21,7 @@
         this.router = new Router();
         this.router.log = this.log;
         this.resolvers = {};
-        this.routes = {};
+        this.handlers = {};
 
         this.options = _.extend({
           location: false,
@@ -30,7 +30,7 @@
           onURLChanged: null,
           defaultRouteHandler: defaultRouteHandler,
           resolver: function (name, cb) {
-            cb(router.routes[name]);
+            cb(router.handlers[name]);
           },
           map: null
         }, options);
@@ -39,8 +39,8 @@
           this.locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
         }
 
-        if (this.options.routes) {
-          this.routes = this.options.routes;
+        if (this.options.handlers) {
+          this.handlers = this.options.handlers;
         }
 
         if (this.options.resolver) {
