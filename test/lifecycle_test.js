@@ -2,7 +2,7 @@ define(function (require) {
 
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
-  var NoneLocation = require("cherrytree/locations/none");
+  var MemoryLocation = require("cherrytree/locations/memory");
   var Promise = require("cherrytree/vendor/promise");
 
 
@@ -34,7 +34,7 @@ define(function (require) {
 
     beforeEach(function (done) {
       router = new Router({
-        location: new NoneLocation(),
+        location: new MemoryLocation(),
         BaseRoute: BaseRoute
       });
 

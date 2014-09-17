@@ -4,7 +4,7 @@ define(function (require) {
   var sinon = window.sinon;
   var Router = require('cherrytree');
   var Route = require('cherrytree/route');
-  var NoneLocation = require('cherrytree/locations/none');
+  var MemoryLocation = require('cherrytree/locations/memory');
 
   var router, cResolver, dResolver;
 
@@ -20,7 +20,7 @@ define(function (require) {
       dResolver = sinon.spy(function (name, cb) { cb(); });
 
       router = new Router({
-        location: new NoneLocation(),
+        location: new MemoryLocation(),
         resolver: function (name, cb) {
           cb(routes[name]);
         },
