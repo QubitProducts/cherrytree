@@ -1,7 +1,7 @@
 (function (define) { 'use strict';
   define(function (require) {
 
-    var _ = require("./lib/util");
+    var _ = require("./lib/utils/smalldash");
     var Router = require("./vendor/router");
     var defaultRouteHandler = require("./route");
     var RouterDSL = require("./lib/dsl");
