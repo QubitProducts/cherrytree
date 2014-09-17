@@ -50,7 +50,7 @@ router.map(function () {
 // register route handlers
 // the application route is the top level route,
 // let's render the layout of the app in here
-router.routes["application"] = Route.extend({
+router.handlers["application"] = Route.extend({
   activate: function () {
     var template = [
       "<div>",
@@ -72,7 +72,7 @@ router.routes["application"] = Route.extend({
 
 // another default route that's always available
 // let's redirect to the first post in here
-router.routes["index"] = Route.extend({
+router.handlers["index"] = Route.extend({
   beforeModel: function () {
     this.router.transitionTo('post.show', 1);
   }
@@ -80,7 +80,7 @@ router.routes["index"] = Route.extend({
 
 // in the post resource we'll fetch the post model
 // so that child routes can use it
-router.routes["post"] = Route.extend({
+router.handlers["post"] = Route.extend({
   model: function (params) {
     var post = new Post({
       id: params.postId
@@ -94,7 +94,7 @@ router.routes["post"] = Route.extend({
 });
 
 // route for displaying the post
-router.routes["post.show"] = Route.extend({
+router.handlers["post.show"] = Route.extend({
   activate: function () {
     var editLink = this.router.generate("post.edit");
     var template = [
@@ -113,7 +113,7 @@ router.routes["post.show"] = Route.extend({
 });
 
 // and one for editing the post
-router.routes["post.edit"] = Route.extend({
+router.handlers["post.edit"] = Route.extend({
   activate: function () {
     this.parent.outlet.html("Editing post " + this.get("post").attr.id);
   }

@@ -3,7 +3,7 @@
 ### var router = new Router(options)
 
 * **options.map** - specify the [route map](#routermapfn)
-* **options.routes** - a hash specifying your [route classes](#routerroutes-hash). Key is the name of the route, value is the route class
+* **options.handlers** - a hash specifying your [route handlers](#routerhandlers-hash). Key is the name of the route, value is the route handler class
 * **options.logging** - default is false
 * **options.onURLChanged** - called if URL changes. e.g. function (url) {}
 * **options.onDidTransition** - called if router transitioned. e.g. function (routeName) {}
@@ -20,8 +20,8 @@ Or a custom location
 
 Advanced options
 
-* **options.resolver** - specify a custom route resolver. Default resolver loads the routes from `router.routes[routeName]` by name. The code of the default resolver is `function (name, cb) { cb(router.routes[name]); }`
-* **options.defaultRouteHandler** - default is `cherrytree/route`. Change this to specify a different default route class that will be used for all routes that don't have a specific class provided
+* **options.resolver** - specify a custom route resolver. Default resolver loads the routes from `router.handlers[routeName]` by name. The code of the default resolver is `function (name, cb) { cb(router.handlers[name]); }`
+* **options.defaultRouteHandler** - default is `cherrytree/route`. Change this to specify a different default route handler class that will be used for all routes that don't have a specific handler provided
 
 ### router.map(fn)
 
@@ -37,14 +37,14 @@ router.map(function () {
 })
 ```
 
-### router.routes hash
+### router.handlers hash
 
-This is where you register all your custom route classes. Each route in your route map can have specific behaviour, such as loading data and specifying how to render the views. Each resource in the map can have an associated route class, the name of the resource is what you use to attach the route class to it, e.g. `post`. Each route in the map has a name that can be created by combining the name of the resource and the route, e.g. `post.show`. Top level route names don't include a prefix, e.g. `about`. There are a couple of special routes that are always available - `application`, `index` and `loading`.
+This is where you register all your custom route handlers. Each route in your route map can have specific behaviour, such as loading data and specifying how to render the views. Each resource in the map can have an associated route handlers. The name of the resource is what you use to attach the route handler to it, e.g. `post`. Each route in the map has a name that can be created by combining the name of the resource and the route, e.g. `post.show`. Top level route names don't include a prefix, e.g. `about`. There are a couple of special routes that are always available - `application`, `index` and `loading`.
 
 ```js
 var Route = require('cherrytree/route');
 
-router.routes['post.show'] = Route.extend({
+router.handlers['post.show'] = Route.extend({
   model: function () {
     return $.getJSON('/url');
   },
@@ -56,7 +56,7 @@ router.routes['post.show'] = Route.extend({
 
 ### router.startRouting()
 
-After the router has been configured with a route map and route classes - start listening to URL changes and transition to the appropriate route based on the current URL.
+After the router has been configured with a route map and route handlers - start listening to URL changes and transition to the appropriate route based on the current URL.
 
 ### router.transitionTo(name, ...params)
 
@@ -98,7 +98,7 @@ List currently active route names. Recommended to only use this for debugging.
 
 ## Route
 
-The Route class should be extend to create specific routes.
+The Route class should be extend to create specific route handlers.
 
 ```js
 var route = Route.extend({...})

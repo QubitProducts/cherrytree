@@ -59,7 +59,7 @@ define(function (require) {
         });
       });
 
-      router.routes["postsAdmin.create"] = BaseRoute.extend({
+      router.handlers["postsAdmin.create"] = BaseRoute.extend({
         update: function () {
           sequence.push("update " + this.name);
         },
@@ -68,7 +68,7 @@ define(function (require) {
         }
       });
 
-      router.routes["settings.photo"] = BaseRoute.extend({
+      router.handlers["settings.photo"] = BaseRoute.extend({
         update: function () {
           sequence.push("update " + this.name);
         },
@@ -85,7 +85,7 @@ define(function (require) {
     });
 
     it("should handle rapid retransitioning", function (done) {
-      router.routes["posts.show"] = BaseRoute.extend({
+      router.handlers["posts.show"] = BaseRoute.extend({
         initialize: function () {
           sequence.push("initialize " + this.name);
         },
@@ -251,7 +251,7 @@ define(function (require) {
 
     describe("only changing params", function () {
       it("should still deactivate the previous state with the same name", function (done) {
-        router.routes["posts.show"] = BaseRoute.extend({
+        router.handlers["posts.show"] = BaseRoute.extend({
           initialize: function () {
             sequence.push("initialize " + this.name);
           },

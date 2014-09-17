@@ -50,12 +50,12 @@ If you configure the HistoryLocation to use hashchange event (by setting `pushSt
 
 You can customize the behavior of a route by creating a `Route`
 subclass. For example, to customize what happens when your user visits
-`/`, assign a Route subclass to `router.routes["index"]`:
+`/`, assign a Route subclass to `router.handlers["index"]`:
 
 ```js
 var Route = require("cherrytree/route");
 
-router.routes["index"] = Route.extend({
+router.handlers["index"] = Route.extend({
   activate: function(controller) {
     document.body.innerHTML = "My App";
   }
@@ -143,7 +143,7 @@ For example, if we have the resource `this.resource('posts');`, our
 route handler might look like this:
 
 ```js
-router.routes.posts = Route.extend({
+router.handlers.posts = Route.extend({
   model: function() {
     this.setContext({posts: new PostsCollection()});
     return this.get("posts").fetch();
@@ -169,7 +169,7 @@ router.map(function() {
   this.resource('post', { path: '/post/:postId' });
 });
 
-router.routes.post = Route.extend({
+router.handlers.post = Route.extend({
   model: function(params) {
     var post = new Post({id: params.postId});
     this.setContext({post: post)});
@@ -306,7 +306,7 @@ router.map(function() {
 Like all routes with a dynamic segment, you must provide a context when using a `generate` or `transitionTo` to programatically enter this route.
 
 ```js
-router.routes.application = Route.extend({
+router.handlers.application = Route.extend({
   error: function () {
     this.transitionTo("catchall", "application-error");
   }
@@ -317,7 +317,7 @@ With this code, if an error bubbles up to the Application route, your applicatio
 
 ## Custom resolvers
 
-By default, cherrytree always look at the `router.routes` hash to find all the route classes. However, you can override the resolver to load routes from anywhere else. That is especially useful if you want to be loading your routes asynchronously. It's possible to override the global resolver or specify a per route/resource resolver in the route map. For example, if we wanted to load each route asynchronously using AMD style require, we could do this:
+By default, cherrytree always look at the `router.handlers` hash to find all the route classes. However, you can override the resolver to load routes from anywhere else. That is especially useful if you want to be loading your routes asynchronously. It's possible to override the global resolver or specify a per route/resource resolver in the route map. For example, if we wanted to load each route asynchronously using AMD style require, we could do this:
 
 ```js
 var router = new Router({

@@ -45,7 +45,7 @@ define(function (require) {
 
     // provide the states
     // first of all, we want an application state
-    router.routes["application"] = State.extend({
+    router.handlers["application"] = State.extend({
       // this is a cherrytree hook for "performing"
       // actions upon entering this state
       activate: function () {
@@ -66,19 +66,19 @@ define(function (require) {
     });
     // then we'll create an application.index state that
     // will render out the welcome page
-    router.routes["index"] = State.extend({
+    router.handlers["index"] = State.extend({
       activate: function () {
         this.parent.$outlet.html("Welcome to this application");
       }
     });
     // about page
-    router.routes["about"] = State.extend({
+    router.handlers["about"] = State.extend({
       activate: function () {
         this.parent.$outlet.html("This is about page");
       }
     });
     // faq page
-    router.routes["faq"] = State.extend({
+    router.handlers["faq"] = State.extend({
       model: function (params) {
         this.params = params;
       },
@@ -98,7 +98,7 @@ define(function (require) {
       }
     });
     // posts page
-    router.routes["posts.filter"] = State.extend({
+    router.handlers["posts.filter"] = State.extend({
       model: function (params) {
         this.setContext(params);
       },
