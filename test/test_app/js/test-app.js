@@ -38,8 +38,7 @@ define(function (require) {
       var self = this;
       return new Promise(function (resolve) {
         self.timeout = setTimeout(function () {
-          self.setContext(params);
-          resolve();
+          resolve(params);
         }, 300);
       });
     },
@@ -122,9 +121,9 @@ define(function (require) {
       } else {
         this.sessionStore++;
       }
-      this.setContext({
+      return {
         title: "Blog " + params.id
-      });
+      };
     },
     view: function (context) {
       return $(template("posts-show")({
@@ -136,7 +135,7 @@ define(function (require) {
   // blog page
   router.handlers["posts.filter"] = BaseRoute.extend({
     model: function (params) {
-      this.setContext(params);
+      return params;
     },
     activate: function (context) {
       this.render(context);
