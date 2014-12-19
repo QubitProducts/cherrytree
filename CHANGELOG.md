@@ -2,16 +2,16 @@
 
 ## 0.6.0
 
-* HistoryLocation is now the default location - this simplifies typical usage of Cherrytree.
-* Parameters to HistoryLocation cab be passed in to the router directly, e.g. `new Router({pushState: true})`
-* NoneLocation is now called MemoryLocation and is found at `cherrytree/locations/memory`.
-* options.BaseRoute is now called options.defaultRouteHandler
-* options.routes is now called options.handlers
-* router.routes is now called router.handlers
+* `HistoryLocation` is now the default location - this simplifies the typical usage of Cherrytree.
+* `HistoryLocation` options can be passed directly to the router, e.g. `new Router({pushState: true})`.
+* `NoneLocation` is now called MemoryLocation and is found at `cherrytree/locations/memory`.
+* `options.BaseRoute` is now called `options.defaultRouteHandler`.
+* `options.routes` is now called `options.handlers`.
+* `router.routes` is now called `router.handlers`.
+* `queryParamsDidChange` event always fires when transitioning if query params change (previously it only fired in noop transitions).
+* `queryParams` aren't remembered between transitions anymore.
+* The return value of the model hook is treated as the context for the route. It can be an object with promises as keys.
 * Upgrade to [router.js#03810a9](https://github.com/tildeio/router.js/compare/03810a915789549c4798c8eeb7d23e64b9789c75...master)
-* queryParamsDidChange event always fired when transitioning if query params change (previously only in noop transitions)
-* queryParams aren't remembered between transitions.
-* The return value of model is treated as the context for the route. It can be an object with promises as keys.
 
 ## 0.5.0
 
