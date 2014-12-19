@@ -3,6 +3,9 @@
 Check out this example in action at [http://requirebin.com/embed?gist=aa3edb9fb05fa01c59f0](http://requirebin.com/embed?gist=aa3edb9fb05fa01c59f0) or edit it at [http://requirebin.com/?gist=aa3edb9fb05fa01c59f0](http://requirebin.com/?gist=aa3edb9fb05fa01c59f0).
 
 ```js
+var Router = require("cherrytree");
+var Route = require("cherrytree/route");
+
 // some things we'll use to render the views
 var $ = require("jquery");
 var insert = require("insert-stylesheet");
@@ -87,7 +90,7 @@ router.handlers["post"] = Route.extend({
       id: params.postId
     });
     return {
-      post: post.fetch();
+      post: post.fetch()
     }
   },
   activate: function () {
