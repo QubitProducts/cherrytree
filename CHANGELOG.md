@@ -10,7 +10,8 @@
 * router.routes is now called router.handlers
 * Upgrade to [router.js#03810a9](https://github.com/tildeio/router.js/compare/03810a915789549c4798c8eeb7d23e64b9789c75...master)
 * queryParamsDidChange event always fired when transitioning if query params change (previously only in noop transitions)
-* queryParams aren't remembered between transitions
+* queryParams aren't remembered between transitions.
+* The return value of model is treated as the context for the route. It can be an object with promises as keys.
 
 ## 0.5.0
 

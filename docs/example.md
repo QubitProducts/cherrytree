@@ -34,6 +34,7 @@ var Post = function (attr) {
 };
 Post.prototype.fetch = function () {
   this.attr = posts[this.attr.id - 1];
+  return this;
 };
 
 // create the router
@@ -85,8 +86,9 @@ router.handlers["post"] = Route.extend({
     var post = new Post({
       id: params.postId
     });
-    this.setContext({post: post});
-    return post.fetch();
+    return {
+      post: post.fetch();
+    }
   },
   activate: function () {
     this.outlet = this.parent.view.find(".outlet");

@@ -145,8 +145,10 @@ route handler might look like this:
 ```js
 router.handlers.posts = Route.extend({
   model: function() {
-    this.setContext({posts: new PostsCollection()});
-    return this.get("posts").fetch();
+    var posts = new PostsCollection();
+    return {
+      posts: posts.fetch()
+    };
   }
 });
 ```
@@ -172,8 +174,9 @@ router.map(function() {
 router.handlers.post = Route.extend({
   model: function(params) {
     var post = new Post({id: params.postId});
-    this.setContext({post: post)});
-    return post.fetch();
+    return {
+      post: post.fetch()
+    };
   }
 });
 ```

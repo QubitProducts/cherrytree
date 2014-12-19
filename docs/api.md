@@ -120,7 +120,7 @@ Useful for route entry validations and redirects if we don't want to proceed. Re
 
 ### model(params, transition)
 
-Useful for loading in data. Query params can be found at `params.queryParams`. Return a promise to block the loading of further route model hooks.
+Useful for loading in data. Query params can be found at `params.queryParams`. Return a promise to block the loading of further route model hooks. The return value from this hook will be set as the context for the route. The return value can also be an object with values as promises, all of the values will be resolved and the fully resolved object will be set as the context for the route.
 
 ### afterModel(context, transition)
 
@@ -175,7 +175,7 @@ Get the route's context.
 
 ### route.get(field)
 
-Get a field from the context of this route or any of the parent routes. For example, if you fetched the `post` model in the `post` resource and set it as context using `this.setContext({post: model})` you can retrieve it in all child routes with `this.get('post')`.
+Get a field from the context of this route or any of the parent routes. For example, if you returned the `post` model in the `post` resource you can retrieve it in all child routes with `this.get('post')`.
 
 Example
 
@@ -183,11 +183,10 @@ Example
 var PostRoute = Route.extend({
   model: function (params) {
     var post = new Post();
-    this.setContext({
+    return {
       postId: params.postId,
-      post: post
-    });
-    return post.fetch();
+      post: post.fetch()
+    };
   }
 })
 
