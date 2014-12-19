@@ -1,7 +1,7 @@
 (function (define) { 'use strict';
   define(function (require) {
 
-    var _ = require('../lib/util');
+    var _ = require('../lib/utils/smalldash');
     var links = require('./history/link_delegate');
     var LocationBar = require('location-bar');
 
