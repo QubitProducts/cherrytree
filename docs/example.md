@@ -1,6 +1,6 @@
 ## Basic Example
 
-Check out this example in action at [http://requirebin.com/embed?gist=aa3edb9fb05fa01c59f0](http://requirebin.com/embed?gist=aa3edb9fb05fa01c59f0) or edit it at [http://requirebin.com/?gist=aa3edb9fb05fa01c59f0](http://requirebin.com/?gist=aa3edb9fb05fa01c59f0).
+Check out this example in action at [http://requirebin.com/embed?gist=543a9f1a36382683f422](http://requirebin.com/embed?gist=543a9f1a36382683f422) or edit it at [http://requirebin.com/?gist=543a9f1a36382683f422](http://requirebin.com/?gist=543a9f1a36382683f422).
 
 ```js
 var Router = require("cherrytree");

@@ -26,8 +26,8 @@ Read [the guide](docs/guide.md) or [the API docs](docs/api.md).
 
 # Examples
 
-* [Hello World standalone](http://requirebin.com/embed?gist=aa3edb9fb05fa01c59f0)
-* [Hello World with code](http://requirebin.com/?gist=aa3edb9fb05fa01c59f0)
+* [Hello World standalone](http://requirebin.com/embed?gist=543a9f1a36382683f422) - you can see the URL change
+* [Hello World with code](http://requirebin.com/?gist=543a9f1a36382683f422)
 
 
 # Features
