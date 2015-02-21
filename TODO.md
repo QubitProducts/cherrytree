@@ -1,4 +1,4 @@
-- [ ] convert example to webpack
+- [x] convert example to webpack
 - [ ] create a backbone example (the backbone-route workflow)
 - [ ] create a react example
 - [ ] unit test some of the stuff
