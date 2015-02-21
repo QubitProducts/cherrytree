@@ -1,0 +1,34 @@
+- [ ] convert example to webpack
+- [ ] create a backbone example (the backbone-route workflow)
+- [ ] create a react example
+- [ ] unit test some of the stuff
+- [ ] scenario test the router
+- [ ] implement aborting/resuming transitions
+- [ ] implement redirecting
+- [ ] prove that redirects can be handled efficiently in the model middleware
+- [ ] add a code example in the README
+- [ ] update docs
+- [ ] create cherrytree-for-backbone
+- [ ] create cherrytree-for-react
+- [ ] prove that all this works using mdashboard
+- [ ] make sure transition and route descriptors are immutable (modifyng route descriptors only affect that transition)
+- [ ] remove usage of the Backbone regexes and route matching, use the react-router Path code instead
+- [ ] implement queryStrings
+- [ ] publish bro-size to npm
+- [ ] add the size of the lib to README
+- [ ] write a blogpost draft about the journey to 2.0 (sketchy bulletpoints)
+- [ ] create examples folder where various middlewares are demonstrated
+- [ ] make sure the route options are attached to the route descriptors in transitions
+- [ ] prove that resolver middleware is possible
+- [ ] proof of concept backend example
+- [ ] make sure that joining patterns from routes is done correctly (the react-router way)
+- [ ] make sure that qs parser can be overriden
+- [ ] make sure splats works
+- [ ] implement optional params / optional splats
+- [ ] make consistent error reporting for checking invariants, etc.
+- [ ] a function for listing all possible routes (leaf routes with their patterns)
+- [ ] check if we still need `update` hook...
+- [ ] handle matchPoint computation + annotating what changed in each route (previouslyActive | paramsChanged, queryParamsChanged)
+- [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies
+- [ ] avoid pulling in when or lodash (location-bar is fine, install Promise as npm dep)
+- [ ] support CJS and AMD... (will need to do smth about qs)
