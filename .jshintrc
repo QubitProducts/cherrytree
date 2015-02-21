@@ -21,7 +21,9 @@
   "node": true,
   "devel": true,
 
-  "maxlen": 120,
+  "esnext": true,
+
+  "maxlen": 140,
   "white": false,
 
   "predef": ["require", "define", "buster", "assert", "refute", "describe", "it", "expect", "before", "after", "module", "beforeEach", "afterEach"],

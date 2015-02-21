@@ -1,322 +1,257 @@
 (function (define) { 'use strict';
-  define(function (require) {
+define(function (require) {
 
-    var _ = require("./lib/utils/smalldash");
-    var Router = require("./vendor/router");
-    var defaultRouteHandler = require("./route");
-    var RouterDSL = require("./lib/dsl");
-    var handlerCreator = require("./lib/handler_creator");
-    var HistoryLocation = require("./locations/history");
+  var _ = require("lodash");
+  var DSL = require("./lib/dsl");
+  var Path = require("./lib/path");
+  var HistoryLocation = require("./locations/history");
+  var when = require("when");
 
-    var CherrytreeRoute = function () {
-      this.initialize.apply(this, arguments);
-    };
+  // Cached regular expressions for matching named param parts and splatted
+  // parts of route strings.
+  var optionalParam = /\((.*?)\)/g;
+  var namedParam = /(\(\?)?:\w+/g;
+  var splatParam = /\*\w+/g;
+  var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
-    _.extend(CherrytreeRoute.prototype, {
+  var CherrytreeRouter = function () {
+    this.initialize.apply(this, arguments);
+  };
 
-      initialize: function (options) {
-        var router = this;
+  _.extend(CherrytreeRouter.prototype, {
 
-        // the underlying router.js ember microlib
-        this.router = new Router();
-        this.router.log = this.log;
-        this.resolvers = {};
-        this.handlers = {};
+    initialize: function (options) {
+      this.handlers = {};
+      this.dispatchHandlers = [];
+      this.state = {};
+      this.options = _.extend({
+        location: false
+      }, options);
+    },
 
-        this.options = _.extend({
-          location: false,
-          logging: false,
-          onDidTransition: null,
-          onURLChanged: null,
-          defaultRouteHandler: defaultRouteHandler,
-          resolver: function (name, cb) {
-            cb(router.handlers[name]);
-          },
-          map: null
-        }, options);
+    // Convert a route string into a regular expression, suitable for matching
+    // against the current location hash.
+    _routeToRegExp: function(route) {
+      route = route.replace(escapeRegExp, '\\$&')
+                   .replace(optionalParam, '(?:$1)?')
+                   .replace(namedParam, function(match, optional) {
+                     return optional ? match : '([^/?]+)';
+                   })
+                   .replace(splatParam, '([^?]*?)');
+      return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
+    },
 
-        if (!this.options.location) {
-          this.locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
+    // Given a route, and a URL fragment that it matches, return the array of
+    // extracted decoded parameters. Empty or unmatched parameters will be
+    // treated as `null` to normalize cross-browser behavior.
+    _extractParameters: function(pattern, path) {
+      path = path.split("?")[0];
+      var params = Path.extractParams(pattern, path);
+      params.queryParams = {};
+      return params;
+      // var params = route.exec(fragment).slice(1);
+      // return _.map(params, function(param, i) {
+      //   // Don't decode the search params.
+      //   if (i === params.length - 1) return param || null;
+      //   return param ? decodeURIComponent(param) : null;
+      // });
+    },
+
+    use: function (dispatchHandler) {
+      this.dispatchHandlers.push(dispatchHandler);
+    },
+
+    map: function (routes) {
+      var self = this;
+
+      this.routes = DSL.map(routes);
+
+      this.matchers = [];
+
+      eachBranch(this.routes, function (routes) {
+        var path = _.map(routes, function (r) {
+          return r.path;
+        }).join("/");
+        path = path.replace("//", "");
+        if (path === "/") {
+          path = "";
         }
-
-        if (this.options.handlers) {
-          this.handlers = this.options.handlers;
-        }
-
-        if (this.options.resolver) {
-          this.resolvers["application"] = this.options.resolver;
-        }
-
-        if (this.options.logging) {
-          this.log = function () {
-            console && console.log.apply(console, arguments);
-          };
-        }
-
-        if (this.options.map) {
-          this.map(this.options.map);
-        }
-      },
-
-      map: function (callback) {
-        var router = this.router;
-
-        var dsl = RouterDSL.map(function () {
-          this.resource("application", { path: "/" }, function () {
-            callback.call(this);
-          });
+        // register routes
+        var routeRegExp = new RegExp(self._routeToRegExp(path));
+        self.matchers.push({
+          regExp: routeRegExp,
+          routes: routes,
+          name: routes[routes.length - 1].name,
+          path: path
         });
+      }, this);
 
-        router.map(dsl.generate());
-        _.extend(this.resolvers, dsl.resolvers);
-
-        return this;
-      },
-
-      startRouting: function () {
-        var self = this;
-        var router = this.router;
-        var location = this.location = this.options.location ||
-          new HistoryLocation(this.locationOptions);
-
-        setupRouter(this, router, location);
-
-        location.onChange(function(url) {
-          self.handleURL(url);
-        });
-
-        return this.handleURL(location.getURL());
-      },
-
-      transitionTo: function() {
-        var args = [].slice.call(arguments);
-        return doTransition(this, 'transitionTo', args);
-      },
-
-      replaceWith: function() {
-        var args = [].slice.call(arguments);
-        return doTransition(this, 'replaceWith', args);
-      },
-
-      generate: function() {
-        var url = this.router.generate.apply(this.router, arguments);
-        return this.location.formatURL(url);
-      },
-
-      isActive: function(routeName) {
-        var router = this.router;
-        return router.isActive.apply(router, arguments);
-      },
-
-      send: function(name, context) {
-        this.router.trigger.apply(this.router, arguments);
-      },
-
-      hasRoute: function(route) {
-        return this.router.hasRoute(route);
-      },
-
-      getBranchNames: function (name) {
-        if (name === "application") {
-          return ["application"];
-        } else if (name === "loading") {
-          return ["application", "loading"];
-        } else {
-          var names = this.router.recognizer.names[name];
-          return _.pluck(names.handlers, "handler");
+      function eachBranch(node, memo, fn, context) {
+        if (!context) {
+          fn = memo;
+          context = fn;
+          memo = [];
+          node = {routes: node};
         }
-      },
-
-      activeRoutes: function (name) {
-        var activeRoutes = _.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route");
-        if (name) {
-          for (var i = 0, length = activeRoutes.length; i < length; i++) {
-            if (activeRoutes[i].name === name) {
-              return activeRoutes[i];
-            }
+        _.each(node.routes, function (route) {
+          if (!route.routes || route.routes.length === 0) {
+            fn.call(context, memo.concat(route));
+          } else {
+            eachBranch(route, memo.concat(route), fn, context);
           }
-        } else {
-          return activeRoutes;
-        }
-      },
-
-      activeRouteNames: function () {
-        return _.pluck(_.pluck(_.pluck(this.router.currentHandlerInfos, "handler"), "route"), "name");
-      },
-
-      destroy: function () {
-        if (this.location.destroy) {
-          this.location.destroy();
-        }
-      },
-
-      /**
-       * @private
-       */
-      log: function () {},
-
-      /**
-       * @private
-       */
-      didTransition: function (infos) {
-        if (this.options.onDidTransition) {
-          this.options.onDidTransition(routePath(infos));
-        }
-      },
-
-      /**
-       * @private
-       */
-      handleURL: function(url) {
-        scheduleLoadingRouteEntry(this);
-
-        var self = this;
-
-        return this.router.handleURL(url).then(function() {
-          transitionCompleted(self);
-        }, function(err) {
-          transitionFailed(err, self);
-          return err;
         });
-      },
-
-      /**
-        @private
-
-        Resets the state of the router by clearing the current route
-        handlers and deactivating them.
-
-        @method reset
-       */
-      reset: function() {
-        this.router.reset();
-      }
-    });
-
-    return CherrytreeRoute;
-
-
-    /**
-     *
-     */
-
-    function assert(desc, test) {
-      if (!test) throw new Error("assertion failed: " + desc);
-    }
-
-    function routePath(handlerInfos) {
-      var path = [];
-
-      for (var i=1, l=handlerInfos.length; i<l; i++) {
-        var name = handlerInfos[i].name,
-            nameParts = name.split(".");
-
-        path.push(nameParts[nameParts.length - 1]);
       }
 
-      return path.join(".");
-    }
+      return this;
+    },
 
-    function setupRouter(cherrytree, router, location) {
-      router.getHandler = handlerCreator(cherrytree);
-      router.updateURL = function(path) {
-        location.setURL(path);
-      };
-      router.replaceURL = function(path) {
-        location.replaceURL(path);
-      };
-      router.didTransition = function(infos) {
-        cherrytree.didTransition(infos);
-      };
-    }
-
-    function doTransition(router, method, args) {
-      // Normalize blank route to root URL.
-      args = [].slice.call(args);
-      args[0] = args[0] || '/';
-
-      var passedName = args[0], name;
-
-      if (passedName.charAt(0) === '/') {
-        name = passedName;
-      } else {
-        if (!router.router.hasRoute(passedName)) {
-          name = args[0] = passedName + '.index';
-        } else {
-          name = passedName;
+    loadUrl: function(fragment) {
+      fragment = this.fragment = this.getFragment(fragment);
+      return _.any(this.handlers, function(handler) {
+        if (handler.route.test(fragment)) {
+          handler.callback(fragment);
+          return true;
         }
+      });
+    },
 
-        assert("The route " + passedName + " was not found", router.router.hasRoute(name));
-      }
+    computeRoutes: function (path) {
+      var found = false;
+      var routes = [];
+      _.each(this.matchers, function (matcher) {
+        if (!found && matcher.regExp.test(path)) {
+          found = true;
+          routes = matcher.routes;
+        }
+      });
+      return routes;
+    },
 
-      scheduleLoadingRouteEntry(router);
+    extractParams: function (path) {
+      var found = false;
+      var params;
+      _.each(this.matchers, function (matcher) {
+        if (!found && matcher.regExp.test(path)) {
+          found = true;
+          params = this._extractParameters(matcher.path, path);
+        }
+      }, this);
+      return params;
+    },
 
-      var transitionPromise = router.router[method].apply(router.router, args);
-      transitionPromise.then(function() {
-        transitionCompleted(router);
-      }, function(err) {
-        transitionFailed(err, router);
-        return err;
+    dispatch: function (path) {
+      var routes, params;
+
+      path = path.substr(1);
+
+      routes = this.computeRoutes(path);
+      params = this.extractParams(path);
+
+      var resolve, reject;
+      var promise = new Promise(function (res, rej) {
+        resolve = res;
+        reject = rej;
       });
 
-      // We want to return the configurable promise object
-      // so that callers of this function can use `.method()` on it,
-      // which obviously doesn't exist for normal RSVP promises.
-      return transitionPromise;
-    }
+      var transition = this.activeTransition = {
+        nextRoutes: routes,
+        params: params,
+        path: path,
+        promise: promise,
+        then: promise.then.bind(promise),
+        catch: promise.catch.bind(promise)
+      };
 
-    function scheduleLoadingRouteEntry(router) {
-      if (router._loadingRouteActive) { return; }
-      router._shouldEnterLoadingRoute = true;
-      // Ember.run.scheduleOnce('routerTransitions', null, enterLoadingRoute, router);
-      setTimeout(function () {
-        enterLoadingRoute(router);
-      }, 1);
-    }
+      var router = this;
+      return when.reduce(this.dispatchHandlers, function(arg, task) {
+        return task(transition, arg);
+      }, null).then(function () {
+        router.activeTransition = null;
+        router.state = {
+          routes: transition.nextRoutes,
+          params: params,
+          path: path
+        };
+        resolve();
+      }).catch(reject);
+    },
 
-    function enterLoadingRoute(router) {
-      if (router._loadingRouteActive || !router._shouldEnterLoadingRoute) { return; }
+    listen: function (location) {
+      var self = this;
+      var location = this.location = location || this.defaultLocation();
+      location.onChange(function(url) {
+        self.dispatch(url);
+      });
+      return this.dispatch(location.getURL());
+    },
 
-      var loadingRoute = router.router.getHandler('loading');
-      if (loadingRoute) {
-        if (loadingRoute.model) { loadingRoute.model(); }
-        if (loadingRoute.enter) { loadingRoute.enter(); }
-        if (loadingRoute.setup) { loadingRoute.setup(); }
-        router._loadingRouteActive = true;
+    defaultLocation: function () {
+      var locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
+      return new HistoryLocation(locationOptions);
+    },
+
+    transitionTo: function(url) {
+      if (url[0] !== "/") {
+        url = "/" + this.generate.apply(this, arguments);
       }
-    }
+      this.location.setURL(url);
+    },
 
-    function exitLoadingRoute(router) {
-      router._shouldEnterLoadingRoute = false;
-      if (!router._loadingRouteActive) { return; }
-
-      var loadingRoute = router.router.getHandler('loading');
-      if (loadingRoute && loadingRoute.exit) { loadingRoute.exit(); }
-      router._loadingRouteActive = false;
-    }
-
-    function transitionCompleted(router) {
-      exitLoadingRoute(router);
-      if (router.options.onURLChanged) {
-        router.options.onURLChanged(router.location.getURL());
+    replaceWith: function(url) {
+      if (url[0] !== "/") {
+        url = "/" + this.generate.apply(this, arguments);
       }
-    }
+      this.location.replaceURL(url);
+    },
+
+    generate: function(name, params) {
+      var matcher, currentParams, pattern, paramNames, args;
+      _.each(this.matchers, function (m) {
+        if (m.name === name) {
+          matcher = m;
+        }
+      });
+      if (matcher) {
+        currentParams = _.clone(this.state.params || {});
+        delete currentParams.queryParams;
+        pattern = matcher.path;
+        paramNames = Path.extractParamNames(pattern);
+        if (_.isObject(params)) {
+          currentParams = _.extend(currentParams, params);
+        } else {
+          args = _.rest(arguments, 1);
+          _.each(args, function (val, i) {
+            var paramName = paramNames[paramNames.length - 1 - i];
+            currentParams[paramName] = val;
+          });
+        }
+
+        return this.location.formatURL(Path.injectParams(matcher.path, currentParams));
+      } else {
+        throw new Error('No route is named ' + name);
+      }
+    },
+
+    destroy: function () {
+      if (this.location.destroy) {
+        this.location.destroy();
+      }
+    },
 
     /**
-      we want to complete the transition
-      we want to notify everyone that url changed TODO (?)
-      we want to exit the loading route
-    */
-    function transitionFailed(err, router) {
-      // only complete transition if it's not a redirect
-      if (!router.router.activeTransition) {
-        transitionCompleted(router);
-      }
-      // only log if it wasn't a redirect
-      if (err.name !== "TransitionAborted") {
-        console && console.error(err.stack ? err.stack : err);
-      }
+      Resets the state of the router by clearing the current route
+      handlers and deactivating them.
+
+      @method reset
+     */
+    reset: function() {
+      
     }
+  });
+
+  return function cherrytree(options) {
+    return new CherrytreeRouter(options);
+  };
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

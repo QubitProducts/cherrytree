@@ -10,6 +10,7 @@
 
         setURL: function(path) {
           this.path = path;
+          this.handleURL(this.getURL());
         },
 
         replaceURL: function (path) {

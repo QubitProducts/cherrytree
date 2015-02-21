@@ -1,7 +1,7 @@
 (function (define) { 'use strict';
   define(function (require) {
 
-    var _ = require('../lib/utils/smalldash');
+    var _ = require('lodash');
     var links = require('./history/link_delegate');
     var LocationBar = require('location-bar');
 
@@ -62,7 +62,7 @@
     HistoryLocation.prototype.setURL = function (path) {
       if (this.path !== path) {
         this.path = path;
-        this.locationBar.update(path, {trigger: false});
+        this.locationBar.update(path, {trigger: true});
       }
     };
 
@@ -74,7 +74,7 @@
     HistoryLocation.prototype.replaceURL = function (path) {
       if (this.path !== path) {
         this.path = path;
-        this.locationBar.update(path, {trigger: false, replace: true});
+        this.locationBar.update(path, {trigger: true, replace: true});
       }
     };
 
