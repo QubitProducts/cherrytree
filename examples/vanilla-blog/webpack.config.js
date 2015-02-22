@@ -9,12 +9,14 @@ module.exports = {
   },
   devtool: "source-map",
   resolve: {
-    root: [__dirname]
+    root: [__dirname],
+    modulesDirectories: ["node_modules", "shared"]
   },
   module: {
     loaders: [
-      { test: /vanilla\-blog.*\.js$/, exclude: /node_modules/, loader: "babel-loader" },
-      { test: /\.css$/, loader: "style" }
+      { test: /vanilla\-blog.*\.js$/, exclude: /node_modules/, loader: "babel" },
+      { test: /\.css$/, loader: "style!css" },
+      { test: /\.html$/, loader: "underscore-template" },
     ]
   }
 };

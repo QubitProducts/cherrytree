@@ -1,26 +1,32 @@
 var _ = require("lodash");
-var Promise = require("../../../vendor/promise");
+var Promise = require("when").Promise;
 var cherrytree = require("../../../");
-var handlers = require("./handlers");
+var getHandler = require("./handler");
 
+require("./styles/app.css");
+
+// create the router
 var router = window.router = cherrytree();
 
+// define the route map
 router.map(function () {
   this.route("application", {path: "/"}, function () {
-    this.route("index", {path: "/"});
+    this.route("home", {path: "/"});
     this.route("about");
     this.route("faq");
     this.route("posts", function () {
       this.route("posts.index");
       this.route("posts.popular");
-      this.route("posts.filter", { path: "filter/:filterId" });
+      this.route("posts.search", { path: "search/:query" });
       this.route("posts.show", { path: ":id" });
     });
   });
 });
 
-// logging
-router.use(function (transition) {
+// implement a set of middleware
+
+// simple logging
+router.use(function log(transition) {
   console.log("Transition to", transition.path);
   transition.then(function () {
     console.log("Transition successful.");
@@ -38,37 +44,43 @@ router.use(function (transition) {
   });
 });
 
-// deactive up old routes
-// they also get a chance to abort the transition (TODO)
-router.use(function (transition) {
-  var currentRoutes = router.state.routes || [];
-  currentRoutes.forEach(function (route) {
-    var handler = handlers[route.name];
-    handler && handler.deactivate();
-  });
-});
-
 // load and attach route handlers
 // this can load handlers dynamically (TODO)
-router.use(function (transition) {
+router.use(function loadHandlers(transition) {
   var i = 0;
   transition.nextRoutes.forEach(function (route) {
-    var handler = handlers[route.name] || _.clone(handlers.base);
-    handlers[route.name] = handler;
+    var handler = getHandler(route.name);
     handler.name = route.name;
     handler.router = router;
     var parentRoute = transition.nextRoutes[i - 1];
     if (parentRoute) {
-      handler.parent = handlers[parentRoute.name];
+      handler.parent = parentRoute.handler;
     }
     route.handler = handler;
     i++;
   });
 });
 
+// willTransition hook
+router.use(function deactivateHook(transition) {
+  var prevRoutes = transition.prevRoutes;
+  prevRoutes.forEach(function (route) {
+    route.handler.willTransition && route.handler.willTransition(transition);
+  });
+});
+
+// deactive up old routes
+// they also get a chance to abort the transition (TODO)
+router.use(function deactivateHook(transition) {
+  var prevRoutes = transition.prevRoutes;
+  prevRoutes.forEach(function (route) {
+    route.handler.deactivate();
+  });
+});
+
 // model hook
-// with the loading hook(TODO)
-router.use(function (transition) {
+// with the loading hook (TODO)
+router.use(function modelHook(transition) {
   var prevContext = Promise.resolve();
   return Promise.all(transition.nextRoutes.map(function (route) {
     prevContext = Promise.resolve(route.handler.model(transition.params, prevContext, transition));
@@ -78,12 +90,12 @@ router.use(function (transition) {
 
 // activate hook
 // which only reactives routes starting at the match point (TODO)
-router.use(function (transition, contexts) {
+router.use(function activateHook(transition, contexts) {
   var i = 0;
   transition.nextRoutes.forEach(function (route) {
     var handler = route.handler.activate(contexts[i++]);
   });
 });
 
-// kick things off
+// start the routing
 router.listen();

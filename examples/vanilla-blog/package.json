@@ -15,5 +15,10 @@
     "style-loader": "^0.8.3",
     "webpack": "^1.5.3",
     "webpack-dev-server": "^1.7.0"
+  },
+  "dependencies": {
+    "css-loader": "^0.9.1",
+    "underscore": "^1.8.1",
+    "underscore-template-loader": "^0.2.5"
   }
 }
