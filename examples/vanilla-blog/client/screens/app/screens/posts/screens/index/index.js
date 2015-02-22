@@ -1,6 +1,6 @@
 module.exports = {
-  model: function () {
-    this.router.transitionTo("posts.show", 1);
+  model: function (params, transition) {
+    transition.redirectTo("posts.show", 1);
   },
   activate: function () {},
   deactivate: function () {}

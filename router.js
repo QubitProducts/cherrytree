@@ -143,8 +143,8 @@ define(function (require) {
       var routes, params, router = this;
 
       if (this.activeTransition) {
-        var cancelErr = new Error("TransitionRedirect");
-        cancelErr.type = "TransitionRedirect";
+        var cancelErr = new Error("TransitionRedirected");
+        cancelErr.type = "TransitionRedirected";
         this.activeTransition.cancel(cancelErr);
       }
 
@@ -156,10 +156,10 @@ define(function (require) {
       var resolve, reject;
       var promise = new Promise(function (res, rej) {
         resolve = res;
-        reject = function (err) {
-          rej(err);
-        };
+        reject = rej;
       });
+
+      var cancelled = false;
 
       var transition = this.activeTransition = {
         prevRoutes: router.state.routes || [],
@@ -171,26 +171,16 @@ define(function (require) {
             err = new Error("TransitionCancelled");
             err.type = "TransitionCancelled";
           }
+          cancelled = err;
           reject(err);
         },
-        redirect: function () {
+        redirectTo: function () {
           router.transitionTo.apply(router, arguments);
         },
         promise: promise,
         then: promise.then.bind(promise),
         catch: promise.catch.bind(promise)
       };
-
-      promise.catch(function (err) {
-        if (err.type === "TransitionCancelled") {
-          return "foo";
-        }
-      });
-
-      var cancelled = false;
-      transition.catch(function (err) {
-        cancelled = err;
-      });
 
       setTimeout(function () {
         when.reduce(router.dispatchHandlers, function(arg, task) {
@@ -207,24 +197,25 @@ define(function (require) {
           };
           resolve();
         }).catch(function (err) {
-          if (err.type === "TransitionCancelled") {
-
-          } else {
+          if (err.type !== "TransitionCancelled") {
             reject(err);
           }
         });
       }, 1);
 
-      return this.activeTransition;
+      return transition;
     },
 
     listen: function (location) {
       var self = this;
       var location = this.location = location || this.defaultLocation();
+      this.previousUrl = location.getURL();
       location.onChange(function(url) {
-        self.dispatch(url).catch(function (err) {
-          if (err.type === "TransitionCancelled") {
-            return;
+        self.dispatch(url).then(function () {
+          self.previousUrl = url;
+        }).catch(function (err) {
+          if (err.type === 'TransitionCancelled') {
+            location.replaceURL(self.previousUrl, {trigger: false});
           }
         });
       });
@@ -245,13 +236,8 @@ define(function (require) {
       if (url[0] !== "/") {
         url = this.generate.apply(this, arguments);
       }
-      var previousUrl = location.getURL();
+      this.previousUrl = location.getURL();
       location.setURL(url);
-      this.activeTransition.catch(function (err) {
-        if (err.type === 'TransitionCancelled') {
-          location.replaceURL(previousUrl, {trigger: false});
-        }
-      });
       return this.activeTransition;
     },
 
@@ -260,13 +246,8 @@ define(function (require) {
       if (url[0] !== "/") {
         url = this.generate.apply(this, arguments);
       }
-      var previousUrl = location.getURL();
+      this.previousUrl = location.getURL();
       location.replaceURL(url);
-      this.activeTransition.catch(function (err) {
-        if (err.type === 'TransitionCancelled') {
-          location.replaceURL(previousUrl, {trigger: false});
-        }
-      });
       return this.activeTransition;
     },
 

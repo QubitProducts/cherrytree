@@ -31,11 +31,11 @@ router.use(function log(transition) {
   transition.then(function () {
     console.log("Transition successful.");
   }).catch(function (err) {
-    if (err.type === "TransitionRedirect") {
+    if (err.type === "TransitionRedirected") {
       console.log("Redirecting");
       return;
     }
-    if (err.type === "TransitionAbort") {
+    if (err.type === "TransitionCancelled") {
       console.log("Aborted");
       return;
     }
@@ -62,7 +62,7 @@ router.use(function loadHandlers(transition) {
 });
 
 // willTransition hook
-router.use(function deactivateHook(transition) {
+router.use(function willTransition(transition) {
   var prevRoutes = transition.prevRoutes;
   prevRoutes.forEach(function (route) {
     route.handler.willTransition && route.handler.willTransition(transition);

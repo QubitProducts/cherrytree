@@ -4,9 +4,9 @@ var BaseHandler = require("base_handler");
 module.exports = _.extend({}, BaseHandler, {
   template: template,
   willTransition: function (transition) {
-    if (this.postId === "2") {
-      transition.cancel();
-    }
+    // if (this.postId === "2") {
+    //   transition.cancel();
+    // }
   },
   model: function (params, context) {
     if (!this.sessionStore) {
