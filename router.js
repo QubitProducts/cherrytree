@@ -7,12 +7,12 @@ define(function (require) {
   var HistoryLocation = require("./locations/history");
   var when = require("when");
 
-  // Cached regular expressions for matching named param parts and splatted
-  // parts of route strings.
-  var optionalParam = /\((.*?)\)/g;
-  var namedParam = /(\(\?)?:\w+/g;
-  var splatParam = /\*\w+/g;
-  var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
+  // // Cached regular expressions for matching named param parts and splatted
+  // // parts of route strings.
+  // var optionalParam = /\((.*?)\)/g;
+  // var namedParam = /(\(\?)?:\w+/g;
+  // var splatParam = /\*\w+/g;
+  // var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
 
   var CherrytreeRouter = function () {
     this.initialize.apply(this, arguments);
@@ -29,33 +29,33 @@ define(function (require) {
       }, options);
     },
 
-    // Convert a route string into a regular expression, suitable for matching
-    // against the current location hash.
-    _routeToRegExp: function(route) {
-      route = route.replace(escapeRegExp, '\\$&')
-                   .replace(optionalParam, '(?:$1)?')
-                   .replace(namedParam, function(match, optional) {
-                     return optional ? match : '([^/?]+)';
-                   })
-                   .replace(splatParam, '([^?]*?)');
-      return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
-    },
+    // // Convert a route string into a regular expression, suitable for matching
+    // // against the current location hash.
+    // _routeToRegExp: function(route) {
+    //   route = route.replace(escapeRegExp, '\\$&')
+    //                .replace(optionalParam, '(?:$1)?')
+    //                .replace(namedParam, function(match, optional) {
+    //                  return optional ? match : '([^/?]+)';
+    //                })
+    //                .replace(splatParam, '([^?]*?)');
+    //   return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
+    // },
 
-    // Given a route, and a URL fragment that it matches, return the array of
-    // extracted decoded parameters. Empty or unmatched parameters will be
-    // treated as `null` to normalize cross-browser behavior.
-    _extractParameters: function(pattern, path) {
-      path = path.split("?")[0];
-      var params = Path.extractParams(pattern, path);
-      params.queryParams = {};
-      return params;
-      // var params = route.exec(fragment).slice(1);
-      // return _.map(params, function(param, i) {
-      //   // Don't decode the search params.
-      //   if (i === params.length - 1) return param || null;
-      //   return param ? decodeURIComponent(param) : null;
-      // });
-    },
+    // // Given a route, and a URL fragment that it matches, return the array of
+    // // extracted decoded parameters. Empty or unmatched parameters will be
+    // // treated as `null` to normalize cross-browser behavior.
+    // _extractParameters: function(pattern, path) {
+    //   path = path.split("?")[0];
+    //   var params = Path.extractParams(pattern, path);
+    //   params.queryParams = {};
+    //   return params;
+    //   // var params = route.exec(fragment).slice(1);
+    //   // return _.map(params, function(param, i) {
+    //   //   // Don't decode the search params.
+    //   //   if (i === params.length - 1) return param || null;
+    //   //   return param ? decodeURIComponent(param) : null;
+    //   // });
+    // },
 
     use: function (dispatchHandler) {
       this.dispatchHandlers.push(dispatchHandler);
@@ -77,9 +77,9 @@ define(function (require) {
           path = "";
         }
         // register routes
-        var routeRegExp = new RegExp(self._routeToRegExp(path));
+        // var routeRegExp = new RegExp(self._routeToRegExp(path));
         self.matchers.push({
-          regExp: routeRegExp,
+          // regExp: routeRegExp,
           routes: routes,
           name: routes[routes.length - 1].name,
           path: path
@@ -119,7 +119,9 @@ define(function (require) {
       var found = false;
       var routes = [];
       _.each(this.matchers, function (matcher) {
-        if (!found && matcher.regExp.test(path)) {
+        // if (!found && matcher.regExp.test(path)) {
+        var pathWithoutQuery = path.split("?")[0];
+        if (!found && Path.extractParams(matcher.path, pathWithoutQuery)) {
           found = true;
           routes = matcher.routes;
         }
@@ -131,9 +133,14 @@ define(function (require) {
       var found = false;
       var params;
       _.each(this.matchers, function (matcher) {
-        if (!found && matcher.regExp.test(path)) {
-          found = true;
-          params = this._extractParameters(matcher.path, path);
+        // if (!found && matcher.regExp.test(path)) {
+        if (!found) {
+          var pathWithoutQuery = path.split("?")[0];
+          params = Path.extractParams(matcher.path, pathWithoutQuery);
+          if (params) {
+            found = true;
+            params.queryParams = {};
+          }
         }
       }, this);
       return params;
@@ -260,6 +267,10 @@ define(function (require) {
       });
       if (matcher) {
         currentParams = _.clone(this.state.params || {});
+        if (this.state.activeTransition) {
+          currentParams = _.clone(this.state.activeTransition.params || {});
+        }
+
         delete currentParams.queryParams;
         pattern = matcher.path;
         paramNames = Path.extractParamNames(pattern);
@@ -275,6 +286,7 @@ define(function (require) {
           });
         }
 
+        currentParams.splat = currentParams.splat || '';
         return this.location.formatURL(Path.injectParams(matcher.path, currentParams));
       } else {
         throw new Error('No route is named ' + name);
