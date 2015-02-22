@@ -267,8 +267,10 @@ define(function (require) {
           currentParams = _.extend(currentParams, params);
         } else {
           args = _.rest(arguments, 1);
+          var diff = paramNames.length - args.length;
+          paramNames = diff ? _.rest(paramNames, diff) : paramNames;
           _.each(args, function (val, i) {
-            var paramName = paramNames[paramNames.length - 1 - i];
+            var paramName = paramNames[i];
             currentParams[paramName] = val;
           });
         }
