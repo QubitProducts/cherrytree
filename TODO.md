@@ -32,3 +32,7 @@
 - [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies
 - [ ] avoid pulling in when or lodash (location-bar is fine, install Promise as npm dep)
 - [ ] support CJS and AMD... (will need to do smth about qs)
+- [ ] detect noop transitions
+- [ ] rename abort to cancel
+- [ ] make sure router errors are logged loudly
+- [ ] make sure handler errors are logged loudly (i.e. errors from the dispatchHandlers)

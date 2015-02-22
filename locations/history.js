@@ -59,10 +59,10 @@
      * back to the router. Add a new entry in browser's history.
      */
 
-    HistoryLocation.prototype.setURL = function (path) {
+    HistoryLocation.prototype.setURL = function (path, options) {
       if (this.path !== path) {
         this.path = path;
-        this.locationBar.update(path, {trigger: true});
+        this.locationBar.update(path, _.extend({trigger: true}, options));
       }
     };
 
@@ -71,10 +71,10 @@
      * back to the router. Replace the latest entry in broser's history.
      */
 
-    HistoryLocation.prototype.replaceURL = function (path) {
+    HistoryLocation.prototype.replaceURL = function (path, options) {
       if (this.path !== path) {
         this.path = path;
-        this.locationBar.update(path, {trigger: true, replace: true});
+        this.locationBar.update(path, _.extend({trigger: true, replace: true}, options));
       }
     };
 

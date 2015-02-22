@@ -40,3 +40,4 @@ Read [the guide](docs/guide.md) or [the API docs](docs/api.md).
 * transition is a first class citizen - abort, pause, resume, retry failed ones. E.g. pause the transition to display "There are unsaved changes" message if the user clicked some link on the page or used browser's back/forward buttons
 * navigate around the app programatically, e.g. `router.transitionTo("commits")`
 * rename URL segments (e.g. /account -> /profile) without having to change route names or rewrite links
+* link clicks on the page are intercepted automatically when using pushState

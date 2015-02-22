@@ -140,7 +140,13 @@ define(function (require) {
     },
 
     dispatch: function (path) {
-      var routes, params;
+      var routes, params, router = this;
+
+      if (this.activeTransition) {
+        var cancelErr = new Error("TransitionRedirect");
+        cancelErr.type = "TransitionRedirect";
+        this.activeTransition.cancel(cancelErr);
+      }
 
       path = path.substr(1);
 
@@ -150,37 +156,77 @@ define(function (require) {
       var resolve, reject;
       var promise = new Promise(function (res, rej) {
         resolve = res;
-        reject = rej;
+        reject = function (err) {
+          rej(err);
+        };
       });
 
       var transition = this.activeTransition = {
+        prevRoutes: router.state.routes || [],
         nextRoutes: routes,
         params: params,
         path: path,
+        cancel: function (err) {
+          if (!err) {
+            err = new Error("TransitionCancelled");
+            err.type = "TransitionCancelled";
+          }
+          reject(err);
+        },
+        redirect: function () {
+          router.transitionTo.apply(router, arguments);
+        },
         promise: promise,
         then: promise.then.bind(promise),
         catch: promise.catch.bind(promise)
       };
 
-      var router = this;
-      return when.reduce(this.dispatchHandlers, function(arg, task) {
-        return task(transition, arg);
-      }, null).then(function () {
-        router.activeTransition = null;
-        router.state = {
-          routes: transition.nextRoutes,
-          params: params,
-          path: path
-        };
-        resolve();
-      }).catch(reject);
+      promise.catch(function (err) {
+        if (err.type === "TransitionCancelled") {
+          return "foo";
+        }
+      });
+
+      var cancelled = false;
+      transition.catch(function (err) {
+        cancelled = err;
+      });
+
+      setTimeout(function () {
+        when.reduce(router.dispatchHandlers, function(arg, task) {
+          if (cancelled) {
+            throw cancelled;
+          }
+          return task(transition, arg);
+        }, null).then(function () {
+          router.activeTransition = null;
+          router.state = {
+            routes: transition.nextRoutes,
+            params: params,
+            path: path
+          };
+          resolve();
+        }).catch(function (err) {
+          if (err.type === "TransitionCancelled") {
+
+          } else {
+            reject(err);
+          }
+        });
+      }, 1);
+
+      return this.activeTransition;
     },
 
     listen: function (location) {
       var self = this;
       var location = this.location = location || this.defaultLocation();
       location.onChange(function(url) {
-        self.dispatch(url);
+        self.dispatch(url).catch(function (err) {
+          if (err.type === "TransitionCancelled") {
+            return;
+          }
+        });
       });
       return this.dispatch(location.getURL());
     },
@@ -191,17 +237,37 @@ define(function (require) {
     },
 
     transitionTo: function(url) {
-      if (url[0] !== "/") {
-        url = "/" + this.generate.apply(this, arguments);
+      if (this.activeTransition) {
+        return this.replaceWith.apply(this, arguments);
       }
-      this.location.setURL(url);
+
+      var location = this.location;
+      if (url[0] !== "/") {
+        url = this.generate.apply(this, arguments);
+      }
+      var previousUrl = location.getURL();
+      location.setURL(url);
+      this.activeTransition.catch(function (err) {
+        if (err.type === 'TransitionCancelled') {
+          location.replaceURL(previousUrl, {trigger: false});
+        }
+      });
+      return this.activeTransition;
     },
 
     replaceWith: function(url) {
+      var location = this.location;
       if (url[0] !== "/") {
-        url = "/" + this.generate.apply(this, arguments);
+        url = this.generate.apply(this, arguments);
       }
-      this.location.replaceURL(url);
+      var previousUrl = location.getURL();
+      location.replaceURL(url);
+      this.activeTransition.catch(function (err) {
+        if (err.type === 'TransitionCancelled') {
+          location.replaceURL(previousUrl, {trigger: false});
+        }
+      });
+      return this.activeTransition;
     },
 
     generate: function(name, params) {
