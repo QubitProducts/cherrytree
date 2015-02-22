@@ -1,10 +1,10 @@
-var _ = require("lodash");
+import _ from 'lodash';
 import when from 'when';
 import keys from 'when/keys';
 import React from 'react';
 import cherrytree from '../../../';
 import routes from './routes';
-import LoadingRoute from './routes/loading';
+import loading from './loading';
 
 
 let App = React.createClass({
@@ -23,6 +23,8 @@ let App = React.createClass({
 
 var router = cherrytree();
 router.map(routes);
+// install loading animation
+router.use(loading);
 // load route handlers
 router.use(function (transition) {
   transition.nextRoutes.forEach(function (route) {
@@ -73,6 +75,9 @@ function getRouteHandler(name) {
   }
   if (name === "repo") {
     return require("./components/repo_header");
+  }
+  if (name === "repo.code") {
+    return require("./pages/code");
   }
 }
 

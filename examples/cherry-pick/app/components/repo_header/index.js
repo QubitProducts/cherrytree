@@ -16,10 +16,10 @@ export default React.createClass({
               {this.props.org} / {this.props.repo}
             </li>
             <li className='RepoHeader-navItem u-floatLeft'>
-              <a href={1 || this.context.router.generate('repo.code.index')}>Code</a>
+              <a href={this.context.router.generate('repo.code')}>Code</a>
             </li>
             <li className='RepoHeader-navItem u-floatLeft'>
-              <a href={1 || this.context.router.generate('repo.commits')}>Commits</a>
+              <a href={this.context.router.generate('repo.commits')}>Commits</a>
             </li>
           </ul>
         </div>

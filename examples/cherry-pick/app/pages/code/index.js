@@ -1,6 +1,7 @@
 import './code.css';
 import React from 'react';
 import R from 'ramda';
+import * as github from 'github';
 let decode = window.atob;
 
 let Breadcrumb = React.createClass({
@@ -48,6 +49,20 @@ let Breadcrumb = React.createClass({
 });
 
 export default React.createClass({
+  contextTypes: {
+    router: React.PropTypes.object.isRequired
+  },
+  statics: {
+    fetchData: function (params) {
+      var repoUid = params.org + '/' + params.repo;
+      var path = params.splat || '';
+      return {
+        code: github.code(repoUid, path),
+        path: path,
+        repo: params.repo
+      };
+    }
+  },
   render() {
     var code = this.props.code;
     var path = this.props.path;
@@ -84,6 +99,8 @@ export default React.createClass({
   },
 
   link(path) {
-    return this.props.router.generate('code.path', path);
+    return this.context.router.generate('repo.code', {
+      splat: path
+    });
   }
 });
