@@ -1,0 +1,41 @@
+{
+  "eqeqeq": true,
+  "forin": true,
+  "freeze": true,
+  "immed": true,
+  "latedef": "nofunc",
+  "noarg": true,
+  "noempty": true,
+  "nonew": true,
+  "regexp": false,
+  "undef": true,
+  "unused": true,
+  "trailing": true,
+  "maxcomplexity": 12,
+
+  "laxbreak": true,
+  "sub": true,
+  "expr": true,
+
+  "browser": true,
+  "node": true,
+  "devel": true,
+  
+  "indent": 2,
+  "maxlen": 120,
+
+  "esnext": true,
+
+  "globals": {
+    "define": true,
+    "require": true,
+    "describe": true,
+    "context": true,
+    "it": true,
+    "expect": true,
+    "before": true,
+    "after": true,
+    "beforeEach": true,
+    "afterEach": true
+  }
+}

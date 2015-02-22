@@ -1,0 +1,21 @@
+@import url('http://fonts.googleapis.com/css?family=Lato:300,400,700');
+@import url(http://fonts.googleapis.com/css?family=PT+Mono);
+
+body {
+  font-family: 'Lato', sans-serif;
+  font-weight: lighter;
+}
+
+input[type="text"] {
+  border: 1px solid #aaa;
+}
+
+input[type="text"]:focus {
+  border: 1px solid #0036ff;
+  box-shadow: inset 0 1px rgba(255,255,255,0.36), 0 0 0 2px #6fb5f1;
+  outline: 0;
+}
+
+a, a:visited {
+  color: #005AA8;
+}

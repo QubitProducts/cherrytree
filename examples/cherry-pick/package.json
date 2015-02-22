@@ -1,0 +1,37 @@
+{
+  "name": "cherry-pick",
+  "version": "1.0.0",
+  "description": "A demo app for Cherrytree router",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --colors --no-info --port=8000 --content-base .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^0.9.0",
+    "file-loader": "^0.8.1",
+    "react": "^0.12.2",
+    "rework-webpack-loader": "0.0.0",
+    "style-loader": "^0.7.1",
+    "url-loader": "^0.5.5",
+    "webpack": "^1.3.0",
+    "webpack-dev-server": "^1.6.4",
+    "webpack-traceur-loader": "^0.3.0"
+  },
+  "dependencies": {
+    "babel-core": "^4.4.5",
+    "babel-loader": "^4.0.0",
+    "lodash": "^3.3.0",
+    "nprogress": "^0.1.6",
+    "ramda": "^0.8.0",
+    "randomcolor": "^0.1.1",
+    "react": "^0.12.2",
+    "rest": "git://github.com/cujojs/rest#dev",
+    "rework-webpack-loader": "^0.1.0",
+    "suitcss-components-arrange": "^0.6.2",
+    "suitcss-utils-layout": "^0.4.2",
+    "suitcss-utils-text": "^0.4.2"
+  }
+}

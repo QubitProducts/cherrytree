@@ -1,0 +1,14 @@
+.Commits {
+  padding: 50px 100px;
+  list-style: none;
+}
+.Commits-commit {
+  font-family: 'PT Mono';
+  font-size: 12px;
+  margin-top: 6px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #f2f2f2;
+}
+.Commits-commit:last-child {
+  border-bottom: none;
+}
