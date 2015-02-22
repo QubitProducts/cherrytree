@@ -142,10 +142,10 @@ define(function (require) {
     dispatch: function (path) {
       var routes, params, router = this;
 
-      if (this.activeTransition) {
+      if (this.state.activeTransition) {
         var cancelErr = new Error("TransitionRedirected");
         cancelErr.type = "TransitionRedirected";
-        this.activeTransition.cancel(cancelErr);
+        this.state.activeTransition.cancel(cancelErr);
       }
 
       path = path.substr(1);
@@ -161,7 +161,7 @@ define(function (require) {
 
       var cancelled = false;
 
-      var transition = this.activeTransition = {
+      var transition = this.state.activeTransition = {
         prevRoutes: router.state.routes || [],
         nextRoutes: routes,
         params: params,
@@ -189,8 +189,8 @@ define(function (require) {
           }
           return task(transition, arg);
         }, null).then(function () {
-          router.activeTransition = null;
           router.state = {
+            activeTransition: null,
             routes: transition.nextRoutes,
             params: params,
             path: path
@@ -228,7 +228,7 @@ define(function (require) {
     },
 
     transitionTo: function(url) {
-      if (this.activeTransition) {
+      if (this.state.activeTransition) {
         return this.replaceWith.apply(this, arguments);
       }
 
@@ -238,7 +238,7 @@ define(function (require) {
       }
       this.previousUrl = location.getURL();
       location.setURL(url);
-      return this.activeTransition;
+      return this.state.activeTransition;
     },
 
     replaceWith: function(url) {
@@ -248,7 +248,7 @@ define(function (require) {
       }
       this.previousUrl = location.getURL();
       location.replaceURL(url);
-      return this.activeTransition;
+      return this.state.activeTransition;
     },
 
     generate: function(name, params) {
