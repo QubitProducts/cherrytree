@@ -14,7 +14,6 @@
 - [ ] make sure transition and route descriptors are immutable (modifyng route descriptors only affect that transition)
 - [ ] remove usage of the Backbone regexes and route matching, use the react-router Path code instead
 - [ ] implement queryStrings
-- [ ] publish bro-size to npm
 - [ ] add the size of the lib to README
 - [ ] write a blogpost draft about the journey to 2.0 (sketchy bulletpoints)
 - [ ] create examples folder where various middlewares are demonstrated
