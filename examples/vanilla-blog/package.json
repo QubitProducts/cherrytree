@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --colors --no-info --port=8000 --content-base . --entry ./index.js",
+    "start": "webpack-dev-server --colors --no-info --port=8000 --content-base .",
     "test": "mocha"
   },
   "author": "",
