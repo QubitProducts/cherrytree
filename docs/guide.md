@@ -7,7 +7,9 @@ First you'll need to create an instance of the router.
 ```js
 var Router = require("cherrytree");
 var router = new Router({
-  pushState: true
+  locationOptions: {
+    pushState: true
+  }
 });
 ```
 
@@ -46,7 +48,7 @@ router.generate("index");
 // => /
 ```
 
-If you configure the HistoryLocation to use hashchange event (by setting `pushState: false`), the generated links will start with `#`.
+If you configure the HistoryLocation to use hashchange event (the default behaviour), the generated links will start with `#`. To override this set `locationOptions.pushState: false`.
 
 You can customize the behavior of a route by creating a `Route`
 subclass. For example, to customize what happens when your user visits
