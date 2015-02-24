@@ -10,9 +10,9 @@
 
 Location related options
 
-* **options.pushState** - default is false, which means using hashchange events. Set to true to use pushState.
-* **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
-* **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
+* **options.locationOptions.pushState** - default is false, which means using hashchange events. Set to true to use pushState.
+* **options.locationOptions.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
+* **options.locationOptions.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
 
 Or a custom location
 
