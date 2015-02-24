@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+* Breaking change: fix the bug where locationOptions where being read from the wrong place. It's now consistent with the documentation.
+
 ## 0.6.0
 
 * `HistoryLocation` is now the default location - this simplifies the typical usage of Cherrytree.
