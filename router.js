@@ -77,7 +77,7 @@
         var self = this;
         var router = this.router;
         var location = this.location = this.options.location ||
-          new HistoryLocation(this.options.locationOptions);
+          new HistoryLocation(this.locationOptions);
 
         setupRouter(this, router, location);
 
