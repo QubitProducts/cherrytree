@@ -1,4 +1,4 @@
-import './repo_header.css';
+import './repo.css';
 import 'suitcss-utils-layout';
 import React from 'react';
 
