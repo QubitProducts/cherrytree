@@ -7,13 +7,6 @@ define(function (require) {
   var HistoryLocation = require("./locations/history");
   var when = require("when");
 
-  // // Cached regular expressions for matching named param parts and splatted
-  // // parts of route strings.
-  // var optionalParam = /\((.*?)\)/g;
-  // var namedParam = /(\(\?)?:\w+/g;
-  // var splatParam = /\*\w+/g;
-  // var escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g;
-
   var CherrytreeRouter = function () {
     this.initialize.apply(this, arguments);
   };
@@ -24,38 +17,8 @@ define(function (require) {
       this.handlers = {};
       this.dispatchHandlers = [];
       this.state = {};
-      this.options = _.extend({
-        location: false
-      }, options);
+      this.options = _.extend({}, options);
     },
-
-    // // Convert a route string into a regular expression, suitable for matching
-    // // against the current location hash.
-    // _routeToRegExp: function(route) {
-    //   route = route.replace(escapeRegExp, '\\$&')
-    //                .replace(optionalParam, '(?:$1)?')
-    //                .replace(namedParam, function(match, optional) {
-    //                  return optional ? match : '([^/?]+)';
-    //                })
-    //                .replace(splatParam, '([^?]*?)');
-    //   return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
-    // },
-
-    // // Given a route, and a URL fragment that it matches, return the array of
-    // // extracted decoded parameters. Empty or unmatched parameters will be
-    // // treated as `null` to normalize cross-browser behavior.
-    // _extractParameters: function(pattern, path) {
-    //   path = path.split("?")[0];
-    //   var params = Path.extractParams(pattern, path);
-    //   params.queryParams = {};
-    //   return params;
-    //   // var params = route.exec(fragment).slice(1);
-    //   // return _.map(params, function(param, i) {
-    //   //   // Don't decode the search params.
-    //   //   if (i === params.length - 1) return param || null;
-    //   //   return param ? decodeURIComponent(param) : null;
-    //   // });
-    // },
 
     use: function (dispatchHandler) {
       this.dispatchHandlers.push(dispatchHandler);
@@ -69,17 +32,18 @@ define(function (require) {
       this.matchers = [];
 
       eachBranch(this.routes, function (routes) {
-        var path = _.map(routes, function (r) {
-          return r.path;
-        }).join("/");
-        path = path.replace("//", "");
-        if (path === "/") {
-          path = "";
+        var path = _.reduce(routes, function (memo, r) {
+          memo = memo.replace(/\/$/, "");
+          // reset if there's a leading slash, otherwise concat
+          return r.path[0] === "/" ? r.path : memo + "/" + r.path;
+        }, "");
+        path = path.replace(/\/$/, "");
+        if (path === "") {
+          path = "/";
         }
+        
         // register routes
-        // var routeRegExp = new RegExp(self._routeToRegExp(path));
         self.matchers.push({
-          // regExp: routeRegExp,
           routes: routes,
           name: routes[routes.length - 1].name,
           path: path
@@ -118,9 +82,8 @@ define(function (require) {
     computeRoutes: function (path) {
       var found = false;
       var routes = [];
+      var pathWithoutQuery = path.split("?")[0];
       _.each(this.matchers, function (matcher) {
-        // if (!found && matcher.regExp.test(path)) {
-        var pathWithoutQuery = path.split("?")[0];
         if (!found && Path.extractParams(matcher.path, pathWithoutQuery)) {
           found = true;
           routes = matcher.routes;
@@ -132,10 +95,9 @@ define(function (require) {
     extractParams: function (path) {
       var found = false;
       var params;
+      var pathWithoutQuery = path.split("?")[0];
       _.each(this.matchers, function (matcher) {
-        // if (!found && matcher.regExp.test(path)) {
         if (!found) {
-          var pathWithoutQuery = path.split("?")[0];
           params = Path.extractParams(matcher.path, pathWithoutQuery);
           if (params) {
             found = true;
@@ -155,7 +117,9 @@ define(function (require) {
         this.state.activeTransition.cancel(cancelErr);
       }
 
-      path = path.substr(1);
+      if (path === "") {
+        path = "/";
+      }
 
       routes = this.computeRoutes(path);
       params = this.extractParams(path);
@@ -204,7 +168,7 @@ define(function (require) {
           };
           resolve();
         }).catch(function (err) {
-          if (err.type !== "TransitionCancelled") {
+          if (err.type !== "TransitionCancelled" && err.type !== "TransitionRedirected") {
             reject(err);
           }
         });
@@ -215,7 +179,7 @@ define(function (require) {
 
     listen: function (location) {
       var self = this;
-      var location = this.location = location || this.defaultLocation();
+      location = this.location = location || this.defaultLocation();
       this.previousUrl = location.getURL();
       location.onChange(function(url) {
         self.dispatch(url).then(function () {
