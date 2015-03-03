@@ -2,201 +2,271 @@
 define(function (require) {
 
   var _ = require("lodash");
-  var DSL = require("./lib/dsl");
+  var when = require("when");
+  var sequence = require("when/sequence");
+  var dsl = require("./lib/dsl");
   var Path = require("./lib/path");
   var HistoryLocation = require("./locations/history");
-  var when = require("when");
 
-  var CherrytreeRouter = function () {
+  /**
+   * Constructor
+   */
+  var Cherrytree = function () {
     this.initialize.apply(this, arguments);
   };
 
-  _.extend(CherrytreeRouter.prototype, {
+  /**
+   * The actual constructor
+   * @param {Object} options
+   */
+  Cherrytree.prototype.initialize = function (options) {
+    this.nextId = 1;
+    this.state = {};
+    this.middleware = [];
+    this.options = _.extend({}, options);
+    this.log = this.options.log || function () {};
+  };
 
-    initialize: function (options) {
-      this.handlers = {};
-      this.dispatchHandlers = [];
-      this.state = {};
-      this.options = _.extend({}, options);
-    },
+  /**
+   * Add a middleware
+   * @param  {Function} middleware
+   * @return {Object}   router
+   * @api public
+   */
+  Cherrytree.prototype.use = function (middleware) {
+    this.middleware.push(middleware);
+    return this;
+  };
 
-    use: function (dispatchHandler) {
-      this.dispatchHandlers.push(dispatchHandler);
-    },
+  /**
+   * Add the route map
+   * @param  {Function} routes
+   * @return {Object}   router
+   * @api public
+   */
+  Cherrytree.prototype.map = function (routes) {
+    var self = this;
 
-    map: function (routes) {
-      var self = this;
+    // create the route tree
+    this.routes = dsl(routes);
 
-      this.routes = DSL.map(routes);
+    // create the matcher list, which is like a flattened
+    // list of routes = a list of all branches of the route tree
+    var matchers = this.matchers = [];
 
-      this.matchers = [];
-
-      eachBranch(this.routes, function (routes) {
-        var path = _.reduce(routes, function (memo, r) {
-          memo = memo.replace(/\/$/, "");
-          // reset if there's a leading slash, otherwise concat
-          return r.path[0] === "/" ? r.path : memo + "/" + r.path;
-        }, "");
-        path = path.replace(/\/$/, "");
-        if (path === "") {
-          path = "/";
-        }
-        
-        // register routes
-        self.matchers.push({
-          routes: routes,
-          name: routes[routes.length - 1].name,
-          path: path
-        });
-      }, this);
-
-      function eachBranch(node, memo, fn, context) {
-        if (!context) {
-          fn = memo;
-          context = fn;
-          memo = [];
-          node = {routes: node};
-        }
-        _.each(node.routes, function (route) {
-          if (!route.routes || route.routes.length === 0) {
-            fn.call(context, memo.concat(route));
-          } else {
-            eachBranch(route, memo.concat(route), fn, context);
-          }
-        });
-      }
-
-      return this;
-    },
-
-    loadUrl: function(fragment) {
-      fragment = this.fragment = this.getFragment(fragment);
-      return _.any(this.handlers, function(handler) {
-        if (handler.route.test(fragment)) {
-          handler.callback(fragment);
-          return true;
-        }
-      });
-    },
-
-    computeRoutes: function (path) {
-      var found = false;
-      var routes = [];
-      var pathWithoutQuery = path.split("?")[0];
-      _.each(this.matchers, function (matcher) {
-        if (!found && Path.extractParams(matcher.path, pathWithoutQuery)) {
-          found = true;
-          routes = matcher.routes;
-        }
-      });
-      return routes;
-    },
-
-    extractParams: function (path) {
-      var found = false;
-      var params;
-      var pathWithoutQuery = path.split("?")[0];
-      _.each(this.matchers, function (matcher) {
-        if (!found) {
-          params = Path.extractParams(matcher.path, pathWithoutQuery);
-          if (params) {
-            found = true;
-            params.queryParams = {};
-          }
-        }
-      }, this);
-      return params;
-    },
-
-    dispatch: function (path) {
-      var routes, params, router = this;
-
-      if (this.state.activeTransition) {
-        var cancelErr = new Error("TransitionRedirected");
-        cancelErr.type = "TransitionRedirected";
-        this.state.activeTransition.cancel(cancelErr);
-      }
-
+    eachBranch({routes: this.routes}, [], function (routes) {
+      // concatenate the paths of the list of routes
+      var path = _.reduce(routes, function (memo, r) {
+        // reset if there's a leading slash, otherwise concat
+        // and keep resetting the trailing slash
+        return (r.path[0] === "/" ? r.path : memo + "/" + r.path).replace(/\/$/, "");
+      }, "");
+      // ensure we have a leading slash
       if (path === "") {
         path = "/";
       }
-
-      routes = this.computeRoutes(path);
-      params = this.extractParams(path);
-
-      var resolve, reject;
-      var promise = new Promise(function (res, rej) {
-        resolve = res;
-        reject = rej;
+      // register routes
+      matchers.push({
+        routes: routes,
+        name: routes[routes.length - 1].name,
+        path: path
       });
+    });
 
-      var cancelled = false;
+    function eachBranch(node, memo, fn) {
+      _.each(node.routes, function (route) {
+        if (!route.routes || route.routes.length === 0) {
+          fn.call(null, memo.concat(route));
+        } else {
+          eachBranch(route, memo.concat(route), fn);
+        }
+      });
+    }
 
-      var transition = this.state.activeTransition = {
-        prevRoutes: router.state.routes || [],
-        nextRoutes: routes,
-        params: params,
-        path: path,
-        cancel: function (err) {
-          if (!err) {
-            err = new Error("TransitionCancelled");
-            err.type = "TransitionCancelled";
-          }
-          cancelled = err;
-          reject(err);
-        },
-        redirectTo: function () {
-          router.transitionTo.apply(router, arguments);
-        },
-        promise: promise,
-        then: promise.then.bind(promise),
-        catch: promise.catch.bind(promise)
-      };
+    return this;
+  };
 
-      setTimeout(function () {
-        when.reduce(router.dispatchHandlers, function(arg, task) {
-          if (cancelled) {
-            throw cancelled;
-          }
-          return task(transition, arg);
-        }, null).then(function () {
-          router.state = {
-            activeTransition: null,
-            routes: transition.nextRoutes,
-            params: params,
-            path: path
-          };
-          resolve();
-        }).catch(function (err) {
-          if (err.type !== "TransitionCancelled" && err.type !== "TransitionRedirected") {
-            reject(err);
-          }
-        });
-      }, 1);
+  /**
+   * Starts listening to the location changes.
+   * @param  {Object}  location (optional)
+   * @return {Promise} initial transition
+   */
+  Cherrytree.prototype.listen = function (location) {
+    var router = this;
+    location = this.location = location || this.createDefaultLocation();
+    
+    // setup the location onChange handler
+    this.previousUrl = location.getURL();
+    location.onChange(dispatch);
+    // and also kick off the initial transition
+    return dispatch(location.getURL());
+
+    function dispatch(url) {
+      var transition = router.dispatch(url)
+
+      transition.then(function () {
+        router.previousUrl = url;
+      }).catch(function (err) {
+        if (err && err.type === 'TransitionCancelled') {
+          // reset the URL in case the transition has been cancelled
+          location.replaceURL(router.previousUrl, {trigger: false});
+        }
+        return err;
+      });
 
       return transition;
-    },
+    }
+  };
+  
+  /**
+   * Match the path against the routes
+   * @param  {String} path
+   * @return {Object} the list of matching routes and params
+   * @api private
+   */
+  Cherrytree.prototype.match = function (path) {
+    path = path || "/";
+    var found = false;
+    var params = {};
+    var routes = [];
+    var pathWithoutQuery = path.split("?")[0];
+    _.each(this.matchers, function (matcher) {
+      if (!found) {
+        params = Path.extractParams(matcher.path, pathWithoutQuery)
+        if (params) {
+          found = true;
+          routes = matcher.routes;
+          // TODO: extract the query params
+          params.queryParams = {};
+        }
+      }
+    });
+    return {
+      routes: routes,
+      params: params
+    };
+  },
+  
+  Cherrytree.prototype.dispatch = function (path) {
+    if (this.state.activeTransition) {
+      var err = new Error('TransitionRedirected');
+      err.type = 'TransitionRedirected';
+      this.state.activeTransition.cancel(err);
+    }
 
-    listen: function (location) {
-      var self = this;
-      location = this.location = location || this.defaultLocation();
-      this.previousUrl = location.getURL();
-      location.onChange(function(url) {
-        self.dispatch(url).then(function () {
-          self.previousUrl = url;
-        }).catch(function (err) {
-          if (err.type === 'TransitionCancelled') {
-            location.replaceURL(self.previousUrl, {trigger: false});
-          }
-        });
-      });
-      return this.dispatch(location.getURL());
-    },
+    var id = this.nextId++;
+    this.log("Transition #" + id, "started");
 
-    defaultLocation: function () {
-      var locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
-      return new HistoryLocation(locationOptions);
-    },
+    var router = this;
+    var match = this.match(path);
+    var routes = match.routes;
+    var params = match.params;
+
+    this.log("Transition #" + id, "routes", _.pluck(routes, "name"));
+    this.log("Transition #" + id, "params", params);
+
+    // create the transition promise
+    var resolve, reject;
+    var promise = new Promise(function (res, rej) {
+      resolve = res;
+      reject = rej;
+    });
+
+    // 1. make transition errors loud
+    // 2. by adding this handler we make sure
+    //    we don't trigger the default "Potentially
+    //    unhandled rejection" for cancellations
+    promise.then(function () {
+      router.log("Transition #" + id, "completed");
+    }).catch(function (err) {
+      if (err.type !== 'TransitionRedirected' && err.type !== 'TransitionCancelled') {
+        router.log("Transition #" + id, "FAILED");
+        console.error(err.stack);
+      }
+    });
+
+    var cancelled = false;
+
+    var transition = this.state.activeTransition = {
+      id: id,
+      prevRoutes: router.state.routes || [],
+      nextRoutes: routes,
+      params: params,
+      path: path,
+      cancel: function (err) {
+        router.state.activeTransition = null;
+        if (!err) {
+          err = new Error('TransitionCancelled');
+          err.type = 'TransitionCancelled';
+        }
+        cancelled = err;
+
+        if (err.type === 'TransitionCancelled') {
+          router.log("Transition #" + id, "cancelled");
+        }
+        if (err.type === 'TransitionRedirected') {
+          router.log("Transition #" + id, "redirected");
+        }
+
+        reject(err);
+        transition.isCancelled = true;
+      },
+      redirectTo: function () {
+        return router.transitionTo.apply(router, arguments);
+      },
+      promise: promise,
+      then: promise.then.bind(promise),
+      catch: promise.catch.bind(promise)
+    };
+    
+    // here we handle calls to all of the middlewares
+    function callNext(i, prevResult) {
+      var middlewareName;
+      // if transition has been cancelled - nothing left to do
+      if (cancelled) {
+        return;
+      }
+      // done
+      if (i < router.middleware.length) {
+        middlewareName = router.middleware[i].name || "anonymous";
+        router.log("Transition #" + id, "resolving middleware:", middlewareName);
+        Promise.resolve(router.middleware[i](transition, prevResult))
+          .then(function (result) {
+            callNext(i + 1, result)
+          })
+          .catch(function (err) {
+            router.log("Transition #" + id, "resolving middleware:", middlewareName, "FAILED");
+            reject(err);
+          });
+      } else {
+        router.state = {
+          activeTransition: null,
+          routes: transition.nextRoutes,
+          params: params,
+          path: path
+        };
+        resolve();
+      }
+    }
+    callNext(0);
+    
+    return transition;
+  };
+
+
+  /**
+   * Create the default location.
+   * This is used when no custom location is passed to
+   * the listen call.
+   * @return {Object} location
+   * @api private
+   */
+  Cherrytree.prototype.createDefaultLocation = function () {
+    var locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
+    return new HistoryLocation(locationOptions);
+  };
+  
+  _.extend(Cherrytree.prototype, {
 
     transitionTo: function(url) {
       if (this.state.activeTransition) {
@@ -258,7 +328,7 @@ define(function (require) {
     },
 
     destroy: function () {
-      if (this.location.destroy) {
+      if (this.location.destroy && this.location.destroy) {
         this.location.destroy();
       }
     },
@@ -275,7 +345,7 @@ define(function (require) {
   });
 
   return function cherrytree(options) {
-    return new CherrytreeRouter(options);
+    return new Cherrytree(options);
   };
 
 });
