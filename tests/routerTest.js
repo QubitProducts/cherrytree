@@ -27,7 +27,7 @@ afterEach(() => {
 // @api public
 
 test('#use registers middleware', () => {
-  assert.expect(3)
+  assert.expect(2)
   let m = function () {}
   router.use(m)
   assert(router.middleware.length === 1)

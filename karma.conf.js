@@ -3,7 +3,7 @@
 
 var config = {
 
-  frameworks: ['mocha', 'sinon', 'sinon-chai'],
+  frameworks: ['mocha'],
 
   preprocessors: {
     'tests/index.js': ['webpack', 'sourcemap']
@@ -41,6 +41,8 @@ var config = {
   },
 
   client: {
+    useIframe: true,
+    captureConsole: true,
     mocha: {
       ui: 'qunit'
     }

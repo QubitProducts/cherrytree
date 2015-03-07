@@ -1,5 +1,6 @@
 let referee = require('referee')
-let {assert, beforeEach, afterEach} = window
+let {assert} = referee
+let {beforeEach, afterEach} = window
 
 // assertions counting
 let expected = 0
@@ -15,9 +16,12 @@ beforeEach(() => {
 afterEach(function () {
   var self = this
   try {
-    assert(expected === referee.count - 1, 'Expected ' + expected + ' assertions')
+    assert(expected === referee.count - 1, 'expected ' + expected + ' assertions, got ' + referee.count)
   } catch (err) {
-    self.currentTest.emit('error', err)
+    err.message = err.message + ' in ' + self.currentTest.title
+    throw err
+    // self.currentTest.emit('error', err)
+    // self.test.emit('error', err)
   }
 })
 
