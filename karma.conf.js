@@ -1,17 +1,17 @@
 // Karma configuration
 // Generated on Mon Oct 07 2013 15:55:00 GMT+0100 (BST)
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
 
     frameworks: ['mocha', 'sinon', 'sinon-chai'],
 
     preprocessors: {
-      'test/index.js': ['webpack', 'sourcemap']
+      'tests/index.js': ['webpack', 'sourcemap']
     },
 
     files: [
-      'test/index.js'
+      'tests/index.js'
     ],
 
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
@@ -28,8 +28,14 @@ module.exports = function(config) {
       watch: true,
       resolve: {
         alias: {
-          'cherrytree': __dirname
+          'cherrytree': __dirname,
+          'expect': 'referee/lib/expect'
         }
+      },
+      module: {
+        loaders: [
+          { test: /test.*\.js$/, exclude: /node_modules/, loader: 'babel' }
+        ]
       },
       devtool: 'inline-source-map'
     },
@@ -38,6 +44,12 @@ module.exports = function(config) {
       noInfo: true
     },
 
+    client: {
+      mocha: {
+        ui: 'qunit'
+      }
+    },
+
     browsers: ['Chrome']
-  });
-};
+  })
+}

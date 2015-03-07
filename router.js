@@ -6,6 +6,7 @@ define(function (require) {
   var sequence = require("when/sequence");
   var dsl = require("./lib/dsl");
   var Path = require("./lib/path");
+  var invariant = require("./lib/invariant");
   var HistoryLocation = require("./locations/history");
 
   /**
@@ -293,6 +294,7 @@ define(function (require) {
     },
 
     generate: function(name, params) {
+      invariant(this.location, 'call .listen() before using .generate()')
       var matcher, currentParams, pattern, paramNames, args;
       _.each(this.matchers, function (m) {
         if (m.name === name) {
@@ -328,7 +330,7 @@ define(function (require) {
     },
 
     destroy: function () {
-      if (this.location.destroy && this.location.destroy) {
+      if (this.location && this.location.destroy && this.location.destroy) {
         this.location.destroy();
       }
     },
