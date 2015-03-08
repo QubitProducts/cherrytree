@@ -53,6 +53,7 @@
   },
   "standard": {
     "ignore": [
+      "dist/**",
       "docs/**",
       "examples/**",
       "testOld/**",

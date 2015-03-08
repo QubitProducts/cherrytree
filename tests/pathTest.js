@@ -1,5 +1,5 @@
 let {assert} = require('referee')
-let {suite, test, beforeEach, afterEach} = window
+let {suite, test} = window
 let path = require('../lib/path')
 
 suite('path.extractParamNames')
