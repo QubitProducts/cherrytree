@@ -52,13 +52,10 @@
   },
   "standard": {
     "ignore": [
-      "testOld/**",
-      "vendor/**",
+      "docs/**",
       "examples/**",
-      "router.js",
-      "lib/**",
-      "locations/**",
-      "docs/**"
+      "testOld/**",
+      "vendor/**"
     ]
   }
 }
