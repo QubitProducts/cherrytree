@@ -7,12 +7,12 @@ suite('Cherrytree')
 
 let router
 
-let routes = function () {
-  this.route('application', function () {
-    this.route('home', {path: ''})
-    this.route('notifications')
-    this.route('messages')
-    this.route('status', {path: ':user/status/:id'})
+let routes = function (route) {
+  route('application', function () {
+    route('home', {path: ''})
+    route('notifications')
+    route('messages')
+    route('status', {path: ':user/status/:id'})
   })
 }
 
@@ -27,7 +27,6 @@ afterEach(() => {
 // @api public
 
 test('#use registers middleware', () => {
-  assert.expect(2)
   let m = function () {}
   router.use(m)
   assert(router.middleware.length === 1)
@@ -35,7 +34,6 @@ test('#use registers middleware', () => {
 })
 
 test('#map registers the routes', () => {
-  assert.expect(3)
   router.map(routes)
   // check that the internal matchers object is created
   assert.equals(_.pluck(router.matchers, 'path'), [
@@ -50,21 +48,18 @@ test('#map registers the routes', () => {
 })
 
 test('#generate generates urls given route name and params as object', () => {
-  assert.expect(1)
   router.map(routes).listen()
   var url = router.generate('status', {user: 'foo', id: 1, queryParams: {withReplies: true}})
   assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
 
 test('#generate generates urls given route name and params as args', () => {
-  assert.expect(1)
   router.map(routes).listen()
   var url = router.generate('status', 'foo', 1, {queryParams: {withReplies: true}})
   assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
 
 test('#generate throws a useful error when listen has not been called', () => {
-  assert.expect(1)
   router.map(routes)
   try {
     router.generate('messages')
@@ -76,7 +71,6 @@ test('#generate throws a useful error when listen has not been called', () => {
 // @api private
 
 test('#match matches a path against the routes', () => {
-  assert.expect(2)
   router.map(routes)
   let match = router.match('/application/KidkArolis/status/42')
   assert.equals(match.params, {
@@ -88,7 +82,6 @@ test('#match matches a path against the routes', () => {
 })
 
 test('#match matches a path with query params', () => {
-  assert.expect(1)
   router.map(routes)
   let match = router.match('/application/KidkArolis/status/42?withReplies=true&foo=bar')
   assert.equals(match.params, {
@@ -103,18 +96,54 @@ test('#match matches a path with query params', () => {
 
 suite('route maps')
 
+beforeEach(() => {
+  router = cherrytree()
+})
+
+afterEach(() => {
+  router.destroy()
+})
+
 test('routes with name "index" or that end int ".index" default to an empty path', () => {
-  router.map(function () {
-    this.route('index')
-    this.route('foo')
-    this.route('bar', function () {
-      this.route('bar.index')
+  router.map(function (route) {
+    route('index')
+    route('foo')
+    route('bar', function () {
+      route('bar.index')
     })
   })
   assert.equals(_.pluck(router.matchers, 'path'), [
     '/',
     '/foo',
     '/bar'
+  ])
+})
+
+test('a complex route map', () => {
+  router.map(function (route) {
+    route('application', function () {
+      route('home', {path: ''})
+      route('notifications')
+      route('messages', function () {
+        route('unread', function () {
+          route('priority')
+        })
+        route('read')
+        route('draft', function () {
+          route('recent')
+        })
+      })
+      route('status', {path: ':user/status/:id'})
+    })
+  })
+  // check that the internal matchers object is created
+  assert.equals(_.pluck(router.matchers, 'path'), [
+    '/application',
+    '/application/notifications',
+    '/application/messages/unread/priority',
+    '/application/messages/read',
+    '/application/messages/draft/recent',
+    '/application/:user/status/:id'
   ])
 })
 
