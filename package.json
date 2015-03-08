@@ -19,7 +19,6 @@
   "dependencies": {
     "location-bar": "^2.0.0",
     "lodash": "^3.3.0",
-    "lodash-amd": "^3.3.0",
     "when": "^3.7.2"
   },
   "keywords": [
