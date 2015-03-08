@@ -15,6 +15,7 @@ beforeEach(() => {
 })
 afterEach(function () {
   var self = this
+  if (expected === false) return
   try {
     assert(expected === referee.count - 1, 'expected ' + expected + ' assertions, got ' + referee.count)
   } catch (err) {
@@ -23,6 +24,7 @@ afterEach(function () {
     // self.currentTest.emit('error', err)
     // self.test.emit('error', err)
   }
+  expected = false
 })
 
 let testsContext = require.context('.', true, /Test$/)
