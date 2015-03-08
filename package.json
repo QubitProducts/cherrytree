@@ -20,6 +20,7 @@
   "dependencies": {
     "location-bar": "^2.0.0",
     "lodash": "^3.3.0",
+    "qs": "^2.3.3",
     "when": "^3.7.2"
   },
   "keywords": [
