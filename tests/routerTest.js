@@ -49,12 +49,18 @@ test('#map registers the routes', () => {
   assert.equals(router.routes[0].routes[3].options.path, ':user/status/:id')
 })
 
-test('#generate generates urls given route name and params', () => {
+test('#generate generates urls given route name and params as object', () => {
   assert.expect(1)
-  router.map(routes)
-  router.listen()
-  var url = router.generate('status', {user: 'foo', id: 1})
-  assert.equals(url, '#application/foo/status/1')
+  router.map(routes).listen()
+  var url = router.generate('status', {user: 'foo', id: 1, queryParams: {withReplies: true}})
+  assert.equals(url, '#application/foo/status/1?withReplies=true')
+})
+
+test('#generate generates urls given route name and params as args', () => {
+  assert.expect(1)
+  router.map(routes).listen()
+  var url = router.generate('status', 'foo', 1, {queryParams: {withReplies: true}})
+  assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
 
 test('#generate throws a useful error when listen has not been called', () => {
@@ -72,11 +78,13 @@ test('#generate throws a useful error when listen has not been called', () => {
 test('#match matches a path against the routes', () => {
   assert.expect(2)
   router.map(routes)
-  let match = router.match('/application/KidkArolis/status/42')
+  let match = router.match('/application/KidkArolis/status/42?withReplies=false')
   assert.equals(match.params, {
     user: 'KidkArolis',
     id: '42',
-    queryParams: {}
+    queryParams: {
+      withReplies: 'false'
+    }
   })
   assert.equals(_.pluck(match.routes, 'name'), ['application', 'status'])
 })
