@@ -1,5 +1,4 @@
-// Karma configuration
-// Generated on Mon Oct 07 2013 15:55:00 GMT+0100 (BST)
+var _ = require('lodash')
 
 var config = {
 
@@ -19,22 +18,11 @@ var config = {
   // this watcher watches when bundled files are updated
   autoWatch: true,
 
-  webpack: {
+  webpack: _.extend(require('./webpack.config'), {
+    entry: undefined,
     // this watcher watches when source files are updated
-    watch: true,
-    resolve: {
-      alias: {
-        'cherrytree': __dirname,
-        'expect': 'referee/lib/expect'
-      }
-    },
-    module: {
-      loaders: [
-        { test: /test.*\.js$/, exclude: /node_modules/, loader: 'babel' }
-      ]
-    },
-    devtool: 'inline-source-map'
-  },
+    watch: true
+  }),
 
   webpackServer: {
     noInfo: true

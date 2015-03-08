@@ -5,6 +5,7 @@
   "main": "router",
   "scripts": {
     "test": "standard && karma start --single-run",
+    "watch": "webpack -w",
     "release": "release"
   },
   "repository": {
