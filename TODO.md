@@ -12,14 +12,14 @@
 - [x] log redirects / cancel
 - [x] implement redirecting (unhandled rejection is currently thrown)
 - [x] implement cancelling/resuming transitions
-- [ ] consider providing a reference to the parent route object
-- [ ] fix trailing slash bug
-- [ ] prove that all this works using mdashboard
-- [ ] prove that redirects can be handled effectively in the model middleware
-- [ ] make sure transition and route descriptors are immutable (modifyng route descriptors only affect that transition), but doesn't modify the state of the router. Perhaps transition could be completely immutable, you could instead return stuff in the middleware to pass data on, e.g. the resolved RouteHandlers.
-- [ ] make sure the route options are attached to the route descriptors in transitions
-- [ ] make sure splats work
-- [ ] implement optional params / optional splats
+- [x] make sure the route options are attached to the route descriptors in transitions
+- [x] fix trailing slash bug
+- [x] prove that all this works using mdashboard
+- [x] prove that redirects can be handled effectively in the model middleware
+- [x] make sure transition and route descriptors are immutable (modifyng route descriptors only affect that transition), but doesn't modify the state of the router. Perhaps transition could be completely immutable, you could instead return stuff in the middleware to pass data on, e.g. the resolved RouteHandlers.
+- [ ] implement named splats
+- [ ] implement optional params
+- [ ] implement optional splats
 - [ ] check if we still need `update` hook...
 - [ ] handle matchPoint computation + annotating what changed in each route (previouslyActive | paramsChanged, queryParamsChanged)
 - [ ] make error reporting consistent for checking invariants, etc.
@@ -52,3 +52,4 @@
 
 - [x] consider making transitions not promises (since it's complicated when it comes to redirects, etc.). Instead have 1 global error handler (or many like middlewares). It gets called if transition fails. Also, each .use() can take another callback for when transition is cancelled/redirected (?). Finally, the last .use callback to get called basically indicates that the transition completed. Other than that, there is no other callback?
 - [x] consider passing in error handlers to the .use, or have a .error middleware (an alternative to .then on transitions)
+- [x] consider providing a reference to the parent route object

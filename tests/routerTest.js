@@ -7,8 +7,8 @@ suite('Cherrytree')
 
 let router
 
-let routes = function (route) {
-  route('application', function () {
+let routes = (route) => {
+  route('application', () => {
     route('home', {path: ''})
     route('notifications')
     route('messages')
@@ -27,7 +27,7 @@ afterEach(() => {
 // @api public
 
 test('#use registers middleware', () => {
-  let m = function () {}
+  let m = () => {}
   router.use(m)
   assert(router.middleware.length === 1)
   assert(router.middleware[0] === m)
@@ -94,6 +94,38 @@ test('#match matches a path with query params', () => {
   })
 })
 
+test('#match returns an array of route descriptors', () => {
+  router.map((route) => {
+    route('foo', {customData: 1}, () => {
+      route('bar', {customData: 2})
+    })
+  })
+  let match = router.match('/foo/bar')
+  assert.equals(match.routes, [{
+    name: 'foo',
+    path: 'foo',
+    options: {
+      customData: 1,
+      path: 'foo'
+    },
+    ancestors: []
+  }, {
+    name: 'bar',
+    path: 'bar',
+    options: {
+      customData: 2,
+      path: 'bar'
+    },
+    ancestors: ['foo']
+  }])
+})
+
+test('#match ignores the trailing slash', () => {
+  router.map(routes)
+  assert(router.match('/application/messages').routes.length)
+  assert(router.match('/application/messages/').routes.length)
+})
+
 suite('route maps')
 
 beforeEach(() => {
@@ -105,10 +137,10 @@ afterEach(() => {
 })
 
 test('routes with name "index" or that end int ".index" default to an empty path', () => {
-  router.map(function (route) {
+  router.map((route) => {
     route('index')
     route('foo')
-    route('bar', function () {
+    route('bar', () => {
       route('bar.index')
     })
   })
@@ -120,20 +152,23 @@ test('routes with name "index" or that end int ".index" default to an empty path
 })
 
 test('a complex route map', () => {
-  router.map(function (route) {
-    route('application', function () {
+  router.map((route) => {
+    route('application', () => {
       route('home', {path: ''})
       route('notifications')
-      route('messages', function () {
-        route('unread', function () {
+      route('messages', () => {
+        route('unread', () => {
           route('priority')
         })
         route('read')
-        route('draft', function () {
+        route('draft', () => {
           route('recent')
         })
       })
       route('status', {path: ':user/status/:id'})
+    })
+    route('anotherTopLevel', () => {
+      route('withChildren')
     })
   })
   // check that the internal matchers object is created
@@ -143,10 +178,21 @@ test('a complex route map', () => {
     '/application/messages/unread/priority',
     '/application/messages/read',
     '/application/messages/draft/recent',
-    '/application/:user/status/:id'
+    '/application/:user/status/:id',
+    '/anotherTopLevel/withChildren'
   ])
 })
 
-test('routes with duplicate names throw a useful error')
-
-test('the path of the first top level route defaults to /')
+test('routes with duplicate names throw a useful error', () => {
+  try {
+    router.map((route) => {
+      route('foo', () => {
+        route('foo')
+      })
+    })
+  } catch (e) {
+    assert.equals(e.message, 'Invariant Violation: Route names must be unique, but route "foo" is declared multiple times')
+    return
+  }
+  assert(false, 'Should not reach this')
+})
