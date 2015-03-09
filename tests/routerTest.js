@@ -89,6 +89,19 @@ test('#use middleware can not modify routers internal state by changing transiti
   router.listen()
 })
 
+test('#use transition fails if a middleware returns a transition', (done) => {
+  window.location.hash = '/application/messages'
+  router.map(routes)
+  router.logError = function () {}
+  router.use((transition) => {
+    transition.catch((err) => {
+      assert.equals(err.message, 'Invariant Violation: Middleware anonymous returned a transition which resulted in a deadlock')
+    }).then(done).catch(done)
+  })
+  router.use((transition) => transition)
+  router.listen()
+})
+
 // @api private
 
 test('#match matches a path against the routes', () => {

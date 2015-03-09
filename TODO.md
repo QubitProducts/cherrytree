@@ -17,15 +17,15 @@
 - [x] prove that all this works using mdashboard
 - [x] prove that redirects can be handled effectively in the model middleware
 - [x] make sure transition and route descriptors are immutable (modifyng route descriptors only affect that transition), but doesn't modify the state of the router. Perhaps transition could be completely immutable, you could instead return stuff in the middleware to pass data on, e.g. the resolved RouteHandlers.
+- [x] make error reporting consistent for checking invariants, etc.
+- [x] add (standard) linting
+- [x] throw a warning when middleware returns a transition, since that's basically a deadlock
 - [ ] implement named splats
 - [ ] implement optional params
 - [ ] implement optional splats
 - [ ] check if we still need `update` hook...
 - [ ] handle matchPoint computation + annotating what changed in each route (previouslyActive | paramsChanged, queryParamsChanged)
-- [ ] make error reporting consistent for checking invariants, etc.
 - [ ] detect noop transitions
-- [ ] throw a warning when middleware returns a transition, since that's basically a deadlock
-- [ ] add (standard) linting
 - [ ] a better name for generate
 - [ ] unit test some of the stuff
 - [ ] scenario test the router
