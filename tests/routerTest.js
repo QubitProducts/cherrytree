@@ -126,6 +126,12 @@ test('#match ignores the trailing slash', () => {
   assert(router.match('/application/messages/').routes.length)
 })
 
+test('#match returns an empty route array if nothing matches', () => {
+  router.map(routes)
+  let match = router.match('/foo/bar')
+  assert.equals(match, {routes: [], params: {queryParams: {}}})
+})
+
 suite('route maps')
 
 beforeEach(() => {
