@@ -68,6 +68,27 @@ test('#generate throws a useful error when listen has not been called', () => {
   }
 })
 
+test('#use middleware can not modify routers internal state by changing transition.routes', (done) => {
+  window.location.hash = '/application/messages'
+  router.map(routes)
+  router.use((transition) => {
+    assert.equals(transition.nextRoutes[0].name, 'application')
+    transition.nextRoutes[0].foo = 1
+    transition.nextRoutes[0].options.bar = 2
+  })
+  router.use((transition) => {
+    assert.equals(transition.nextRoutes[0].name, 'application')
+    assert.equals(transition.nextRoutes[0].foo, 1)
+    assert.equals(transition.nextRoutes[0].options.bar, 2)
+
+    assert.equals(router.routes[0].name, 'application')
+    assert.equals(router.routes[0].foo, undefined)
+    assert.equals(router.routes[0].options.foo, undefined)
+    done()
+  })
+  router.listen()
+})
+
 // @api private
 
 test('#match matches a path against the routes', () => {
