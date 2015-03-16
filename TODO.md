@@ -20,10 +20,12 @@
 - [x] make error reporting consistent for checking invariants, etc.
 - [x] add (standard) linting
 - [x] throw a warning when middleware returns a transition, since that's basically a deadlock
+- [x] check if we still need `update` hook...
+- [ ] separate params and queryParams objects, rename things to path, pathname, params, query
+- [ ] rename prev* to prev.
 - [ ] implement named splats
 - [ ] implement optional params
 - [ ] implement optional splats
-- [ ] check if we still need `update` hook...
 - [ ] handle matchPoint computation + annotating what changed in each route (previouslyActive | paramsChanged, queryParamsChanged)
 - [ ] detect noop transitions
 - [ ] a better name for generate
