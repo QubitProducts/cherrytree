@@ -72,14 +72,14 @@ test('#use middleware can not modify routers internal state by changing transiti
   window.location.hash = '/application/messages'
   router.map(routes)
   router.use((transition) => {
-    assert.equals(transition.nextRoutes[0].name, 'application')
-    transition.nextRoutes[0].foo = 1
-    transition.nextRoutes[0].options.bar = 2
+    assert.equals(transition.routes[0].name, 'application')
+    transition.routes[0].foo = 1
+    transition.routes[0].options.bar = 2
   })
   router.use((transition) => {
-    assert.equals(transition.nextRoutes[0].name, 'application')
-    assert.equals(transition.nextRoutes[0].foo, 1)
-    assert.equals(transition.nextRoutes[0].options.bar, 2)
+    assert.equals(transition.routes[0].name, 'application')
+    assert.equals(transition.routes[0].foo, 1)
+    assert.equals(transition.routes[0].options.bar, 2)
 
     assert.equals(router.routes[0].name, 'application')
     assert.equals(router.routes[0].foo, undefined)
@@ -138,6 +138,7 @@ test('#match returns an array of route descriptors', () => {
   assert.equals(match.routes, [{
     name: 'foo',
     path: 'foo',
+    paramNames: [],
     options: {
       customData: 1,
       path: 'foo'
@@ -146,6 +147,7 @@ test('#match returns an array of route descriptors', () => {
   }, {
     name: 'bar',
     path: 'bar',
+    paramNames: [],
     options: {
       customData: 2,
       path: 'bar'
