@@ -33,6 +33,80 @@ test('#use registers middleware', () => {
   assert(router.middleware[0] === m)
 })
 
+test('#use middleware gets passed in a transition object', (done) => {
+  let m = (transition) => {
+    let t = _.omit(transition, ['catch', 'then', 'cancel', 'redirectTo'])
+    let et = {
+      id: 3,
+      prev: {
+        routes: [{
+          name: 'application',
+          path: 'application',
+          paramNames: [],
+          options: {
+            path: 'application'
+          },
+          ancestors: []
+        }, {
+          name: 'home',
+          path: '',
+          paramNames: [],
+          options: {
+            path: ''
+          },
+          ancestors: ['application']
+        }],
+        path: '/application',
+        pathname: '/application',
+        params: {},
+        query: {}
+      },
+      routes: [{
+        name: 'application',
+        path: 'application',
+        paramNames: [],
+        options: {
+          path: 'application'
+        },
+        ancestors: []
+      }, {
+        name: 'status',
+        path: ':user/status/:id',
+        paramNames: ['user', 'id'],
+        options: {
+          path: ':user/status/:id'
+        },
+        ancestors: [
+          'application'
+        ]
+      }],
+      path: '/application/1/status/2?withReplies=true',
+      pathname: '/application/1/status/2',
+      params: {
+        user: '1',
+        id: '2'
+      },
+      query: {
+        withReplies: 'true'
+      }
+    }
+    assert.equals(t, et)
+
+    done()
+  }
+
+  // first navigate to 'home'
+  router.map(routes)
+  router.listen()
+  router.transitionTo('home').then(() => {
+    // then install the middleware and navigate to status page
+    // this is so that we have a richer transition object
+    // to assert
+    router.use(m)
+    return router.transitionTo('status', {user: 1, id: 2}, {withReplies: true})
+  }).catch(done)
+})
+
 test('#map registers the routes', () => {
   router.map(routes)
   // check that the internal matchers object is created
@@ -49,13 +123,7 @@ test('#map registers the routes', () => {
 
 test('#generate generates urls given route name and params as object', () => {
   router.map(routes).listen()
-  var url = router.generate('status', {user: 'foo', id: 1, queryParams: {withReplies: true}})
-  assert.equals(url, '#application/foo/status/1?withReplies=true')
-})
-
-test('#generate generates urls given route name and params as args', () => {
-  router.map(routes).listen()
-  var url = router.generate('status', 'foo', 1, {queryParams: {withReplies: true}})
+  var url = router.generate('status', {user: 'foo', id: 1}, {withReplies: true})
   assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
 
@@ -109,8 +177,7 @@ test('#match matches a path against the routes', () => {
   let match = router.match('/application/KidkArolis/status/42')
   assert.equals(match.params, {
     user: 'KidkArolis',
-    id: '42',
-    queryParams: {}
+    id: '42'
   })
   assert.equals(_.pluck(match.routes, 'name'), ['application', 'status'])
 })
@@ -120,11 +187,11 @@ test('#match matches a path with query params', () => {
   let match = router.match('/application/KidkArolis/status/42?withReplies=true&foo=bar')
   assert.equals(match.params, {
     user: 'KidkArolis',
-    id: '42',
-    queryParams: {
-      withReplies: 'true',
-      foo: 'bar'
-    }
+    id: '42'
+  })
+  assert.equals(match.query, {
+    withReplies: 'true',
+    foo: 'bar'
   })
 })
 
@@ -165,7 +232,7 @@ test('#match ignores the trailing slash', () => {
 test('#match returns an empty route array if nothing matches', () => {
   router.map(routes)
   let match = router.match('/foo/bar')
-  assert.equals(match, {routes: [], params: {queryParams: {}}})
+  assert.equals(match, {routes: [], params: {}, query: {}})
 })
 
 suite('route maps')
