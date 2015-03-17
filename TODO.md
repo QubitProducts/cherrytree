@@ -21,20 +21,19 @@
 - [x] add (standard) linting
 - [x] throw a warning when middleware returns a transition, since that's basically a deadlock
 - [x] check if we still need `update` hook...
-- [ ] separate params and queryParams objects, rename things to path, pathname, params, query
-- [ ] rename prev* to prev.
+- [x] separate params and queryParams objects, rename things to path, pathname, params, query
+- [x] rename prev* to prev.
+- [x] unit test some of the stuff
 - [ ] implement named splats
 - [ ] implement optional params
 - [ ] implement optional splats
-- [ ] handle matchPoint computation + annotating what changed in each route (previouslyActive | paramsChanged, queryParamsChanged)
 - [ ] detect noop transitions
-- [ ] a better name for generate
-- [ ] unit test some of the stuff
 - [ ] scenario test the router
 - [ ] proof of concept backend example
 
 
 
+- [ ] a better name for generate
 - [ ] add transition.followRedirects()
 - [ ] avoid pulling in when or lodash (location-bar is fine, install Promise as npm dep)
 - [ ] create examples folder where various middlewares are demonstrated
@@ -55,3 +54,4 @@
 - [x] consider making transitions not promises (since it's complicated when it comes to redirects, etc.). Instead have 1 global error handler (or many like middlewares). It gets called if transition fails. Also, each .use() can take another callback for when transition is cancelled/redirected (?). Finally, the last .use callback to get called basically indicates that the transition completed. Other than that, there is no other callback?
 - [x] consider passing in error handlers to the .use, or have a .error middleware (an alternative to .then on transitions)
 - [x] consider providing a reference to the parent route object
+- [x] consider handling matchPoint computation + annotating what changed in each route (previouslyActive | paramsChanged, queryParamsChanged)
