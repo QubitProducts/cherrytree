@@ -27,6 +27,7 @@
 - [x] implement named splats
 - [x] implement optional params
 - [x] implement optional splats
+- [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
 - [ ] detect noop transitions
 - [ ] scenario test the router
 - [ ] proof of concept backend example
