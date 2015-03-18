@@ -20,6 +20,7 @@
   "dependencies": {
     "location-bar": "^2.0.0",
     "lodash": "^3.3.0",
+    "path-to-regexp": "^1.0.3",
     "qs": "^2.3.3",
     "when": "^3.7.2"
   },

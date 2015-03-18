@@ -24,9 +24,9 @@
 - [x] separate params and queryParams objects, rename things to path, pathname, params, query
 - [x] rename prev* to prev.
 - [x] unit test some of the stuff
-- [ ] implement named splats
-- [ ] implement optional params
-- [ ] implement optional splats
+- [x] implement named splats
+- [x] implement optional params
+- [x] implement optional splats
 - [ ] detect noop transitions
 - [ ] scenario test the router
 - [ ] proof of concept backend example
