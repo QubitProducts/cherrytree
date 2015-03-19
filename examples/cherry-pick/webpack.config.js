@@ -18,7 +18,7 @@ module.exports = {
   ],
   module: {
     loaders: [
-      { test:  /cherry\-pick.*\.js$/, exclude: /node_modules/, loader: "babel" },
+      { test:  /.*\.js$/, exclude: /node_modules/, loader: "babel" },
       { test: /\.css$/, loader: "style!rework-webpack" },
       { test: /\.woff$/, loader: "url-loader?limit=10000&minetype=application/font-woff" },
       { test: /\.png$/, loader: "file-loader?mimetype=image/png" },

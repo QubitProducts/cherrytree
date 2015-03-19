@@ -27,28 +27,28 @@
 - [x] implement named splats
 - [x] implement optional params
 - [x] implement optional splats
-- [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
+- [x] consider using path-to-regexp
 - [ ] detect noop transitions
 - [ ] scenario test the router
 - [ ] proof of concept backend example
 
 
 
-- [ ] a better name for generate
+- [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
+- [ ] a function for listing all possible routes (leaf routes with their patterns)
 - [ ] add transition.followRedirects()
-- [ ] avoid pulling in when or lodash (location-bar is fine, install Promise as npm dep)
-- [ ] create examples folder where various middlewares are demonstrated
-- [ ] write a blogpost draft about the journey to 2.0 (sketchy bulletpoints)
-- [ ] support CJS and AMD... (will need to do smth about qs)
 - [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies.
 - [ ] add a code example in the README
+- [ ] avoid pulling in when or lodash (location-bar is fine, install Promise as npm dep)
 - [ ] add the size of the lib to README
 - [ ] update docs
+- [ ] support CJS and AMD... (will need to do smth about qs)
+- [ ] create a backbone example (the backbone-route workflow)
 - [ ] create cherrytree-for-backbone
 - [ ] create cherrytree-for-react
-- [ ] consider using path-to-regexp
-- [ ] create a backbone example (the backbone-route workflow)
-- [ ] a function for listing all possible routes (leaf routes with their patterns)
+- [ ] create examples folder where various middlewares are demonstrated
+- [ ] write a blogpost draft about the journey to 2.0 (sketchy bulletpoints)
+- [ ] a better name for generate
 
 
 

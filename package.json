@@ -47,16 +47,16 @@
     "mocha": "^2.2.0",
     "referee": "^1.1.1",
     "referee-sinon": "^1.0.2",
-    "standard": "^3.0.0-alpha",
+    "standard": "^3.2.0",
     "underscore": "^1.7.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.6"
   },
   "standard": {
     "ignore": [
+      "examples/cherry-pick/**",
       "dist/**",
       "docs/**",
-      "examples/**",
       "testOld/**",
       "vendor/**"
     ]

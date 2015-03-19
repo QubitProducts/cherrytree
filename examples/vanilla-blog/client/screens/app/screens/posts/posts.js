@@ -1,5 +1,6 @@
-var BaseHandler = require("base_handler");
-var template = require("./templates/posts.html");
+var _ = require('lodash')
+var BaseHandler = require('base_handler')
+var template = require('./templates/posts.html')
 
 module.exports = _.extend({}, BaseHandler, {
   template: template,
@@ -7,9 +8,9 @@ module.exports = _.extend({}, BaseHandler, {
     return context.then(function (context) {
       return new Promise(function (resolve) {
         resolve(_.extend(context, {
-          allPostsData: ["foo", "bar"]
-        }));
-      });
-    });
+          allPostsData: ['foo', 'bar']
+        }))
+      })
+    })
   }
-});
+})

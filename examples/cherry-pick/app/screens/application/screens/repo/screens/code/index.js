@@ -55,7 +55,7 @@ export default React.createClass({
   statics: {
     fetchData: function (params) {
       var repoUid = params.org + '/' + params.repo;
-      var path = params.splat || '';
+      var path = params.path || '';
       return {
         code: github.code(repoUid, path),
         path: path,
@@ -100,7 +100,7 @@ export default React.createClass({
 
   link(path) {
     return this.context.router.generate('repo.code', {
-      splat: path
+      path: path
     });
   }
 });

@@ -1,1 +1,1 @@
-module.exports = require("./search");
+module.exports = require('./search')

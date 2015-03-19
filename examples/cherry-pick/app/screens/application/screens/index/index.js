@@ -19,7 +19,7 @@ export default React.createClass({
     e.preventDefault();
     var repo = this.refs.repoInput.getDOMNode().value.split('/');
     this.setState({disabled: true});
-    this.context.router.transitionTo('repo.commits', repo[0], repo[1]);
+    this.context.router.transitionTo('repo.commits', {org: repo[0], repo: repo[1]});
   },
 
   render() {

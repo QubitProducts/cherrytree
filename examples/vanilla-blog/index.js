@@ -1,1 +1,1 @@
-module.exports = require("./client/app");
+module.exports = require('./client/app')

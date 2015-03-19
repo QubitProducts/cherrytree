@@ -5,15 +5,17 @@ import React from 'react';
 import cherrytree from '../../../';
 import loader from './loader';
 
-let router = window.router = cherrytree();
+let router = window.router = cherrytree({
+  log: true
+});
 
-router.map(function () {
-  this.route('application', {path: '/'}, function () {
-    this.route('index', {path: '/'});
-    this.route('organisation', {path: ':org'});
-    this.route('repo', {path: ':org/:repo'}, function () {
-      this.route('repo.code', {path: 'code/*?'});
-      this.route('repo.commits');
+router.map(function (route) {
+  route('application', {path: '/'}, function () {
+    route('index', {path: '/'});
+    route('organisation', {path: ':org'});
+    route('repo', {path: ':org/:repo'}, function () {
+      route('repo.code', {path: 'code/:path*'});
+      route('repo.commits');
     });
   });
 });
@@ -23,14 +25,14 @@ router.use(loader);
 
 // load route handlers
 router.use((transition) => {
-  transition.nextRoutes.forEach(
+  transition.routes.forEach(
     (route) => route.RouteHandler = route.RouteHandler || getRouteHandler(route)
   );
 });
 
 // load data (or context) for each route
 router.use((transition) => {
-  return when.all(transition.nextRoutes.map((route) => {
+  return when.all(transition.routes.map((route) => {
     if (route.RouteHandler.fetchData) {
       return keys.all(route.RouteHandler.fetchData(transition.params, transition));
     }
@@ -49,8 +51,8 @@ router.use((transition, contexts) => {
     let childRouteHandler;
     // start rendering with the child most route first
     // working our way up to the parent
-    let i = transition.nextRoutes.length - 1;
-    _.clone(transition.nextRoutes).reverse().forEach((route) => {
+    let i = transition.routes.length - 1;
+    _.clone(transition.routes).reverse().forEach((route) => {
       let RouteHandler = route.RouteHandler;
       let context = contexts[i--];
       childRouteHandler = <RouteHandler {...context}>{childRouteHandler}</RouteHandler>;

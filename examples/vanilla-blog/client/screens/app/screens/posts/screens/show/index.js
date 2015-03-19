@@ -1,1 +1,1 @@
-module.exports = require("./show");
+module.exports = require('./show')

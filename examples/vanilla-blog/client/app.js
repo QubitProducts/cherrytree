@@ -1,101 +1,78 @@
-var _ = require("lodash");
-var Promise = require("when").Promise;
-var cherrytree = require("../../../");
-var getHandler = require("./handler");
+var Promise = require('when').Promise
+var cherrytree = require('../../../')
+var getHandler = require('./handler')
 
-require("./styles/app.css");
+require('./styles/app.css')
 
 // create the router
-var router = window.router = cherrytree();
+var router = window.router = cherrytree({
+  log: true
+})
 
 // define the route map
-router.map(function () {
-  this.route("application", {path: "/"}, function () {
-    this.route("home", {path: "/"});
-    this.route("about");
-    this.route("faq");
-    this.route("posts", function () {
-      this.route("posts.index");
-      this.route("posts.popular");
-      this.route("posts.search", { path: "search/:query" });
-      this.route("posts.show", { path: ":id" });
-    });
-  });
-});
+router.map(function (route) {
+  route('application', {path: '/'}, function () {
+    route('home', {path: '/'})
+    route('about')
+    route('faq')
+    route('posts', function () {
+      route('posts.index')
+      route('posts.popular')
+      route('posts.search', { path: 'search/:query' })
+      route('posts.show', { path: ':id' })
+    })
+  })
+})
 
 // implement a set of middleware
 
-// simple logging
-router.use(function log(transition) {
-  console.log("Transition to", transition.path);
-  transition.then(function () {
-    console.log("Transition successful.");
-  }).catch(function (err) {
-    if (err.type === "TransitionRedirected") {
-      console.log("Redirecting");
-      return;
-    }
-    if (err.type === "TransitionCancelled") {
-      console.log("Aborted");
-      return;
-    }
-    console.log("Transition failed");
-    throw err;
-  });
-});
-
 // load and attach route handlers
 // this can load handlers dynamically (TODO)
-router.use(function loadHandlers(transition) {
-  var i = 0;
-  transition.nextRoutes.forEach(function (route) {
-    var handler = getHandler(route.name);
-    handler.name = route.name;
-    handler.router = router;
-    var parentRoute = transition.nextRoutes[i - 1];
+router.use(function loadHandlers (transition) {
+  transition.routes.forEach(function (route, i) {
+    var handler = getHandler(route.name)
+    handler.name = route.name
+    handler.router = router
+    var parentRoute = transition.routes[i - 1]
     if (parentRoute) {
-      handler.parent = parentRoute.handler;
+      handler.parent = parentRoute.handler
     }
-    route.handler = handler;
-    i++;
-  });
-});
+    route.handler = handler
+  })
+})
 
 // willTransition hook
-router.use(function willTransition(transition) {
-  var prevRoutes = transition.prevRoutes;
-  prevRoutes.forEach(function (route) {
-    route.handler.willTransition && route.handler.willTransition(transition);
-  });
-});
+router.use(function willTransition (transition) {
+  transition.prev.routes.forEach(function (route) {
+    route.handler.willTransition && route.handler.willTransition(transition)
+  })
+})
 
 // deactive up old routes
 // they also get a chance to abort the transition (TODO)
-router.use(function deactivateHook(transition) {
-  var prevRoutes = transition.prevRoutes;
-  prevRoutes.forEach(function (route) {
-    route.handler.deactivate();
-  });
-});
+router.use(function deactivateHook (transition) {
+  transition.prev.routes.forEach(function (route) {
+    route.handler.deactivate()
+  })
+})
 
 // model hook
 // with the loading hook (TODO)
-router.use(function modelHook(transition) {
-  var prevContext = Promise.resolve();
-  return Promise.all(transition.nextRoutes.map(function (route) {
-    prevContext = Promise.resolve(route.handler.model(transition.params, prevContext, transition));
-    return prevContext;
-  }));
-});
+router.use(function modelHook (transition) {
+  var prevContext = Promise.resolve()
+  return Promise.all(transition.routes.map(function (route) {
+    prevContext = Promise.resolve(route.handler.model(transition.params, prevContext, transition))
+    return prevContext
+  }))
+})
 
 // activate hook
 // which only reactives routes starting at the match point (TODO)
-router.use(function activateHook(transition, contexts) {
-  var i = 0;
-  transition.nextRoutes.forEach(function (route) {
-    var handler = route.handler.activate(contexts[i++]);
-  });
-});
+router.use(function activateHook (transition, contexts) {
+  transition.routes.forEach(function (route, i) {
+    route.handler.activate(contexts[i])
+  })
+})
 
 // start the routing
-router.listen();
+router.listen()

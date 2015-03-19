@@ -1,1 +1,1 @@
-module.exports = require("./faq");
+module.exports = require('./faq')
