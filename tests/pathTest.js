@@ -10,7 +10,7 @@ test('Path.extractParamNames', () => {
   assert.equals(Path.extractParamNames('/files/:path*.jpg'), ['path'])
 })
 
-test.only('Path.extractParams', () => {
+test('Path.extractParams', () => {
   assert.equals(Path.extractParams('a/b/c', 'a/b/c'), {})
   assert.equals(Path.extractParams('a/b/c', 'd/e/f'), null)
 
@@ -80,7 +80,7 @@ test('Path.injectParams', () => {
 
   assert.equals(Path.injectParams('/a/:foo*/d', { foo: 'b/c' }), '/a/b/c/d')
   assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b', bar: 'd' }), '/a/b/c/d')
-  assert.exception(() => Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }))
+  assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }), '/a/b/c/')
 
   assert.equals(Path.injectParams('/a/:foo+/d', { foo: 'b/c' }), '/a/b/c/d')
   assert.equals(Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b', bar: 'd' }), '/a/b/c/d')
