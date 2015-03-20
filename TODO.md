@@ -28,12 +28,15 @@
 - [x] implement optional params
 - [x] implement optional splats
 - [x] consider using path-to-regexp
-- [ ] detect noop transitions
+- [x] detect noop transitions
 - [ ] scenario test the router
 - [ ] proof of concept backend example
+- [ ] test url behaviour during transitions
+- [ ] test url behaviour during cancellations
 
 
 
+- [ ] polish the location implementations, make sure they make sense (consider introducing makeHref and makePath on the location object itself)
 - [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
 - [ ] a function for listing all possible routes (leaf routes with their patterns)
 - [ ] add transition.followRedirects()

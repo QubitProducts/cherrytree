@@ -1,4 +1,5 @@
 let _ = require('lodash')
+let delay = require('when/delay')
 let {assert} = require('referee')
 let {suite, test, beforeEach, afterEach} = window
 let cherrytree = require('..')
@@ -33,7 +34,7 @@ test('#use registers middleware', () => {
   assert(router.middleware[0] === m)
 })
 
-test('#use middleware gets passed in a transition object', (done) => {
+test('#use middleware gets passed a transition object', (done) => {
   let m = (transition) => {
     let t = _.omit(transition, ['catch', 'then', 'cancel', 'redirectTo'])
     let et = {
@@ -98,13 +99,14 @@ test('#use middleware gets passed in a transition object', (done) => {
   // first navigate to 'home'
   router.map(routes)
   router.listen()
-  router.transitionTo('home').then(() => {
-    // then install the middleware and navigate to status page
-    // this is so that we have a richer transition object
-    // to assert
-    router.use(m)
-    return router.transitionTo('status', {user: 1, id: 2}, {withReplies: true})
-  }).catch(done)
+    .then(() => router.transitionTo('home'))
+    .then(() => {
+      // then install the middleware and navigate to status page
+      // this is so that we have a richer transition object
+      // to assert
+      router.use(m)
+      return router.transitionTo('status', {user: 1, id: 2}, {withReplies: true})
+    }).catch(done)
 })
 
 test('#map registers the routes', () => {
@@ -233,6 +235,32 @@ test('#match returns an empty route array if nothing matches', () => {
   router.map(routes)
   let match = router.match('/foo/bar')
   assert.equals(match, {routes: [], params: {}, query: {}})
+})
+
+test('#transitionTo called multiple times reuses the active transition', (done) => {
+  router.map(routes)
+  router.listen().then(() => {
+    router.use(() => delay(500))
+    assert.equals(router.transitionTo('status', {user: 'me', id: 1}).id, 2)
+    assert.equals(router.transitionTo('status', {user: 'me', id: 1}).id, 2)
+    done()
+  }).catch(done)
+})
+
+test('#transitionTo called on the same route, returns a completed transition', (done) => {
+  let called = false
+  router.map(routes)
+  router.listen().then(() => {
+    return router.transitionTo('status', {user: 'me', id: 1})
+  }).then(() => {
+    router.use(() => called = true)
+    let t = router.transitionTo('status', {user: 'me', id: 1})
+    assert.equals(t.noop, true)
+    return t
+  }).then(() => {
+    assert.equals(called, false)
+    done()
+  }).catch(done)
 })
 
 suite('route maps')
