@@ -1,11 +1,14 @@
 {
   "name": "cherrytree",
   "version": "0.7.0",
-  "description": "Cherrytree is a hierarchical router for clientside web applications.",
-  "main": "router",
+  "description": "Cherrytree - a flexible hierarchical client side router",
+  "main": "index",
   "scripts": {
+    "build": "npm run build-amd && npm run build-npm",
+    "build-amd": "./tasks/build-amd.sh",
+    "build-npm": "./tasks/build-npm.sh",
     "test": "standard && karma start --single-run",
-    "watch": "webpack -w",
+    "watch": "DEBUG=1 webpack -w index.js build/amd/cherrytree-amd-debug.js",
     "release": "release"
   },
   "repository": {
@@ -35,6 +38,7 @@
   "devDependencies": {
     "babel-core": "^4.7.1",
     "babel-loader": "^4.1.0",
+    "bro-size": "^1.0.0",
     "jquery": "^2.1.3",
     "karma": "~0.12.23",
     "karma-chrome-launcher": "~0.1.0",

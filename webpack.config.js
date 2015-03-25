@@ -1,10 +1,9 @@
 module.exports = {
   context: __dirname,
-  entry: './index',
   output: {
-    path: __dirname + '/dist',
-    filename: 'cherrytree.js',
-    library: 'cherrytree',
+    // path: path.join(__dirname, 'build', 'amd'),
+    // filename: 'cherrytree-amd.js',
+    library: 'cherrytree-amd',
     libraryTarget: 'umd'
   },
   resolve: {
@@ -18,5 +17,5 @@ module.exports = {
       { test: /\.js$/, exclude: /node_modules/, loader: 'babel' }
     ]
   },
-  devtool: 'inline-source-map'
+  devtool: process.env.DEBUG ? 'inline-source-map' : false
 }
