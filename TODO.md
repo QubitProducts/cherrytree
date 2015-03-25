@@ -29,29 +29,33 @@
 - [x] implement optional splats
 - [x] consider using path-to-regexp
 - [x] detect noop transitions
+- [x] add a code example in the README
 - [ ] scenario test the router
-- [ ] proof of concept backend example
 - [ ] test url behaviour during transitions
 - [ ] test url behaviour during cancellations
-
-
-
-- [ ] polish the location implementations, make sure they make sense (consider introducing makeHref and makePath on the location object itself)
-- [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
-- [ ] a function for listing all possible routes (leaf routes with their patterns)
-- [ ] add transition.followRedirects()
-- [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies.
-- [ ] add a code example in the README
-- [ ] avoid pulling in when or lodash (location-bar is fine, install Promise as npm dep)
+- [ ] avoid pulling in when or lodash
+- [ ] install Promise as npm dep
 - [ ] add the size of the lib to README
-- [ ] update docs
-- [ ] support CJS and AMD... (will need to do smth about qs)
+- [ ] create a single file hello-world example
 - [ ] create a backbone example (the backbone-route workflow)
+- [ ] update docs
+- [ ] release cherrytree@2.0.0-alpha.1 to npm - this requires an npm release flow (this version doesn't bunde any of the deps)
+- [ ] release cherrytree-amd@2.0.0-alpha.1 to npm too (this version has all deps bundled)
+
+Move to GitHub issues
+
+Tag 2.0
+
+- [ ] a function for listing all possible routes (leaf routes with their patterns)
+- [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies
 - [ ] create cherrytree-for-backbone
 - [ ] create cherrytree-for-react
+- [ ] write a blogpost draft about the journey to 2.0
+- [ ] polish the location implementations, make sure they make sense (consider introducing makeHref and makePath on the location object itself)
 - [ ] create examples folder where various middlewares are demonstrated
-- [ ] write a blogpost draft about the journey to 2.0 (sketchy bulletpoints)
-- [ ] a better name for generate
+- [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
+- [ ] add transition.followRedirects()
+- [ ] proof of concept isomorphic example
 
 
 
