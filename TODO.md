@@ -31,9 +31,9 @@
 - [x] detect noop transitions
 - [x] add a code example in the README
 - [x] install Promise as npm dep
-- [ ] scenario test the router
+- [x] scenario test the router
+- [x] test url behaviour during cancellations
 - [ ] test url behaviour during transitions
-- [ ] test url behaviour during cancellations
 - [ ] avoid pulling in when or lodash
 - [ ] add the size of the lib to README
 - [ ] create a single file hello-world example
