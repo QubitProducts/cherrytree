@@ -30,11 +30,11 @@
 - [x] consider using path-to-regexp
 - [x] detect noop transitions
 - [x] add a code example in the README
+- [x] install Promise as npm dep
 - [ ] scenario test the router
 - [ ] test url behaviour during transitions
 - [ ] test url behaviour during cancellations
 - [ ] avoid pulling in when or lodash
-- [ ] install Promise as npm dep
 - [ ] add the size of the lib to README
 - [ ] create a single file hello-world example
 - [ ] create a backbone example (the backbone-route workflow)

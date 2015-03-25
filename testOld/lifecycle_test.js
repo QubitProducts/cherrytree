@@ -3,7 +3,7 @@ define(function (require) {
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
   var MemoryLocation = require("cherrytree/locations/memory");
-  var Promise = require("cherrytree/vendor/promise");
+  var Promise = require("es6-promise").Promise;
 
 
   var delay = function (time) {

@@ -25,7 +25,7 @@ define(function (require) {
 
   var $ = require("jquery");
   var _ = require("underscore");
-  var Promise = require("cherrytree/vendor/promise");
+  var Promise = require("es6-promise").Promise;
   var Router = require("cherrytree");
   var Route = require("cherrytree/route");
 
