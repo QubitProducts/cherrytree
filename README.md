@@ -9,8 +9,15 @@ Cherrytree is a flexible hierarchical client side router. Cherrytree translates 
 
 You can get cherrytree from npm - it supports both AMD and CJS.
 
-    $ npm install --save QubitProducts/cherrytree
+    $ npm install --save cherrytree
 
+In a CJS environment, simply require it as usual, the dependencies will be loaded from npm
+
+    require('cherrytree')
+
+In an AMD environment, require the standalone UMD build - this version has all of the dependencies bundled
+
+    require('cherrytree/standalone')
 
 # Usage
 

@@ -1,9 +1,7 @@
 module.exports = {
   context: __dirname,
   output: {
-    // path: path.join(__dirname, 'build', 'amd'),
-    // filename: 'cherrytree-amd.js',
-    library: 'cherrytree-amd',
+    library: 'cherrytree',
     libraryTarget: 'umd'
   },
   resolve: {

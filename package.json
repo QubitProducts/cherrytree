@@ -4,12 +4,10 @@
   "description": "Cherrytree - a flexible hierarchical client side router",
   "main": "index",
   "scripts": {
-    "build": "npm run build-amd && npm run build-npm",
-    "build-amd": "./tasks/build-amd.sh",
-    "build-npm": "./tasks/build-npm.sh",
+    "build": "./tasks/build.sh",
+    "release": "./tasks/release.sh",
     "test": "standard && karma start --single-run",
-    "watch": "DEBUG=1 webpack -w index.js build/amd/cherrytree-amd-debug.js",
-    "release": "release"
+    "watch": "DEBUG=1 webpack -w index.js build/standalone.js"
   },
   "repository": {
     "type": "git",
