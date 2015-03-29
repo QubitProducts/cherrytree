@@ -114,7 +114,7 @@ router.map(function(route) {
     route('index')
     route('inbox', function() {
       route('inbox.index')
-      route('mail', {path: 'm/:mailId}, function () {
+      route('mail', {path: 'm/:mailId'}, function () {
         route('mail.index')
         route('mail.raw')
       })
