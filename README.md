@@ -83,7 +83,7 @@ router.listen()
 
 # Docs
 
-Read [the guide](docs/guide.md) or [the API docs](docs/api.md).
+Read [the API docs](docs/api.md) or [the brief guide](docs/guide.md)
 
 # Examples
 
