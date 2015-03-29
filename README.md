@@ -1,6 +1,6 @@
 # Cherrytree
 
-![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)
+[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)](https://codeship.com/projects/19734)
 
 Cherrytree is a flexible hierarchical client side router. Cherrytree translates every URL change to a transition object and a list of matching routes. You then apply a middleware function to translate the transition data into the desired state of your application.
 
