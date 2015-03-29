@@ -36,7 +36,7 @@
 - [x] avoid pulling in lodash
 - [x] test url behaviour during cancellations
 - [x] create a single file hello-world example
-- [ ] test url behaviour during transitions
+- [x] test url behaviour during transitions
 - [ ] update docs
 - [ ] release cherrytree@2.0.0-alpha.1 to npm - both cjs and amd version
 

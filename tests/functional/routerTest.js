@@ -55,6 +55,37 @@ test('cancelling and retrying transitions', () => {
   })
 })
 
+test.skip('cancelling transition doesn not add a history entry', () => {
+  return co(function * () {
+    // we start of at faq
+    yield router.transitionTo('faq')
+    // then go to posts.filter
+    yield router.transitionTo('posts.filter', {filterId: 'foo'})
+    assert.equals(window.location.hash, '#posts/filter/foo')
+
+    // now attempt to transition to about and cancel
+    var transition = router.transitionTo('/about')
+    transition.cancel()
+    yield transition.catch(() => {})
+
+    // the url is still posts.filter
+    assert.equals(window.location.hash, '#posts/filter/foo')
+
+    // going back should now take as to faq
+    console.log('HERE')
+    yield new Promise((resolve, reject) => {
+      router.use((transition) => {
+        console.log('TRANS')
+        transition.then(() => {
+          assert.equals(window.location.hash, '#faq')
+          resolve()
+        }).catch(reject)
+      })
+      window.history.back()
+    })
+  })
+})
+
 test('navigating around the app', () => {
   return co(function * () {
     assert.equals($('.application .outlet').html(), 'Welcome to this application')
@@ -80,5 +111,42 @@ test('navigating around the app', () => {
       window.location.hash = '#posts/filter/foo'
     })
     assert.equals($('.application .outlet').html(), 'Filter not found')
+  })
+})
+
+test('url behaviour during transitions', () => {
+  return co(function * () {
+    assert.equals(window.location.hash, '#/')
+    let transition = router.transitionTo('about')
+    assert.equals(window.location.hash, '#about')
+    yield transition
+    assert.equals(window.location.hash, '#about')
+    window.history.back()
+    yield new Promise((resolve) => {
+      router.use((transition) => {
+        assert.equals(window.location.hash, '#/')
+        resolve()
+      })
+    })
+  })
+})
+
+test('url behaviour during failed transitions', () => {
+  return co(function * () {
+    router.logError = () => {}
+    yield router.transitionTo('about')
+    yield new Promise((resolve, reject) => {
+      // setup a middleware that will fail
+      router.use((transition) => {
+        // but catch the error
+        transition.catch((err) => {
+          assert.equals(err.message, 'failed')
+          assert.equals(window.location.hash, '#faq')
+          resolve()
+        }).catch(reject)
+        throw new Error('failed')
+      })
+      router.transitionTo('faq')
+    })
   })
 })
