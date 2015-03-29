@@ -32,32 +32,33 @@
 - [x] add a code example in the README
 - [x] install Promise as npm dep
 - [x] scenario test the router
+- [x] avoid pulling in when
+- [x] avoid pulling in lodash
 - [x] test url behaviour during cancellations
+- [x] create a single file hello-world example
 - [ ] test url behaviour during transitions
-- [ ] avoid pulling in when or lodash
-- [ ] add the size of the lib to README
-- [ ] create a single file hello-world example
-- [ ] create a backbone example (the backbone-route workflow)
 - [ ] update docs
-- [ ] release cherrytree@2.0.0-alpha.1 to npm - this requires an npm release flow (this version doesn't bunde any of the deps)
-- [ ] release cherrytree-amd@2.0.0-alpha.1 to npm too (this version has all deps bundled)
+- [ ] release cherrytree@2.0.0-alpha.1 to npm - both cjs and amd version
 
 Move to GitHub issues
 
 Tag 2.0
 
+- [ ] create a backbone example (the backbone-route workflow)
+- [ ] add the size of the lib to README
 - [ ] a function for listing all possible routes (leaf routes with their patterns)
-- [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies
 - [ ] create cherrytree-for-backbone
 - [ ] create cherrytree-for-react
-- [ ] write a blogpost draft about the journey to 2.0
 - [ ] polish the location implementations, make sure they make sense (consider introducing makeHref and makePath on the location object itself)
 - [ ] create examples folder where various middlewares are demonstrated
 - [ ] throw a more specific error when trying to transitionTo/generate a route that is not a leaf node
-- [ ] add transition.followRedirects()
 - [ ] proof of concept isomorphic example
+- [ ] write a blogpost draft about the journey to 2.0
 
+Other issues
 
+- [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies
+- [ ] add transition.followRedirects()
 
 - [x] consider making transitions not promises (since it's complicated when it comes to redirects, etc.). Instead have 1 global error handler (or many like middlewares). It gets called if transition fails. Also, each .use() can take another callback for when transition is cancelled/redirected (?). Finally, the last .use callback to get called basically indicates that the transition completed. Other than that, there is no other callback?
 - [x] consider passing in error handlers to the .use, or have a .error middleware (an alternative to .then on transitions)
