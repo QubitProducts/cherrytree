@@ -2,15 +2,15 @@
 
 ![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)
 
-Cherrytree is a flexible hierarchical client side router. Use the middleware mechanism to partially load parts of your app, load data, render views, perform redirects, etc.
+Cherrytree is a flexible hierarchical client side router. Cherrytree translates every URL change to a transition object and a list of matching routes. You then apply a middleware function to translate the transition data into the desired state of your application.
+
 
 # Installation
 
 You can get cherrytree from npm - it supports both AMD and CJS.
 
-```sh
-npm install --save QubitProducts/cherrytree#2.0
-```
+    $ npm install --save QubitProducts/cherrytree
+
 
 # Usage
 
@@ -81,9 +81,11 @@ router.listen()
 
 ```
 
+
 # Docs
 
 Read [the API docs](docs/api.md) or [the brief guide](docs/guide.md)
+
 
 # Examples
 
@@ -92,6 +94,7 @@ You can clone this repo if you want to run the `examples` locally. Currently the
 * [hello-world](examples/hello-world) - a single file example of how to get started
 * [cherry-pick](examples/cherry-pick) - a mini GitHub clone written in React.js
 * [vanilla-blog](examples/vanilla-blog) - a simple static demo of blog like app that uses no framework
+
 
 # Features
 
@@ -104,6 +107,7 @@ You can clone this repo if you want to run the `examples` locally. Currently the
 * navigate around the app programatically, e.g. `router.transitionTo('commits')`
 * rename URL segments (e.g. /account -> /profile) without having to change route names or manuall update any links
 * not coupled to any framework
+
 
 # How does it compare to other routers?
 
