@@ -1,8 +1,10 @@
 let _ = require('lodash')
-let delay = require('when/delay')
+let Promise = require('es6-promise').Promise
 let {assert} = require('referee')
 let {suite, test, beforeEach, afterEach} = window
 let cherrytree = require('..')
+
+let delay = (t) => new Promise((resolve) => setTimeout(resolve, t))
 
 suite('Cherrytree')
 
