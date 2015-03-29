@@ -42,6 +42,8 @@ router.use(function (transition, datas) {
 })
 ```
 
+#### transition
+
 The transition object is itself a promise. It also contains the following attributes
 
 * `id`
@@ -64,6 +66,16 @@ And the following methods
 * `cancel`
 * `retry`
 * `redirectTo`
+
+#### route
+
+During every transition, you can inspect `transition.routes` and `transition.prev.routes` to see where the router is transitioning to. These are arrays that contain a list of route descriptors. Each route descriptor has the following attributes
+
+* `name` - e.g. `'message'`
+* `path` - the path segment, e.g. `'message/:id'`
+* `paramNames` - a list of dynamic param names, e.g `['id']`
+* `options` - the options object that was passed to the `route` function in the `map`
+* `ancestors` - an array of route names that are parents of this route, e.g. `['application', 'profile']`
 
 ### router.listen()
 
