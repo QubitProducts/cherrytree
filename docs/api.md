@@ -24,6 +24,46 @@ router.map(function (route) {
 })
 ```
 
+#### Nested paths
+
+Nested paths are concatenated unless they start with a '/'. For example
+
+```js
+router.map(function (route) {
+  route('foo', {path: '/foo'}, function () {
+    route('bar', {path: '/bar'}, function () {
+      route('baz', {path: '/baz'})
+    });
+  })
+})
+```
+
+The above map results in 1 URL `/baz` mapping to ['foo', 'bar', 'baz'] routes.
+
+```js
+router.map(function (route) {
+  route('foo', {path: '/foo'}, function () {
+    route('bar', {path: 'bar'}, function () {
+      route('baz', {path: 'baz'})
+    });
+  })
+})
+```
+
+The above map results in 1 URL `/foo/bar/baz` mapping to ['foo', 'bar', 'baz'] routes.
+
+#### Dynamic paths
+
+Paths can contain dynamic segments as described in the docs of [path-to-regexp](https://github.com/pillarjs/path-to-regexp). For example:
+
+```js
+route('foo', {path: '/hello/:myParam'}) // single named param, matches /hello/1
+route('foo', {path: '/hello/:myParam/:myOtherParam'}) // two named params, matches /hello/1/2
+route('foo', {path: '/hello/:myParam?'}) // single optional named param, matches /hello and /hello/1
+route('foo', {path: '/hello/:splat*'}) // match 0 or more segments, matches /hello and /hello/1 and /hello/1/2/3
+route('foo', {path: '/hello/:splat+'}) // match 1 or more segments, matches /hello/1 and /hello/1/2/3
+```
+
 ### router.use(fn)
 
 Add a transition middleware. Every time a transition takes place this middleware will be called with a transition as the argument. You can call `use` multiple times to add more middlewares. The middleware function can return a promise and the next middleware will not be called until the promise of the previous middleware is resolved. The result of the promise is passed in as a second argument to the next middleware. E.g.
