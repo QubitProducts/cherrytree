@@ -2,4 +2,3 @@
 node_modules
 sauce.json
 .sublimelinterrc
-build
