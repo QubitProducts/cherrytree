@@ -121,7 +121,11 @@ test('url behaviour during transitions', () => {
     assert.equals(window.location.hash, '#about')
     yield transition
     assert.equals(window.location.hash, '#about')
-    window.history.back()
+    // would be cool to test history.back() here
+    // but in IE it reloads the karma iframe, so let's
+    // use a regular location.hash assignment instead
+    // window.history.back()
+    window.location.hash = '#/'
     yield new Promise((resolve) => {
       router.use((transition) => {
         assert.equals(window.location.hash, '#/')
