@@ -1,11 +1,13 @@
 {
   "name": "cherrytree",
   "version": "0.7.0",
-  "description": "Cherrytree is a hierarchical router for clientside web applications.",
-  "main": "router",
+  "description": "Cherrytree - a flexible hierarchical client side router",
+  "main": "index",
   "scripts": {
-    "test": "karma start --single-run",
-    "release": "release"
+    "build": "./tasks/build.sh",
+    "release": "./tasks/release.sh",
+    "test": "standard && karma start --single-run",
+    "watch": "DEBUG=1 webpack -w index.js build/standalone.js"
   },
   "repository": {
     "type": "git",
@@ -17,32 +19,49 @@
     "url": "https://github.com/QubitProducts/cherrytree/issues"
   },
   "dependencies": {
-    "location-bar": "^2.0.0"
+    "es6-promise": "^2.0.1",
+    "location-bar": "^2.0.0",
+    "path-to-regexp": "^1.0.3",
+    "qs": "^2.3.3"
   },
   "keywords": [
     "router",
     "history",
     "browser",
     "pushState",
-    "hierarchical"
+    "hierarchical",
+    "nested"
   ],
   "devDependencies": {
-    "chai": "~1.8.0",
-    "jquery": "^2.1.1",
+    "babel-core": "^4.7.1",
+    "babel-loader": "^4.1.0",
+    "babel-runtime": "^4.7.16",
+    "bro-size": "^1.0.0",
+    "co": "^4.5.1",
+    "jquery": "^2.1.3",
     "karma": "~0.12.23",
     "karma-chrome-launcher": "~0.1.0",
     "karma-cli": "0.0.4",
     "karma-firefox-launcher": "~0.1.0",
     "karma-mocha": "~0.1.0",
-    "karma-requirejs": "~0.2.1",
     "karma-sauce-launcher": "^0.2.10",
-    "karma-sinon": "^1.0.3",
-    "karma-sinon-chai": "~0.1.0",
-    "karma-sourcemap-loader": "^0.2.0",
+    "karma-sourcemap-loader": "^0.3.4",
     "karma-webpack": "^1.3.1",
     "kn-release": "^0.1.2",
-    "mocha": "^1.20.1",
+    "lodash": "^3.3.0",
+    "mocha": "^2.2.0",
+    "referee": "^1.1.1",
+    "referee-sinon": "^1.0.2",
+    "standard": "^3.2.0",
+    "underscore": "^1.7.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.6"
+  },
+  "standard": {
+    "ignore": [
+      "examples/cherry-pick/**",
+      "docs/**",
+      "build/**"
+    ]
   }
 }

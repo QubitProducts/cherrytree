@@ -1,0 +1,24 @@
+.IndexPage {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+}
+
+.IndexPage-description {
+  text-align: center;
+  margin: 40px;
+}
+
+.IndexPage-repoInput {
+  width: 400px;
+  padding: 10px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.IndexPage-repoInput[disabled] {
+  color: #888;
+  background: #eee;
+}

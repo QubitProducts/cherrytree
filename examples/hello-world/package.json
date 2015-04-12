@@ -1,0 +1,24 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --colors --no-info --port=8000 --content-base .",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^4.4.3",
+    "babel-loader": "^4.0.0",
+    "style-loader": "^0.8.3",
+    "webpack": "^1.5.3",
+    "webpack-dev-server": "^1.7.0"
+  },
+  "dependencies": {
+    "css-loader": "^0.9.1",
+    "underscore": "^1.8.1",
+    "underscore-template-loader": "^0.2.5"
+  }
+}

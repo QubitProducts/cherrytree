@@ -1,17 +1,18 @@
-var fs = require("fs");
+var fs = require('fs')
+var _ = require('lodash')
+var config = require('./karma.conf').config
 
 // Use ENV vars on CI and sauce.json locally to get credentials
 if (!process.env.SAUCE_USERNAME) {
   if (!fs.existsSync('sauce.json')) {
-    console.log('Create a sauce.json with your credentials {username,accessKey}.');
-    process.exit(1);
+    console.log('Create a sauce.json with your credentials {username,accessKey}.')
+    process.exit(1)
   } else {
-    var sauce = require('./sauce');
-    process.env.SAUCE_USERNAME = sauce.username;
-    process.env.SAUCE_ACCESS_KEY = sauce.accessKey;
+    var sauce = require('./sauce')
+    process.env.SAUCE_USERNAME = sauce.username
+    process.env.SAUCE_ACCESS_KEY = sauce.accessKey
   }
 }
-
 
 var customLaunchers = {
   'SL_Chrome': {
@@ -46,44 +47,10 @@ var customLaunchers = {
     platform: 'Windows 8.1',
     version: '11'
   }
-};
+}
 
-
-module.exports = function(config) {
-  config.set({
-
-    frameworks: ['mocha', 'sinon', 'sinon-chai'],
-
-    preprocessors: {
-      'test/index.js': ['webpack', 'sourcemap']
-    },
-
-    files: [
-      'test/index.js'
-    ],
-
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
-
-    // this watcher watches when bundled files are updated
-    autoWatch: true,
-
-    webpack: {
-      cache: true,
-      // this watcher watches when source files are updated
-      watch: false,
-      resolve: {
-        alias: {
-          'cherrytree': __dirname
-        }
-      },
-      devtool: 'inline-source-map'
-    },
-
-    webpackServer: {
-      noInfo: true
-    },
-
+module.exports = function (c) {
+  c.set(_.extend(config, {
     sauceLabs: {
       testName: 'Cherrytree Tests'
     },
@@ -91,10 +58,9 @@ module.exports = function(config) {
     browsers: Object.keys(customLaunchers),
     reporters: ['dots', 'saucelabs'],
     singleRun: true,
-
-    browserDisconnectTimeout : 10000, // default 2000
-    browserDisconnectTolerance : 1, // default 0
-    browserNoActivityTimeout : 4 * 60 * 1000, //default 10000
-    captureTimeout: 4 * 60 * 1000 //default 60000
-  });
-};
+    browserDisconnectTimeout: 10000, // default 2000
+    browserDisconnectTolerance: 1, // default 0
+    browserNoActivityTimeout: 4 * 60 * 1000, // default 10000
+    captureTimeout: 4 * 60 * 1000 // default 60000
+  }))
+}

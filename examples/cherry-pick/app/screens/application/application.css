@@ -1,0 +1,43 @@
+.Application {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.Application-content {
+  flex: 1;
+}
+
+.Navbar {
+  background: #fcd68a;
+  padding: 12px;
+  border: none;
+  margin: 0;
+}
+
+.Navbar-header {
+  text-align: center;
+  float: none;
+}
+
+.Navbar-brand {
+  display: inline-block;
+  height: auto;
+  float: none;
+  font-weight: bold;
+  width: 32px;
+  height: 32px;
+  background: url('cherry.png');
+}
+
+.Footer {
+  color: #aaa;
+  border-top: 1px solid #eee;
+  padding: 30px;
+  margin-top: 40px;
+}
+
+#nprogress .spinner {
+  margin-top: 5px;
+  margin-right: 5px;
+}

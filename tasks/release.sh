@@ -1,0 +1,1 @@
+npm test && npm build && cd build && ../node_modules/.bin/release
