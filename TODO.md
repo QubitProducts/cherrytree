@@ -38,6 +38,7 @@
 - [x] create a single file hello-world example
 - [x] test url behaviour during transitions
 - [x] update docs
+- [x] add transition.followRedirects()
 - [ ] release cherrytree@2.0.0-alpha.1 to npm - both cjs and amd version
 
 Move to GitHub issues
@@ -58,7 +59,6 @@ Tag 2.0
 Other issues
 
 - [ ] lower level createRoute function that takes location, qs and Promise implementations as params and this way avoids pulling them in as dependencies
-- [ ] add transition.followRedirects()
 
 - [x] consider making transitions not promises (since it's complicated when it comes to redirects, etc.). Instead have 1 global error handler (or many like middlewares). It gets called if transition fails. Also, each .use() can take another callback for when transition is cancelled/redirected (?). Finally, the last .use callback to get called basically indicates that the transition completed. Other than that, there is no other callback?
 - [x] consider passing in error handlers to the .use, or have a .error middleware (an alternative to .then on transitions)
