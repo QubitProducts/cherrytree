@@ -91,9 +91,6 @@ module.exports = function transition(options) {
 
       reject(err);
     },
-    redirectTo: function redirectTo() {
-      return router.transitionTo.apply(router, arguments);
-    },
     followRedirects: function followRedirects() {
       return promise["catch"](function (reason) {
         if (router.state.activeTransition) {
@@ -122,12 +119,14 @@ module.exports = function transition(options) {
         middlewarePromise = router.middleware[i](transition, prevResult);
         invariant(transition !== middlewarePromise, "Middleware %s returned a transition which resulted in a deadlock", middlewareName);
       } catch (err) {
+        router.state.activeTransition = null;
         return reject(err);
       }
       Promise.resolve(middlewarePromise).then(function (result) {
         callNext(i + 1, result);
       })["catch"](function (err) {
         log("Transition #" + id, "resolving middleware:", middlewareName, "FAILED");
+        router.state.activeTransition = null;
         reject(err);
       });
     } else {
