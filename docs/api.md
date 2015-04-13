@@ -105,6 +105,7 @@ And the following methods
 * `catch`
 * `cancel`
 * `retry`
+* `followRedirects`
 
 #### route
 

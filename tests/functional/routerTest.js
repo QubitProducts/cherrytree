@@ -55,7 +55,79 @@ test('cancelling and retrying transitions', () => {
   })
 })
 
-test.skip('cancelling transition doesn not add a history entry', () => {
+test('transition.followRedirects resolves when all of the redirects have finished', () => {
+  return co(function * () {
+    var transition
+
+    yield router.transitionTo('index')
+    // initiate a transition
+    transition = router.transitionTo('/posts/filter/foo')
+    // and a redirect
+    router.transitionTo('/about')
+
+    // if followRedirects is not used - the original transition is rejected
+    var rejected = false
+    yield transition.catch(() => rejected = true)
+    assert(rejected)
+
+    yield router.transitionTo('index')
+    // initiate a redirect
+    router.transitionTo('/posts/filter/foo')
+    // and a redirect
+    router.transitionTo('/about')
+
+    // when followRedirects is used - the promise is only
+    // resolved when both transitions finish
+    yield transition.followRedirects()
+    assert.equals(router.location.getURL(), '/about')
+  })
+})
+
+test('transition.followRedirects is rejected if transition fails', () => {
+  return co(function * () {
+    var transition
+
+    // silence the errors for the tests
+    router.logError = () => {}
+
+    // initiate a transition
+    transition = router.transitionTo('/posts/filter/foo')
+    // install a breaking middleware
+    router.use(() => {
+      throw new Error('middleware error')
+    })
+    // and a redirect
+    router.transitionTo('/about')
+
+    var rejected = false
+    yield transition.followRedirects().catch((err) => rejected = err.message)
+    assert.equals(rejected, 'middleware error')
+  })
+})
+
+test('transition.followRedirects is rejected if transition fails asynchronously', () => {
+  return co(function * () {
+    var transition
+
+    // silence the errors for the tests
+    router.logError = () => {}
+
+    // initiate a transition
+    transition = router.transitionTo('/posts/filter/foo')
+    // install a breaking middleware
+    router.use(() => {
+      return Promise.reject(new Error('middleware promise error'))
+    })
+    // and a redirect
+    router.transitionTo('/about')
+
+    var rejected = false
+    yield transition.followRedirects().catch((err) => rejected = err.message)
+    assert.equals(rejected, 'middleware promise error')
+  })
+})
+
+test.skip('cancelling transition does not add a history entry', () => {
   return co(function * () {
     // we start of at faq
     yield router.transitionTo('faq')
