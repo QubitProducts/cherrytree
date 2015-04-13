@@ -1,1 +1,1 @@
-npm test && npm build && cd build && ../node_modules/.bin/release
+npm test && npm run build && node tasks/release
