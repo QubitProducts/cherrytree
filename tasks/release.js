@@ -24,12 +24,18 @@ prompt.get(schema, function (err, result) {
   var rawVersion = result.version
   var version = 'v' + rawVersion
   updatePkgJSON(rawVersion)
-  commit(version, function () {
-    tag(version, function () {
-      publish(version)
+  rebuild(function () {
+    commit(version, function () {
+      tag(version, function () {
+        publish(version)
+      })
     })
   })
 })
+
+function rebuild (cb) {
+  ex('npm run build', cb)
+}
 
 function commit (version, cb) {
   ex('git commit -am "Release ' + version + '"', cb)

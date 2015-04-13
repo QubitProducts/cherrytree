@@ -1,1 +1,1 @@
-npm test && npm run build && node tasks/release
+npm test && node tasks/release
