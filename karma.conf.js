@@ -1,43 +1,46 @@
-// Karma configuration
-// Generated on Mon Oct 07 2013 15:55:00 GMT+0100 (BST)
+var _ = require('lodash')
 
-module.exports = function(config) {
-  config.set({
+var config = {
 
-    frameworks: ['mocha', 'sinon', 'sinon-chai'],
+  frameworks: ['mocha'],
 
-    preprocessors: {
-      'test/index.js': ['webpack', 'sourcemap']
-    },
+  preprocessors: {
+    'tests/index.js': ['webpack', 'sourcemap']
+  },
 
-    files: [
-      'test/index.js'
-    ],
+  files: [
+    'tests/index.js'
+  ],
 
-    // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['progress'],
+  // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
+  reporters: ['progress'],
 
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+  // this watcher watches when bundled files are updated
+  autoWatch: true,
 
-    // this watcher watches when bundled files are updated
-    autoWatch: true,
+  webpack: _.extend(require('./webpack.config'), {
+    entry: undefined,
+    // this watcher watches when source files are updated
+    watch: true
+  }),
 
-    webpack: {
-      // this watcher watches when source files are updated
-      watch: true,
-      resolve: {
-        alias: {
-          'cherrytree': __dirname
-        }
-      },
-      devtool: 'inline-source-map'
-    },
+  webpackServer: {
+    noInfo: true
+  },
 
-    webpackServer: {
-      noInfo: true
-    },
+  client: {
+    useIframe: true,
+    captureConsole: true,
+    mocha: {
+      ui: 'qunit'
+    }
+  },
 
-    browsers: ['Chrome']
-  });
-};
+  browsers: ['Chrome']
+}
+
+module.exports = function (c) {
+  c.set(config)
+}
+
+module.exports.config = config

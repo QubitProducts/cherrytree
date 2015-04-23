@@ -1,0 +1,1 @@
+npm test && node tasks/release

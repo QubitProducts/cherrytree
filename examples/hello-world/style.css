@@ -1,0 +1,56 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,700);
+
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.App {
+  width: 800px;
+  margin: 0 auto 20px auto;
+}
+
+.App-header {
+  border-bottom: 1px solid #eee;
+}
+
+.App h1 {
+  display: inline-block;
+}
+
+.Nav {
+  display: inline-block;
+}
+
+.Nav-item {
+  list-style: none;
+  display: inline-block;
+}
+
+.Nav-item a {
+  padding: 10px;
+}
+
+.Tweet {
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 10px;
+  border-bottom: none;
+}
+
+.Tweet:last-child {
+  border-bottom: 1px solid #eee;
+}
+
+.Tweet-author {
+  font-weight: bold;
+  display: inline-block;
+}
+
+.Tweet-time {
+  color: #888;
+  display: inline-block;
+  margin-left: 20px;
+  font-size: 12px;
+}

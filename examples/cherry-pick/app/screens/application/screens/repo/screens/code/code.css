@@ -1,0 +1,39 @@
+.Code {
+  list-style: none;
+  width: 800px;
+  margin: auto;
+}
+
+.Code-breadcrumb {
+  font-family: 'PT Mono';
+  padding: 4px;
+  margin: 4px;
+  font-size: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.Code-breadcrumbPart {
+  display: inline-block;
+  padding: 0 2px;
+}
+
+.Code-file {
+  font-family: 'PT Mono';
+  font-size: 12px;
+  margin: 4px;
+  border-bottom: 1px solid #eee;
+}
+
+.Code-fileLink {
+  padding: 4px;
+  display: block;
+}
+
+.Code-fileContents {
+  font-family: 'PT Mono';
+  font-size: 12px;
+  border: 1px solid #eee;
+  border-top: none;
+  border-radius: 2px;
+  padding: 10px;
+}
