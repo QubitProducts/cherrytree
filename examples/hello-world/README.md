@@ -4,5 +4,6 @@ This is a single file demo of cherrytree. It's a very simple static twitter like
 
 ```
 npm install
+npm run bundle
 npm start
 ```
