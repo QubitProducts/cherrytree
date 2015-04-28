@@ -7,3 +7,5 @@ npm install
 npm run bundle
 npm start
 ```
+
+After running `npm start` you can navigate to default [localhost](http://localhost:8000/webpack-dev-server/bundle) to see the example.
