@@ -2,7 +2,7 @@ module.exports = {
   context: __dirname,
   entry: './index',
   output: {
-    path: '',
+    path: 'dist',
     filename: 'bundle.js'
   },
   devtool: 'source-map',
