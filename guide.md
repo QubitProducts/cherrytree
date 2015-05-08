@@ -174,4 +174,4 @@ This router creates the following routes:
 
 ## Examples
 
-I hope you found this brief guide useful, check out some example apps next in the [examples](../examples) dir.
+I hope you found this brief guide useful, check out some example apps next in the [examples](examples) dir.
