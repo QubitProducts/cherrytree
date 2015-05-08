@@ -47,8 +47,7 @@ router.map(function (route) {
 // install any number of middleware
 // middleware can be asynchronous
 router.use(function (transition) {
-  // e.g. use require.js to partially
-  // load your app
+  // e.g. use require.js to partially load your app
   return Promise.all(transition.routes.map(function (route) {
     return new Promise(function (resolve) {
       require(['./views/' + route.name], function (ViewClass) {
@@ -63,13 +62,12 @@ router.use(function (transition) {
 router.use(function (transition) {
   transition.routes.forEach(function (route, i) {
     route.view = new route.ViewClass({
-      // access dynamic params and query params
       params: transition.params,
       query: transition.query
     })
     var parent = transition.routes[i-1]
-    var $outlet = parent ? parent.view.$el.find('.outlet') : $(document.body)
-    $outlet.html(view.render().el)
+    var containerEl = parent ? parent.view.el.querySelector('.outlet') : document.body
+    containerEl.appendChild(view.render().el)
   })
 })
 
@@ -87,7 +85,7 @@ router.use(function (transition) {
   })
 })
 
-// start listening to browser's location bar changes
+// start listening to URL changes
 router.listen()
 
 ```
