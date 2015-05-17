@@ -41,8 +41,8 @@ module.exports = React.createClass({
 
         <footer className='Footer'>
           <p className='u-textCenter'>Cherrytree Demo. ·
-            <a href='github.com/QubitProducts/cherrytree'>Cherrytree Repo</a> ·
-            <a href='github.com/KidkArolis/cherrypick'>Demo Source Code</a>
+            <a href='https://github.com/QubitProducts/cherrytree'>Cherrytree Repo</a> ·
+            <a href='https://github.com/QubitProducts/cherrytree/tree/master/examples/cherry-pick'>Demo Source Code</a>
           </p>
         </footer>
       </div>
