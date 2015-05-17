@@ -32,6 +32,7 @@
     "rework-webpack-loader": "^0.1.0",
     "suitcss-components-arrange": "^0.6.2",
     "suitcss-utils-layout": "^0.4.2",
-    "suitcss-utils-text": "^0.4.2"
+    "suitcss-utils-text": "^0.4.2",
+    "when": "^3.7.3"
   }
 }
