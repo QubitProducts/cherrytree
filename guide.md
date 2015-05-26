@@ -104,7 +104,7 @@ router.transitionTo('/post/5')
 
 See what other types of dynamic routes is supported in the [api docs](api.md#intercepting-links).
 
-### Route Resting
+### Route Nesting
 
 Route nesting is one of the core features of cherrytree. It's useful to nest routes, because you can configure each route to do a different part of the work - e.g. the root `application` route can do some initial data loading/initialization, but you can avoid redoing that work on subsequent transitions by checking if the route is already active. The child route can then load data specific for that page. Nesting routes is also very useful for rendering nested UIs, e.g. if you're building an email application, you might have the following route map
 
