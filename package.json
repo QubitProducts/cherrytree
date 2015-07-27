@@ -6,7 +6,7 @@
   "scripts": {
     "build": "./tasks/build.sh",
     "release": "./tasks/release.sh",
-    "test": "standard && karma start --single-run",
+    "test": "standard | snazzy && karma start --single-run",
     "watch": "DEBUG=1 webpack -w index.js build/standalone.js"
   },
   "repository": {
@@ -53,7 +53,8 @@
     "prompt": "^0.2.14",
     "referee": "^1.1.1",
     "referee-sinon": "^1.0.2",
-    "standard": "^3.2.0",
+    "snazzy": "^1.0.2",
+    "standard": "^4.5.4",
     "underscore": "^1.7.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.6"
