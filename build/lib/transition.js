@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-var _ = require("./dash");
-var Promise = require("es6-promise").Promise;
-var invariant = require("./invariant");
-var Path = require("./path");
+var _ = require('./dash');
+var Promise = require('es6-promise').Promise;
+var invariant = require('./invariant');
+var Path = require('./path');
 
 module.exports = function transition(options) {
   options = options || {};
@@ -20,11 +20,11 @@ module.exports = function transition(options) {
 
   var id = options.id;
   var startTime = Date.now();
-  log("---");
-  log("Transition #" + id, "to", path);
-  log("Transition #" + id, "routes:", _.pluck(routes, "name"));
-  log("Transition #" + id, "params:", params);
-  log("Transition #" + id, "query:", query);
+  log('---');
+  log('Transition #' + id, 'to', path);
+  log('Transition #' + id, 'routes:', _.pluck(routes, 'name'));
+  log('Transition #' + id, 'params:', params);
+  log('Transition #' + id, 'query:', query);
 
   // create the transition promise
   var resolve, reject;
@@ -38,10 +38,10 @@ module.exports = function transition(options) {
   //    we don't trigger the default 'Potentially
   //    unhandled rejection' for cancellations
   promise.then(function () {
-    log("Transition #" + id, "completed in", Date.now() - startTime + "ms");
-  })["catch"](function (err) {
-    if (err.type !== "TransitionRedirected" && err.type !== "TransitionCancelled") {
-      log("Transition #" + id, "FAILED");
+    log('Transition #' + id, 'completed in', Date.now() - startTime + 'ms');
+  })['catch'](function (err) {
+    if (err.type !== 'TransitionRedirected' && err.type !== 'TransitionCancelled') {
+      log('Transition #' + id, 'FAILED');
       logError(err.stack);
     }
   });
@@ -52,8 +52,8 @@ module.exports = function transition(options) {
     id: id,
     prev: {
       routes: router.state.routes || [],
-      path: router.state.path || "",
-      pathname: router.state.pathname || "",
+      path: router.state.path || '',
+      pathname: router.state.pathname || '',
       params: router.state.params || {},
       query: router.state.query || {}
     },
@@ -79,20 +79,20 @@ module.exports = function transition(options) {
       cancelled = true;
 
       if (!err) {
-        err = new Error("TransitionCancelled");
-        err.type = "TransitionCancelled";
+        err = new Error('TransitionCancelled');
+        err.type = 'TransitionCancelled';
       }
-      if (err.type === "TransitionCancelled") {
-        log("Transition #" + id, "cancelled");
+      if (err.type === 'TransitionCancelled') {
+        log('Transition #' + id, 'cancelled');
       }
-      if (err.type === "TransitionRedirected") {
-        log("Transition #" + id, "redirected");
+      if (err.type === 'TransitionRedirected') {
+        log('Transition #' + id, 'redirected');
       }
 
       reject(err);
     },
     followRedirects: function followRedirects() {
-      return promise["catch"](function (reason) {
+      return promise['catch'](function (reason) {
         if (router.state.activeTransition) {
           return router.state.activeTransition.followRedirects();
         }
@@ -100,7 +100,7 @@ module.exports = function transition(options) {
       });
     },
     then: promise.then.bind(promise),
-    "catch": promise["catch"].bind(promise)
+    'catch': promise['catch'].bind(promise)
   };
 
   // here we handle calls to all of the middlewares
@@ -112,20 +112,20 @@ module.exports = function transition(options) {
     }
     // done
     if (i < router.middleware.length) {
-      middlewareName = router.middleware[i].name || "anonymous";
-      log("Transition #" + id, "resolving middleware:", middlewareName);
+      middlewareName = router.middleware[i].name || 'anonymous';
+      log('Transition #' + id, 'resolving middleware:', middlewareName);
       var middlewarePromise = undefined;
       try {
         middlewarePromise = router.middleware[i](transition, prevResult);
-        invariant(transition !== middlewarePromise, "Middleware %s returned a transition which resulted in a deadlock", middlewareName);
+        invariant(transition !== middlewarePromise, 'Middleware %s returned a transition which resulted in a deadlock', middlewareName);
       } catch (err) {
         router.state.activeTransition = null;
         return reject(err);
       }
       Promise.resolve(middlewarePromise).then(function (result) {
         callNext(i + 1, result);
-      })["catch"](function (err) {
-        log("Transition #" + id, "resolving middleware:", middlewareName, "FAILED");
+      })['catch'](function (err) {
+        log('Transition #' + id, 'resolving middleware:', middlewareName, 'FAILED');
         router.state.activeTransition = null;
         reject(err);
       });

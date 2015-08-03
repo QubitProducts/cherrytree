@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-var _ = require("./dash");
-var invariant = require("./invariant");
-var merge = require("qs/lib/utils").merge;
-var qs = require("qs");
-var pathToRegexp = require("path-to-regexp");
+var _ = require('./dash');
+var invariant = require('./invariant');
+var merge = require('qs/lib/utils').merge;
+var qs = require('qs');
+var pathToRegexp = require('path-to-regexp');
 
 var paramInjectMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$?]*[?+*]?)/g;
 var specialParamChars = /[+*?]$/g;
@@ -19,7 +19,7 @@ function compilePattern(pattern) {
 
     _compiledPatterns[pattern] = {
       matcher: re,
-      paramNames: _.pluck(paramNames, "name")
+      paramNames: _.pluck(paramNames, 'name')
     };
   }
 
@@ -32,14 +32,14 @@ var Path = {
    * Returns true if the given path is absolute.
    */
   isAbsolute: function isAbsolute(path) {
-    return path.charAt(0) === "/";
+    return path.charAt(0) === '/';
   },
 
   /**
    * Joins two URL paths together.
    */
   join: function join(a, b) {
-    return a.replace(/\/*$/, "/") + b;
+    return a.replace(/\/*$/, '/') + b;
   },
 
   /**
@@ -81,12 +81,12 @@ var Path = {
     params = params || {};
 
     return pattern.replace(paramInjectMatcher, function (match, param) {
-      var paramName = param.replace(specialParamChars, "");
+      var paramName = param.replace(specialParamChars, '');
 
       // If param is optional don't check for existence
-      if (param.slice(-1) === "?" || param.slice(-1) === "*") {
+      if (param.slice(-1) === '?' || param.slice(-1) === '*') {
         if (params[paramName] == null) {
-          return "";
+          return '';
         }
       } else {
         invariant(params[paramName] != null, "Missing '%s' parameter for path '%s'", paramName, pattern);
@@ -109,7 +109,7 @@ var Path = {
    * Returns a version of the given path without the query string.
    */
   withoutQuery: function withoutQuery(path) {
-    return path.replace(queryMatcher, "");
+    return path.replace(queryMatcher, '');
   },
 
   /**
@@ -126,7 +126,7 @@ var Path = {
     var queryString = qs.stringify(query, { indices: false });
 
     if (queryString) {
-      return Path.withoutQuery(path) + "?" + queryString;
+      return Path.withoutQuery(path) + '?' + queryString;
     }
 
     return path;

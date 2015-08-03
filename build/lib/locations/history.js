@@ -1,20 +1,20 @@
-"use strict";
+'use strict';
 
-var _ = require("../dash");
-var links = require("./history/link_delegate");
-var LocationBar = require("location-bar");
+var _ = require('../dash');
+var links = require('./history/link_delegate');
+var LocationBar = require('location-bar');
 
 /**
  * Constructor
  */
 
 var HistoryLocation = function HistoryLocation(options) {
-  this.path = "";
+  this.path = '';
 
   this.options = _.extend({
     pushState: false,
     interceptLinks: true,
-    root: "/"
+    root: '/'
   }, options);
 
   // we're using the location-bar module for actual
@@ -22,8 +22,9 @@ var HistoryLocation = function HistoryLocation(options) {
   var self = this;
   this.locationBar = new LocationBar();
   this.locationBar.onChange(function (path) {
-    self.handleURL("/" + (path || ""));
+    self.handleURL('/' + (path || ''));
   });
+
   this.locationBar.start(_.extend({}, options));
 
   // we want to intercept all link clicks in case we're using push state,
@@ -93,16 +94,33 @@ HistoryLocation.prototype.formatURL = function (path) {
   if (this.locationBar.hasPushState()) {
     var rootURL = this.options.root;
 
-    if (path !== "") {
-      rootURL = rootURL.replace(/\/$/, "");
+    if (path !== '') {
+      rootURL = rootURL.replace(/\/$/, '');
     }
 
     return rootURL + path;
   } else {
-    if (path[0] === "/") {
+    if (path[0] === '/') {
       path = path.substr(1);
     }
-    return "#" + path;
+    return '#' + path;
+  }
+};
+
+/**
+ * When we use pushState with a custom root option,
+ * we need to take care of removingRoot at certain points.
+ * Specifically
+ * - history.update() can be called with the full URL by router
+ * - history.navigate() can be called with the full URL by a link handler
+ * - LocationBar expects all .update() calls to be called without root
+ * - this method is public so that we could dispatch URLs without root in router
+ */
+HistoryLocation.prototype.removeRoot = function (url) {
+  if (this.options.pushState && this.options.root && this.options.root !== '/') {
+    return url.replace(this.options.root, '');
+  } else {
+    return url;
   }
 };
 
@@ -127,7 +145,7 @@ HistoryLocation.prototype.interceptLinks = function () {
     // TODO use router.transitionTo instead, because
     // that way we're handling errors and what not? and don't
     // update url on failed requests or smth?
-    self.navigate(link.getAttribute("href"));
+    self.navigate(self.removeRoot(link.getAttribute('href')));
   };
   links.delegate(this.linkHandler);
 };

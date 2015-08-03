@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var exp = {};
 
@@ -6,9 +6,9 @@ var exp = {};
 * DOM Event bind/unbind
 */
 
-var bind = window.addEventListener ? "addEventListener" : "attachEvent";
-var unbind = window.removeEventListener ? "removeEventListener" : "detachEvent";
-var prefix = bind !== "addEventListener" ? "on" : "";
+var bind = window.addEventListener ? 'addEventListener' : 'attachEvent';
+var unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
+var prefix = bind !== 'addEventListener' ? 'on' : '';
 
 /**
 * Bind `el` event `type` to `fn`.

@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-var events = require("./events");
+var events = require('./events');
 
 var link = function link(element) {
   element = { parentNode: element };
@@ -10,7 +10,7 @@ var link = function link(element) {
   // Make sure `element !== document` and `element != null`
   // otherwise we get an illegal invocation
   while ((element = element.parentNode) && element !== document) {
-    if (element.tagName.toLowerCase() === "a") {
+    if (element.tagName.toLowerCase() === 'a') {
       return element;
     }
     // After `matches` on the edge case that
@@ -73,25 +73,25 @@ var undelegate = function undelegate(el, type, fn) {
 
 module.exports.delegate = function (el, fn) {
   // default to document
-  if (typeof el === "function") {
+  if (typeof el === 'function') {
     fn = el;
     el = document;
   }
 
-  delegate(el, "click", function (e, el) {
+  delegate(el, 'click', function (e, el) {
     if (clickable(e, el)) fn(e, el);
   });
 };
 
 module.exports.undelegate = function (el, fn) {
   // default to document
-  if (typeof el === "function") {
+  if (typeof el === 'function') {
     fn = el;
     el = document;
   }
 
   // TODO 2014-03-25 fix undelegation here too
-  undelegate(el, "click", fn);
+  undelegate(el, 'click', fn);
 };
 
 /**
@@ -99,33 +99,27 @@ module.exports.undelegate = function (el, fn) {
  */
 
 function clickable(e, el) {
-  if (which(e) !== 1) {
-    return;
-  }if (e.metaKey || e.ctrlKey || e.shiftKey) {
-    return;
-  }if (e.defaultPrevented) {
-    return;
-  } // check target
-  if (el.target) {
-    return;
-  } // check for data-bypass attribute
-  if (el.getAttribute("data-bypass") !== null) {
-    return;
-  } // inspect the href
-  var href = el.getAttribute("href");
-  if (!href || href.length === 0) {
-    return;
-  } // don't handle hash links
-  if (href[0] === "#") {
-    return;
-  } // external/absolute links
-  if (href.indexOf("http://") === 0 || href.indexOf("https://") === 0) {
-    return;
-  } // don't intercept javascript links
-  /*eslint-disable no-script-url*/
-  if (href.indexOf("javascript:") === 0) {
-    return;
-  } /*eslint-enable no-script-url*/
+  if (which(e) !== 1) return;
+  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (e.defaultPrevented) return;
+
+  // check target
+  if (el.target) return;
+
+  // check for data-bypass attribute
+  if (el.getAttribute('data-bypass') !== null) return;
+
+  // inspect the href
+  var href = el.getAttribute('href');
+  if (!href || href.length === 0) return;
+  // don't handle hash links
+  if (href[0] === '#') return;
+  // external/absolute links
+  if (href.indexOf('http://') === 0 || href.indexOf('https://') === 0) return;
+  // don't intercept javascript links
+  /* eslint-disable no-script-url */
+  if (href.indexOf('javascript:') === 0) return;
+  /* eslint-enable no-script-url */
 
   return true;
 }

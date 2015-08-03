@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
 module.exports = function () {
   return {
-    path: "",
+    path: '',
 
     getURL: function getURL() {
       return this.path;
@@ -26,6 +26,10 @@ module.exports = function () {
       if (this.changeCallback) {
         this.changeCallback(url);
       }
+    },
+
+    removeRoot: function removeRoot(url) {
+      return url;
     },
 
     formatURL: function formatURL(url) {

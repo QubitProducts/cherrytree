@@ -1,21 +1,19 @@
-"use strict";
+'use strict';
 
-var _ = require("./dash");
-var dsl = require("./dsl");
-var Path = require("./path");
-var invariant = require("./invariant");
-var HistoryLocation = require("./locations/history");
-var MemoryLocation = require("./locations/memory");
-var transition = require("./transition");
+var _ = require('./dash');
+var dsl = require('./dsl');
+var Path = require('./path');
+var invariant = require('./invariant');
+var HistoryLocation = require('./locations/history');
+var MemoryLocation = require('./locations/memory');
+var transition = require('./transition');
 
 function createLogger(log, error) {
   // falsy means no logging
-  if (!log) {
-    return function () {};
-  } // custom logging function
-  if (log !== true) {
-    return log;
-  } // true means use the default logger - console
+  if (!log) return function () {};
+  // custom logging function
+  if (log !== true) return log;
+  // true means use the default logger - console
   var fn = error ? console.error : console.info;
   return function () {
     fn.apply(console, arguments);
@@ -39,7 +37,7 @@ Cherrytree.prototype.initialize = function (options) {
   this.middleware = [];
   this.options = _.extend({}, options);
   this.log = createLogger(this.options.log);
-  this.logError = createLogger(this.options.logError === false ? false : true, true);
+  this.logError = createLogger(this.options.logError, true);
 };
 
 /**
@@ -72,11 +70,11 @@ Cherrytree.prototype.map = function (routes) {
     var path = _.reduce(routes, function (memo, r) {
       // reset if there's a leading slash, otherwise concat
       // and keep resetting the trailing slash
-      return (r.path[0] === "/" ? r.path : memo + "/" + r.path).replace(/\/$/, "");
-    }, "");
+      return (r.path[0] === '/' ? r.path : memo + '/' + r.path).replace(/\/$/, '');
+    }, '');
     // ensure we have a leading slash
-    if (path === "") {
-      path = "/";
+    if (path === '') {
+      path = '/';
     }
     // register routes
     matchers.push({
@@ -132,7 +130,7 @@ Cherrytree.prototype.transitionTo = function () {
   if (this.state.activeTransition) {
     return this.replaceWith.apply(this, arguments);
   }
-  return this.doTransition("setURL", _.toArray(arguments));
+  return this.doTransition('setURL', _.toArray(arguments));
 };
 
 /**
@@ -146,7 +144,7 @@ Cherrytree.prototype.transitionTo = function () {
  * @api public
  */
 Cherrytree.prototype.replaceWith = function () {
-  return this.doTransition("replaceURL", _.toArray(arguments));
+  return this.doTransition('replaceURL', _.toArray(arguments));
 };
 
 /**
@@ -159,7 +157,7 @@ Cherrytree.prototype.replaceWith = function () {
  * @api public
  */
 Cherrytree.prototype.generate = function (name, params, query) {
-  invariant(this.location, "call .listen() before using .generate()");
+  invariant(this.location, 'call .listen() before using .generate()');
   var matcher;
 
   params = params || {};
@@ -172,7 +170,7 @@ Cherrytree.prototype.generate = function (name, params, query) {
   });
 
   if (!matcher) {
-    throw new Error("No route is named " + name);
+    throw new Error('No route is named ' + name);
   }
 
   // this might be a dangerous feature, although it's useful in practise
@@ -216,22 +214,26 @@ Cherrytree.prototype.reset = function () {};
  * @api private
  */
 Cherrytree.prototype.doTransition = function (method, params) {
-  var _this = this;
+  var _this2 = this;
 
   var previousUrl = this.location.getURL();
 
   var url = params[0];
-  if (url[0] !== "/") {
+  if (url[0] !== '/') {
     url = this.generate.apply(this, params);
-    url = url.replace(/^#/, "/");
+    url = url.replace(/^#/, '/');
+  }
+
+  if (this.options.pushState) {
+    url = this.location.removeRoot(url);
   }
 
   var transition = this.dispatch(url);
 
-  transition["catch"](function (err) {
-    if (err && err.type === "TransitionCancelled") {
+  transition['catch'](function (err) {
+    if (err && err.type === 'TransitionCancelled') {
       // reset the URL in case the transition has been cancelled
-      _this.location.replaceURL(previousUrl, { trigger: false });
+      _this2.location.replaceURL(previousUrl, { trigger: false });
     }
     return err;
   });
@@ -249,7 +251,7 @@ Cherrytree.prototype.doTransition = function (method, params) {
  * @api private
  */
 Cherrytree.prototype.match = function (path) {
-  path = (path || "").replace(/\/$/, "") || "/";
+  path = (path || '').replace(/\/$/, '') || '/';
   var found = false;
   var params;
   var query;
@@ -304,8 +306,8 @@ Cherrytree.prototype.dispatch = function (path) {
   // otherwise, cancel the active transition since we're
   // redirecting (or initiating a brand new transition)
   if (activeTransition) {
-    var err = new Error("TransitionRedirected");
-    err.type = "TransitionRedirected";
+    var err = new Error('TransitionRedirected');
+    err.type = 'TransitionRedirected';
     activeTransition.cancel(err);
   }
 
@@ -346,7 +348,7 @@ Cherrytree.prototype.dispatch = function (path) {
  * @api private
  */
 Cherrytree.prototype.createDefaultLocation = function () {
-  var locationOptions = _.pick(this.options, ["pushState", "root", "interceptLinks"]);
+  var locationOptions = _.pick(this.options, ['pushState', 'root', 'interceptLinks', 'location', 'history']);
   return new HistoryLocation(locationOptions);
 };
 

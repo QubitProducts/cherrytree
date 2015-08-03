@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-var _ = require("./dash");
-var invariant = require("./invariant");
+var _ = require('./dash');
+var invariant = require('./invariant');
 
 module.exports = function dsl(callback) {
   var ancestors = [];
@@ -11,7 +11,7 @@ module.exports = function dsl(callback) {
   callback(function route(name, options, callback) {
     var routes = undefined;
 
-    invariant(!names[name], "Route names must be unique, but route \"%s\" is declared multiple times", name);
+    invariant(!names[name], 'Route names must be unique, but route "%s" is declared multiple times', name);
 
     names[name] = true;
 
@@ -19,16 +19,16 @@ module.exports = function dsl(callback) {
       options = {};
     }
 
-    if (arguments.length === 2 && typeof options === "function") {
+    if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
     }
 
-    if (typeof options.path !== "string") {
-      var parts = name.split(".");
+    if (typeof options.path !== 'string') {
+      var parts = name.split('.');
       options.path = parts[parts.length - 1];
-      if (options.path === "index") {
-        options.path = "";
+      if (options.path === 'index') {
+        options.path = '';
       }
     }
 
@@ -60,7 +60,7 @@ module.exports = function dsl(callback) {
   }
 
   function currentLevel() {
-    return ancestors.join(".");
+    return ancestors.join('.');
   }
 
   return pop();
