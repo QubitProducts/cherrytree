@@ -20,6 +20,7 @@ let routes = (route) => {
 }
 
 beforeEach(() => {
+  window.location.hash = ''
   router = cherrytree()
 })
 
@@ -130,6 +131,39 @@ test('#generate generates urls given route name and params as object', () => {
   var url = router.generate('status', {user: 'foo', id: 1}, {withReplies: true})
   assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
+
+if (window.history && window.history.pushState) {
+  test('#generate when pushState: true and root != "/" in modern browsers', () => {
+    router.options.pushState = true
+    router.options.root = '/foo/bar'
+    router.map(routes).listen()
+    var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
+    assert.equals(url, '/foo/bar/application/usr/status/1?withReplies=true')
+  })
+}
+
+if (window.history && !window.history.pushState) {
+  test('#generate when pushState: true and root != "/" in old browsers', () => {
+    let browserRedirectedTo
+
+    router.options.pushState = true
+    router.options.root = '/foo/bar'
+    router.options.location = {
+      href: '/different/#location',
+      pathname: '/different',
+      hash: '#location',
+      search: '',
+      replace: function (path) {
+        browserRedirectedTo = path
+      }
+    }
+
+    router.map(routes).listen()
+    var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
+    assert.equals(browserRedirectedTo, '/foo/bar/#different')
+    assert.equals(url, '#application/usr/status/1?withReplies=true')
+  })
+}
 
 test('#generate throws a useful error when listen has not been called', () => {
   router.map(routes)

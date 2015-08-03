@@ -1,9 +1,11 @@
 let $ = require('jquery')
 let cherrytree = require('cherrytree')
 
-function TestApp () {
+function TestApp (options) {
+  options = options || {}
+
   // create the router
-  var router = this.router = cherrytree()
+  var router = this.router = cherrytree(options)
 
   // provide the route map
   router.map(function (route) {
