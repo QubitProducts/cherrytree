@@ -1,5 +1,5 @@
 var Promise = require('when').Promise
-var cherrytree = require('../../../')
+var cherrytree = require('cherrytree')
 var getHandler = require('./handler')
 
 require('./styles/app.css')

@@ -17,8 +17,12 @@
     "webpack-dev-server": "^1.7.0"
   },
   "dependencies": {
+    "cherrytree": "file:../..",
     "css-loader": "^0.9.1",
+    "jquery": "^2.1.4",
+    "lodash": "^3.10.1",
     "underscore": "^1.8.1",
-    "underscore-template-loader": "^0.2.5"
+    "underscore-template-loader": "^0.2.5",
+    "when": "^3.7.3"
   }
 }
