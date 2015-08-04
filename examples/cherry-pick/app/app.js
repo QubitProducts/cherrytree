@@ -2,7 +2,7 @@ import _ from 'lodash';
 import when from 'when';
 import keys from 'when/keys';
 import React from 'react';
-import cherrytree from '../../../';
+import cherrytree from 'cherrytree';
 import loader from './loader';
 
 let router = window.router = cherrytree({

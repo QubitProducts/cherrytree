@@ -23,6 +23,7 @@
   "dependencies": {
     "babel-core": "^4.4.5",
     "babel-loader": "^4.0.0",
+    "cherrytree": "file:../..",
     "lodash": "^3.3.0",
     "nprogress": "^0.1.6",
     "ramda": "^0.8.0",
@@ -30,6 +31,7 @@
     "react": "^0.12.2",
     "rest": "git://github.com/cujojs/rest#dev",
     "rework-webpack-loader": "^0.1.0",
+    "suitcss-base": "^0.8.0",
     "suitcss-components-arrange": "^0.6.2",
     "suitcss-utils-layout": "^0.4.2",
     "suitcss-utils-text": "^0.4.2",

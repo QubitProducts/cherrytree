@@ -5,21 +5,21 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --colors --no-info --port=8000 --content-base .",
-    "bundle" : "webpack --progress --colors -p",
+    "bundle": "webpack --progress --colors -p",
     "test": "mocha"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babel-core": "^4.4.3",
-    "babel-loader": "^4.0.0",
+    "babel-core": "^5.8.20",
+    "babel-loader": "^5.3.2",
     "style-loader": "^0.8.3",
     "webpack": "^1.5.3",
     "webpack-dev-server": "^1.7.0"
   },
   "dependencies": {
+    "cherrytree": "file:../..",
     "css-loader": "^0.9.1",
-    "underscore": "^1.8.1",
-    "underscore-template-loader": "^0.2.5"
+    "jquery": "^2.1.4"
   }
 }

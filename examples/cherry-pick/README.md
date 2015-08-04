@@ -9,8 +9,11 @@ It's work in progress, this is an initial version.
 ```
 npm install
 npm start
-open http://localhost:8080/bundle
 ```
+
+Now open [http://localhost:8000](http://localhost:8000).
+
+Or open [http://localhost:8000/webpack-dev-server/bundle](http://localhost:8000/webpack-dev-server/bundle) to see the live reloading version of the app.
 
 # TODO
 

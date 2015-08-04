@@ -1,5 +1,5 @@
 let $ = require('jquery')
-let cherrytree = require('../../')
+let cherrytree = require('cherrytree')
 
 require('./style.css')
 

@@ -5,7 +5,9 @@ This is a single file demo of cherrytree. It's a very simple static twitter like
     $ npm install
     $ npm start
 
-After running `npm start` you can navigate to default [http://localhost:8000/bundle](http://localhost:8000/bundle) to see the example.
+Now open [http://localhost:8000](http://localhost:8000).
+
+Or open [http://localhost:8000/webpack-dev-server/bundle](http://localhost:8000/webpack-dev-server/bundle) to see the live reloading version of the app.
 
 To compile the app into a single file for production run
 

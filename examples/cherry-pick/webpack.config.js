@@ -10,7 +10,6 @@ module.exports = {
   },
   devtool: "inline-source-map",
   resolve: {
-    root: [__dirname],
     modulesDirectories: ["node_modules", "shared"]
   },
   plugins: [
@@ -19,6 +18,7 @@ module.exports = {
   module: {
     loaders: [
       { test:  /.*\.js$/, exclude: /node_modules/, loader: "babel" },
+      { test: /.*node_modules\/cherrytree\/.*\.js$/, loader: "babel" },
       { test: /\.css$/, loader: "style!rework-webpack" },
       { test: /\.woff$/, loader: "url-loader?limit=10000&minetype=application/font-woff" },
       { test: /\.png$/, loader: "file-loader?mimetype=image/png" },
