@@ -1,6 +1,6 @@
 {
   "name": "cherrytree",
-  "version": "2.0.0-alpha.7",
+  "version": "2.0.0-alpha.8",
   "description": "Cherrytree - a flexible hierarchical client side router",
   "main": "index",
   "scripts": {
@@ -21,6 +21,7 @@
   "dependencies": {
     "es6-promise": "^2.0.1",
     "location-bar": "^2.0.0",
+    "lodash": "^3.3.0",
     "path-to-regexp": "^1.0.3",
     "qs": "^2.3.3"
   },
@@ -46,7 +47,6 @@
     "karma-sauce-launcher": "^0.2.10",
     "karma-sourcemap-loader": "^0.3.4",
     "karma-webpack": "^1.7.0",
-    "lodash": "^3.3.0",
     "mocha": "^2.2.0",
     "prompt": "^0.2.14",
     "referee": "^1.1.1",
