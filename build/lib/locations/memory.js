@@ -1,31 +1,42 @@
 'use strict';
 
-module.exports = function () {
+var _ = require('../dash');
+
+module.exports = function (path) {
   return {
-    path: '',
+    path: path || '',
 
     getURL: function getURL() {
       return this.path;
     },
 
-    setURL: function setURL(path) {
-      this.path = path;
-      this.handleURL(this.getURL());
+    setURL: function setURL(path, options) {
+      if (this.path !== path) {
+        this.path = path;
+        this.handleURL(this.getURL(), options);
+      }
     },
 
-    replaceURL: function replaceURL(path) {
-      this.setURL(path);
+    replaceURL: function replaceURL(path, options) {
+      if (this.path !== path) {
+        this.setURL(path, options);
+      }
     },
 
     onChange: function onChange(callback) {
       this.changeCallback = callback;
     },
 
-    handleURL: function handleURL(url) {
+    handleURL: function handleURL(url, options) {
       this.path = url;
-      if (this.changeCallback) {
+      options = _.extend({ trigger: true }, options);
+      if (this.changeCallback && options.trigger) {
         this.changeCallback(url);
       }
+    },
+
+    usesPushState: function usesPushState() {
+      return false;
     },
 
     removeRoot: function removeRoot(url) {

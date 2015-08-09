@@ -1,7 +1,6 @@
 'use strict';
 
 var _ = require('../dash');
-var links = require('./history/link_delegate');
 var LocationBar = require('location-bar');
 
 /**
@@ -13,7 +12,6 @@ var HistoryLocation = function HistoryLocation(options) {
 
   this.options = _.extend({
     pushState: false,
-    interceptLinks: true,
     root: '/'
   }, options);
 
@@ -26,13 +24,6 @@ var HistoryLocation = function HistoryLocation(options) {
   });
 
   this.locationBar.start(_.extend({}, options));
-
-  // we want to intercept all link clicks in case we're using push state,
-  // because all link clicks should be handled via the router instead of
-  // browser reloading the page
-  if (this.usesPushState() && this.options.interceptLinks) {
-    this.interceptLinks();
-  }
 };
 
 /**
@@ -129,25 +120,6 @@ HistoryLocation.prototype.removeRoot = function (url) {
  */
 HistoryLocation.prototype.destroy = function () {
   this.locationBar.stop();
-  if (this.linkHandler) {
-    links.undelegate(this.linkHandler);
-  }
-};
-
-/**
- * @private
- */
-
-HistoryLocation.prototype.interceptLinks = function () {
-  var self = this;
-  this.linkHandler = function (e, link) {
-    e.preventDefault();
-    // TODO use router.transitionTo instead, because
-    // that way we're handling errors and what not? and don't
-    // update url on failed requests or smth?
-    self.navigate(self.removeRoot(link.getAttribute('href')));
-  };
-  links.delegate(this.linkHandler);
 };
 
 /**

@@ -57,41 +57,7 @@ var delegate = function delegate(el, type, fn) {
  */
 
 var undelegate = function undelegate(el, type, fn) {
-  // TODO 2014-03-25 fix unbinding - this fn we're trying
-  // to ubind has never been bound, we bound an anonymous function
   events.unbind(el, type, fn);
-};
-
-/**
- * Handle link delegation on `el` or the document,
- * and invoke `fn(e)` when clickable.
- *
- * @param {Element|Function} el or fn
- * @param {Function} [fn]
- * @api public
- */
-
-module.exports.delegate = function (el, fn) {
-  // default to document
-  if (typeof el === 'function') {
-    fn = el;
-    el = document;
-  }
-
-  delegate(el, 'click', function (e, el) {
-    if (clickable(e, el)) fn(e, el);
-  });
-};
-
-module.exports.undelegate = function (el, fn) {
-  // default to document
-  if (typeof el === 'function') {
-    fn = el;
-    el = document;
-  }
-
-  // TODO 2014-03-25 fix undelegation here too
-  undelegate(el, 'click', fn);
 };
 
 /**
@@ -132,3 +98,28 @@ function which(e) {
   e = e || window.event;
   return e.which === null ? e.button : e.which;
 }
+
+/**
+ * Handle link delegation on `el` or the document,
+ * and invoke `fn(e)` when clickable.
+ *
+ * @param {Element|Function} el or fn
+ * @param {Function} [fn]
+ * @api public
+ */
+
+module.exports.intercept = function intercept(el, fn) {
+  // default to document
+  if (typeof el === 'function') {
+    fn = el;
+    el = document;
+  }
+
+  var cb = delegate(el, 'click', function (e, el) {
+    if (clickable(e, el)) fn(e, el);
+  });
+
+  return function dispose() {
+    undelegate(el, 'click', cb);
+  };
+};

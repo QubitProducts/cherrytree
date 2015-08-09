@@ -64,13 +64,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	var _ = __webpack_require__(2);
-	var dsl = __webpack_require__(84);
-	var Path = __webpack_require__(86);
-	var invariant = __webpack_require__(85);
-	var HistoryLocation = __webpack_require__(94);
-	var MemoryLocation = __webpack_require__(99);
-	var transition = __webpack_require__(100);
+	var _ = __webpack_require__(3);
+	var dsl = __webpack_require__(87);
+	var Path = __webpack_require__(89);
+	var invariant = __webpack_require__(88);
+	var HistoryLocation = __webpack_require__(2);
+	var MemoryLocation = __webpack_require__(97);
+	var transition = __webpack_require__(98);
+	var links = __webpack_require__(104);
 
 	function createLogger(log, error) {
 	  // falsy means no logging
@@ -99,7 +100,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.nextId = 1;
 	  this.state = {};
 	  this.middleware = [];
-	  this.options = _.extend({}, options);
+	  this.options = _.extend({
+	    interceptLinks: true
+	  }, options);
 	  this.log = createLogger(this.options.log);
 	  this.logError = createLogger(this.options.logError, true);
 	};
@@ -177,6 +180,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  location.onChange(function (url) {
 	    return _this.dispatch(url);
 	  });
+	  // start intercepting links
+	  if (this.options.interceptLinks && location.usesPushState()) {
+	    this.interceptLinks();
+	  }
 	  // and also kick off the initial transition
 	  return this.dispatch(location.getURL());
 	};
@@ -259,6 +266,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	Cherrytree.prototype.destroy = function () {
 	  if (this.location && this.location.destroy && this.location.destroy) {
 	    this.location.destroy();
+	  }
+	  if (this.disposeIntercept) {
+	    this.disposeIntercept();
 	  }
 	  if (this.state.activeTransition) {
 	    this.state.activeTransition.cancel();
@@ -372,6 +382,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (activeTransition) {
 	    var err = new Error('TransitionRedirected');
 	    err.type = 'TransitionRedirected';
+	    err.nextPath = path;
 	    activeTransition.cancel(err);
 	  }
 
@@ -412,8 +423,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @api private
 	 */
 	Cherrytree.prototype.createDefaultLocation = function () {
-	  var locationOptions = _.pick(this.options, ['pushState', 'root', 'interceptLinks', 'location', 'history']);
+	  var locationOptions = _.pick(this.options, ['pushState', 'root', 'location', 'history']);
 	  return new HistoryLocation(locationOptions);
+	};
+
+	/**
+	 * When using pushState, it's important to setup link interception
+	 * because all link clicks should be handled via the router instead of
+	 * browser reloading the page
+	 */
+	Cherrytree.prototype.interceptLinks = function () {
+	  var _this3 = this;
+
+	  this.disposeIntercept = links.intercept(function (e, link) {
+	    e.preventDefault();
+	    // TODO use router.transitionTo instead, because
+	    // that way we're handling errors and what not? and don't
+	    // update url on failed requests or smth?
+	    _this3.transitionTo(_this3.location.removeRoot(link.getAttribute('href')));
+	  });
 	};
 
 	module.exports = function cherrytree(options) {
@@ -433,26 +461,183 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	module.exports = {
-	  map: __webpack_require__(3),
-	  each: __webpack_require__(51),
-	  reduce: __webpack_require__(55),
-	  pluck: __webpack_require__(59),
-	  extend: __webpack_require__(60),
-	  pick: __webpack_require__(67),
-	  toArray: __webpack_require__(73),
-	  clone: __webpack_require__(77),
-	  isEqual: __webpack_require__(83)
+	var _ = __webpack_require__(3);
+	var LocationBar = __webpack_require__(85);
+
+	/**
+	 * Constructor
+	 */
+
+	var HistoryLocation = function HistoryLocation(options) {
+	  this.path = '';
+
+	  this.options = _.extend({
+	    pushState: false,
+	    root: '/'
+	  }, options);
+
+	  // we're using the location-bar module for actual
+	  // URL management
+	  var self = this;
+	  this.locationBar = new LocationBar();
+	  this.locationBar.onChange(function (path) {
+	    self.handleURL('/' + (path || ''));
+	  });
+
+	  this.locationBar.start(_.extend({}, options));
 	};
+
+	/**
+	 * Check if we're actually using pushState. For browsers
+	 * that don't support it this would return false since
+	 * it would fallback to using hashState / polling
+	 * @return {Bool}
+	 */
+
+	HistoryLocation.prototype.usesPushState = function () {
+	  return this.options.pushState && this.locationBar.hasPushState();
+	};
+
+	/**
+	 * Get the current URL
+	 */
+
+	HistoryLocation.prototype.getURL = function () {
+	  return this.path;
+	};
+
+	/**
+	 * Set the current URL without triggering any events
+	 * back to the router. Add a new entry in browser's history.
+	 */
+
+	HistoryLocation.prototype.setURL = function (path, options) {
+	  if (this.path !== path) {
+	    this.path = path;
+	    this.locationBar.update(path, _.extend({ trigger: true }, options));
+	  }
+	};
+
+	/**
+	 * Set the current URL without triggering any events
+	 * back to the router. Replace the latest entry in broser's history.
+	 */
+
+	HistoryLocation.prototype.replaceURL = function (path, options) {
+	  if (this.path !== path) {
+	    this.path = path;
+	    this.locationBar.update(path, _.extend({ trigger: true, replace: true }, options));
+	  }
+	};
+
+	/**
+	 * Setup a URL change handler
+	 * @param  {Function} callback
+	 */
+	HistoryLocation.prototype.onChange = function (callback) {
+	  this.changeCallback = callback;
+	};
+
+	/**
+	 * Given a path, generate a URL appending root
+	 * if pushState is used and # if hash state is used
+	 */
+	HistoryLocation.prototype.formatURL = function (path) {
+	  if (this.locationBar.hasPushState()) {
+	    var rootURL = this.options.root;
+
+	    if (path !== '') {
+	      rootURL = rootURL.replace(/\/$/, '');
+	    }
+
+	    return rootURL + path;
+	  } else {
+	    if (path[0] === '/') {
+	      path = path.substr(1);
+	    }
+	    return '#' + path;
+	  }
+	};
+
+	/**
+	 * When we use pushState with a custom root option,
+	 * we need to take care of removingRoot at certain points.
+	 * Specifically
+	 * - history.update() can be called with the full URL by router
+	 * - history.navigate() can be called with the full URL by a link handler
+	 * - LocationBar expects all .update() calls to be called without root
+	 * - this method is public so that we could dispatch URLs without root in router
+	 */
+	HistoryLocation.prototype.removeRoot = function (url) {
+	  if (this.options.pushState && this.options.root && this.options.root !== '/') {
+	    return url.replace(this.options.root, '');
+	  } else {
+	    return url;
+	  }
+	};
+
+	/**
+	 * Stop listening to URL changes and link clicks
+	 */
+	HistoryLocation.prototype.destroy = function () {
+	  this.locationBar.stop();
+	};
+
+	/**
+	 * Update the browser's location bar with a new URL.
+	 * Trigger an event so that we would inform the router
+	 * of the new URL.
+	 * @private
+	 */
+
+	HistoryLocation.prototype.navigate = function (url) {
+	  this.locationBar.update(url, { trigger: true });
+	};
+
+	/**
+	  initially, the changeCallback won't be defined yet, but that's good
+	  because we dont' want to kick off routing right away, the router
+	  does that later by manually calling this handleURL method with the
+	  url it reads of the location. But it's important this is called
+	  first by Backbone, because we wanna set a correct this.path value
+
+	  @private
+	 */
+	HistoryLocation.prototype.handleURL = function (url) {
+	  this.path = url;
+	  if (this.changeCallback) {
+	    this.changeCallback(url);
+	  }
+	};
+
+	module.exports = HistoryLocation;
 
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayMap = __webpack_require__(4),
-	    baseCallback = __webpack_require__(5),
-	    baseMap = __webpack_require__(45),
-	    isArray = __webpack_require__(26);
+	'use strict';
+
+	module.exports = {
+	  map: __webpack_require__(4),
+	  each: __webpack_require__(52),
+	  reduce: __webpack_require__(56),
+	  pluck: __webpack_require__(60),
+	  extend: __webpack_require__(61),
+	  pick: __webpack_require__(68),
+	  toArray: __webpack_require__(74),
+	  clone: __webpack_require__(78),
+	  isEqual: __webpack_require__(84)
+	};
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayMap = __webpack_require__(5),
+	    baseCallback = __webpack_require__(6),
+	    baseMap = __webpack_require__(46),
+	    isArray = __webpack_require__(27);
 
 	/**
 	 * Creates an array of values by running each element in `collection` through
@@ -520,7 +705,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	/**
@@ -547,14 +732,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseMatches = __webpack_require__(6),
-	    baseMatchesProperty = __webpack_require__(34),
-	    bindCallback = __webpack_require__(41),
-	    identity = __webpack_require__(42),
-	    property = __webpack_require__(43);
+	var baseMatches = __webpack_require__(7),
+	    baseMatchesProperty = __webpack_require__(35),
+	    bindCallback = __webpack_require__(42),
+	    identity = __webpack_require__(43),
+	    property = __webpack_require__(44);
 
 	/**
 	 * The base implementation of `_.callback` which supports specifying the
@@ -588,12 +773,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIsMatch = __webpack_require__(7),
-	    getMatchData = __webpack_require__(31),
-	    toObject = __webpack_require__(30);
+	var baseIsMatch = __webpack_require__(8),
+	    getMatchData = __webpack_require__(32),
+	    toObject = __webpack_require__(31);
 
 	/**
 	 * The base implementation of `_.matches` which does not clone `source`.
@@ -624,11 +809,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIsEqual = __webpack_require__(8),
-	    toObject = __webpack_require__(30);
+	var baseIsEqual = __webpack_require__(9),
+	    toObject = __webpack_require__(31);
 
 	/**
 	 * The base implementation of `_.isMatch` without support for callback
@@ -682,12 +867,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIsEqualDeep = __webpack_require__(9),
-	    isObject = __webpack_require__(18),
-	    isObjectLike = __webpack_require__(19);
+	var baseIsEqualDeep = __webpack_require__(10),
+	    isObject = __webpack_require__(19),
+	    isObjectLike = __webpack_require__(20);
 
 	/**
 	 * The base implementation of `_.isEqual` without support for `this` binding
@@ -716,14 +901,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var equalArrays = __webpack_require__(10),
-	    equalByTag = __webpack_require__(12),
-	    equalObjects = __webpack_require__(13),
-	    isArray = __webpack_require__(26),
-	    isTypedArray = __webpack_require__(29);
+	var equalArrays = __webpack_require__(11),
+	    equalByTag = __webpack_require__(13),
+	    equalObjects = __webpack_require__(14),
+	    isArray = __webpack_require__(27),
+	    isTypedArray = __webpack_require__(30);
 
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -824,10 +1009,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arraySome = __webpack_require__(11);
+	var arraySome = __webpack_require__(12);
 
 	/**
 	 * A specialized version of `baseIsEqualDeep` for arrays with support for
@@ -881,7 +1066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	/**
@@ -910,7 +1095,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	/** `Object#toString` result references. */
@@ -964,10 +1149,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var keys = __webpack_require__(14);
+	var keys = __webpack_require__(15);
 
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -1037,13 +1222,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getNative = __webpack_require__(15),
-	    isArrayLike = __webpack_require__(20),
-	    isObject = __webpack_require__(18),
-	    shimKeys = __webpack_require__(24);
+	var getNative = __webpack_require__(16),
+	    isArrayLike = __webpack_require__(21),
+	    isObject = __webpack_require__(19),
+	    shimKeys = __webpack_require__(25);
 
 	/* Native method references for those with the same name as other `lodash` methods. */
 	var nativeKeys = getNative(Object, 'keys');
@@ -1088,10 +1273,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isNative = __webpack_require__(16);
+	var isNative = __webpack_require__(17);
 
 	/**
 	 * Gets the native function at `key` of `object`.
@@ -1110,11 +1295,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isFunction = __webpack_require__(17),
-	    isObjectLike = __webpack_require__(19);
+	var isFunction = __webpack_require__(18),
+	    isObjectLike = __webpack_require__(20);
 
 	/** Used to detect host constructors (Safari > 5). */
 	var reIsHostCtor = /^\[object .+?Constructor\]$/;
@@ -1164,10 +1349,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(18);
+	var isObject = __webpack_require__(19);
 
 	/** `Object#toString` result references. */
 	var funcTag = '[object Function]';
@@ -1208,7 +1393,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	/**
@@ -1242,7 +1427,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports) {
 
 	/**
@@ -1260,11 +1445,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getLength = __webpack_require__(21),
-	    isLength = __webpack_require__(23);
+	var getLength = __webpack_require__(22),
+	    isLength = __webpack_require__(24);
 
 	/**
 	 * Checks if `value` is array-like.
@@ -1281,10 +1466,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseProperty = __webpack_require__(22);
+	var baseProperty = __webpack_require__(23);
 
 	/**
 	 * Gets the "length" property value of `object`.
@@ -1302,7 +1487,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 	/**
@@ -1322,7 +1507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports) {
 
 	/**
@@ -1348,14 +1533,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(25),
-	    isArray = __webpack_require__(26),
-	    isIndex = __webpack_require__(27),
-	    isLength = __webpack_require__(23),
-	    keysIn = __webpack_require__(28);
+	var isArguments = __webpack_require__(26),
+	    isArray = __webpack_require__(27),
+	    isIndex = __webpack_require__(28),
+	    isLength = __webpack_require__(24),
+	    keysIn = __webpack_require__(29);
 
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -1395,11 +1580,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArrayLike = __webpack_require__(20),
-	    isObjectLike = __webpack_require__(19);
+	var isArrayLike = __webpack_require__(21),
+	    isObjectLike = __webpack_require__(20);
 
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -1435,12 +1620,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getNative = __webpack_require__(15),
-	    isLength = __webpack_require__(23),
-	    isObjectLike = __webpack_require__(19);
+	var getNative = __webpack_require__(16),
+	    isLength = __webpack_require__(24),
+	    isObjectLike = __webpack_require__(20);
 
 	/** `Object#toString` result references. */
 	var arrayTag = '[object Array]';
@@ -1481,7 +1666,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	/** Used to detect unsigned integer values. */
@@ -1511,14 +1696,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArguments = __webpack_require__(25),
-	    isArray = __webpack_require__(26),
-	    isIndex = __webpack_require__(27),
-	    isLength = __webpack_require__(23),
-	    isObject = __webpack_require__(18);
+	var isArguments = __webpack_require__(26),
+	    isArray = __webpack_require__(27),
+	    isIndex = __webpack_require__(28),
+	    isLength = __webpack_require__(24),
+	    isObject = __webpack_require__(19);
 
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -1581,11 +1766,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isLength = __webpack_require__(23),
-	    isObjectLike = __webpack_require__(19);
+	var isLength = __webpack_require__(24),
+	    isObjectLike = __webpack_require__(20);
 
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -1661,10 +1846,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(18);
+	var isObject = __webpack_require__(19);
 
 	/**
 	 * Converts `value` to an object if it's not one.
@@ -1681,11 +1866,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isStrictComparable = __webpack_require__(32),
-	    pairs = __webpack_require__(33);
+	var isStrictComparable = __webpack_require__(33),
+	    pairs = __webpack_require__(34);
 
 	/**
 	 * Gets the propery names, values, and compare flags of `object`.
@@ -1708,10 +1893,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(18);
+	var isObject = __webpack_require__(19);
 
 	/**
 	 * Checks if `value` is suitable for strict equality comparisons, i.e. `===`.
@@ -1729,11 +1914,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var keys = __webpack_require__(14),
-	    toObject = __webpack_require__(30);
+	var keys = __webpack_require__(15),
+	    toObject = __webpack_require__(31);
 
 	/**
 	 * Creates a two dimensional array of the key-value pairs for `object`,
@@ -1768,18 +1953,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseGet = __webpack_require__(35),
-	    baseIsEqual = __webpack_require__(8),
-	    baseSlice = __webpack_require__(36),
-	    isArray = __webpack_require__(26),
-	    isKey = __webpack_require__(37),
-	    isStrictComparable = __webpack_require__(32),
-	    last = __webpack_require__(38),
-	    toObject = __webpack_require__(30),
-	    toPath = __webpack_require__(39);
+	var baseGet = __webpack_require__(36),
+	    baseIsEqual = __webpack_require__(9),
+	    baseSlice = __webpack_require__(37),
+	    isArray = __webpack_require__(27),
+	    isKey = __webpack_require__(38),
+	    isStrictComparable = __webpack_require__(33),
+	    last = __webpack_require__(39),
+	    toObject = __webpack_require__(31),
+	    toPath = __webpack_require__(40);
 
 	/**
 	 * The base implementation of `_.matchesProperty` which does not clone `srcValue`.
@@ -1819,10 +2004,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(30);
+	var toObject = __webpack_require__(31);
 
 	/**
 	 * The base implementation of `get` without support for string paths
@@ -1854,7 +2039,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	/**
@@ -1892,11 +2077,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArray = __webpack_require__(26),
-	    toObject = __webpack_require__(30);
+	var isArray = __webpack_require__(27),
+	    toObject = __webpack_require__(31);
 
 	/** Used to match property names within property paths. */
 	var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\n\\]|\\.)*?\1)\]/,
@@ -1926,7 +2111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports) {
 
 	/**
@@ -1951,11 +2136,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseToString = __webpack_require__(40),
-	    isArray = __webpack_require__(26);
+	var baseToString = __webpack_require__(41),
+	    isArray = __webpack_require__(27);
 
 	/** Used to match property names within property paths. */
 	var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\n\\]|\\.)*?)\2)\]/g;
@@ -1985,7 +2170,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports) {
 
 	/**
@@ -2004,10 +2189,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var identity = __webpack_require__(42);
+	var identity = __webpack_require__(43);
 
 	/**
 	 * A specialized version of `baseCallback` which only supports `this` binding
@@ -2049,7 +2234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports) {
 
 	/**
@@ -2075,12 +2260,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseProperty = __webpack_require__(22),
-	    basePropertyDeep = __webpack_require__(44),
-	    isKey = __webpack_require__(37);
+	var baseProperty = __webpack_require__(23),
+	    basePropertyDeep = __webpack_require__(45),
+	    isKey = __webpack_require__(38);
 
 	/**
 	 * Creates a function that returns the property value at `path` on a
@@ -2112,11 +2297,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseGet = __webpack_require__(35),
-	    toPath = __webpack_require__(39);
+	var baseGet = __webpack_require__(36),
+	    toPath = __webpack_require__(40);
 
 	/**
 	 * A specialized version of `baseProperty` which supports deep paths.
@@ -2137,11 +2322,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseEach = __webpack_require__(46),
-	    isArrayLike = __webpack_require__(20);
+	var baseEach = __webpack_require__(47),
+	    isArrayLike = __webpack_require__(21);
 
 	/**
 	 * The base implementation of `_.map` without support for callback shorthands
@@ -2166,11 +2351,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseForOwn = __webpack_require__(47),
-	    createBaseEach = __webpack_require__(50);
+	var baseForOwn = __webpack_require__(48),
+	    createBaseEach = __webpack_require__(51);
 
 	/**
 	 * The base implementation of `_.forEach` without support for callback
@@ -2187,11 +2372,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFor = __webpack_require__(48),
-	    keys = __webpack_require__(14);
+	var baseFor = __webpack_require__(49),
+	    keys = __webpack_require__(15);
 
 	/**
 	 * The base implementation of `_.forOwn` without support for callback
@@ -2210,10 +2395,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createBaseFor = __webpack_require__(49);
+	var createBaseFor = __webpack_require__(50);
 
 	/**
 	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
@@ -2233,10 +2418,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(30);
+	var toObject = __webpack_require__(31);
 
 	/**
 	 * Creates a base function for `_.forIn` or `_.forInRight`.
@@ -2266,12 +2451,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getLength = __webpack_require__(21),
-	    isLength = __webpack_require__(23),
-	    toObject = __webpack_require__(30);
+	var getLength = __webpack_require__(22),
+	    isLength = __webpack_require__(24),
+	    toObject = __webpack_require__(31);
 
 	/**
 	 * Creates a `baseEach` or `baseEachRight` function.
@@ -2303,19 +2488,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 51 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(52);
-
-
-/***/ },
 /* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayEach = __webpack_require__(53),
-	    baseEach = __webpack_require__(46),
-	    createForEach = __webpack_require__(54);
+	module.exports = __webpack_require__(53);
+
+
+/***/ },
+/* 53 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayEach = __webpack_require__(54),
+	    baseEach = __webpack_require__(47),
+	    createForEach = __webpack_require__(55);
 
 	/**
 	 * Iterates over elements of `collection` invoking `iteratee` for each element.
@@ -2353,7 +2538,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports) {
 
 	/**
@@ -2381,11 +2566,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var bindCallback = __webpack_require__(41),
-	    isArray = __webpack_require__(26);
+	var bindCallback = __webpack_require__(42),
+	    isArray = __webpack_require__(27);
 
 	/**
 	 * Creates a function for `_.forEach` or `_.forEachRight`.
@@ -2407,12 +2592,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayReduce = __webpack_require__(56),
-	    baseEach = __webpack_require__(46),
-	    createReduce = __webpack_require__(57);
+	var arrayReduce = __webpack_require__(57),
+	    baseEach = __webpack_require__(47),
+	    createReduce = __webpack_require__(58);
 
 	/**
 	 * Reduces `collection` to a value which is the accumulated result of running
@@ -2457,7 +2642,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports) {
 
 	/**
@@ -2489,12 +2674,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCallback = __webpack_require__(5),
-	    baseReduce = __webpack_require__(58),
-	    isArray = __webpack_require__(26);
+	var baseCallback = __webpack_require__(6),
+	    baseReduce = __webpack_require__(59),
+	    isArray = __webpack_require__(27);
 
 	/**
 	 * Creates a function for `_.reduce` or `_.reduceRight`.
@@ -2517,7 +2702,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports) {
 
 	/**
@@ -2547,11 +2732,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var map = __webpack_require__(3),
-	    property = __webpack_require__(43);
+	var map = __webpack_require__(4),
+	    property = __webpack_require__(44);
 
 	/**
 	 * Gets the property value of `path` from all elements in `collection`.
@@ -2584,12 +2769,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var assignWith = __webpack_require__(61),
-	    baseAssign = __webpack_require__(62),
-	    createAssigner = __webpack_require__(64);
+	var assignWith = __webpack_require__(62),
+	    baseAssign = __webpack_require__(63),
+	    createAssigner = __webpack_require__(65);
 
 	/**
 	 * Assigns own enumerable properties of source object(s) to the destination
@@ -2633,10 +2818,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var keys = __webpack_require__(14);
+	var keys = __webpack_require__(15);
 
 	/**
 	 * A specialized version of `_.assign` for customizing assigned values without
@@ -2671,11 +2856,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseCopy = __webpack_require__(63),
-	    keys = __webpack_require__(14);
+	var baseCopy = __webpack_require__(64),
+	    keys = __webpack_require__(15);
 
 	/**
 	 * The base implementation of `_.assign` without support for argument juggling,
@@ -2696,7 +2881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports) {
 
 	/**
@@ -2725,12 +2910,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var bindCallback = __webpack_require__(41),
-	    isIterateeCall = __webpack_require__(65),
-	    restParam = __webpack_require__(66);
+	var bindCallback = __webpack_require__(42),
+	    isIterateeCall = __webpack_require__(66),
+	    restParam = __webpack_require__(67);
 
 	/**
 	 * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
@@ -2772,12 +2957,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArrayLike = __webpack_require__(20),
-	    isIndex = __webpack_require__(27),
-	    isObject = __webpack_require__(18);
+	var isArrayLike = __webpack_require__(21),
+	    isIndex = __webpack_require__(28),
+	    isObject = __webpack_require__(19);
 
 	/**
 	 * Checks if the provided arguments are from an iteratee call.
@@ -2806,7 +2991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports) {
 
 	/** Used as the `TypeError` message for "Functions" methods. */
@@ -2870,14 +3055,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFlatten = __webpack_require__(68),
-	    bindCallback = __webpack_require__(41),
-	    pickByArray = __webpack_require__(70),
-	    pickByCallback = __webpack_require__(71),
-	    restParam = __webpack_require__(66);
+	var baseFlatten = __webpack_require__(69),
+	    bindCallback = __webpack_require__(42),
+	    pickByArray = __webpack_require__(71),
+	    pickByCallback = __webpack_require__(72),
+	    restParam = __webpack_require__(67);
 
 	/**
 	 * Creates an object composed of the picked `object` properties. Property
@@ -2918,14 +3103,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayPush = __webpack_require__(69),
-	    isArguments = __webpack_require__(25),
-	    isArray = __webpack_require__(26),
-	    isArrayLike = __webpack_require__(20),
-	    isObjectLike = __webpack_require__(19);
+	var arrayPush = __webpack_require__(70),
+	    isArguments = __webpack_require__(26),
+	    isArray = __webpack_require__(27),
+	    isArrayLike = __webpack_require__(21),
+	    isObjectLike = __webpack_require__(20);
 
 	/**
 	 * The base implementation of `_.flatten` with added support for restricting
@@ -2965,7 +3150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports) {
 
 	/**
@@ -2991,10 +3176,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(30);
+	var toObject = __webpack_require__(31);
 
 	/**
 	 * A specialized version of `_.pick` which picks `object` properties specified
@@ -3025,10 +3210,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseForIn = __webpack_require__(72);
+	var baseForIn = __webpack_require__(73);
 
 	/**
 	 * A specialized version of `_.pick` which picks `object` properties `predicate`
@@ -3053,11 +3238,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFor = __webpack_require__(48),
-	    keysIn = __webpack_require__(28);
+	var baseFor = __webpack_require__(49),
+	    keysIn = __webpack_require__(29);
 
 	/**
 	 * The base implementation of `_.forIn` without support for callback
@@ -3076,13 +3261,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayCopy = __webpack_require__(74),
-	    getLength = __webpack_require__(21),
-	    isLength = __webpack_require__(23),
-	    values = __webpack_require__(75);
+	var arrayCopy = __webpack_require__(75),
+	    getLength = __webpack_require__(22),
+	    isLength = __webpack_require__(24),
+	    values = __webpack_require__(76);
 
 	/**
 	 * Converts `value` to an array.
@@ -3114,7 +3299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports) {
 
 	/**
@@ -3140,11 +3325,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseValues = __webpack_require__(76),
-	    keys = __webpack_require__(14);
+	var baseValues = __webpack_require__(77),
+	    keys = __webpack_require__(15);
 
 	/**
 	 * Creates an array of the own enumerable property values of `object`.
@@ -3179,7 +3364,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports) {
 
 	/**
@@ -3207,12 +3392,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseClone = __webpack_require__(78),
-	    bindCallback = __webpack_require__(41),
-	    isIterateeCall = __webpack_require__(65);
+	var baseClone = __webpack_require__(79),
+	    bindCallback = __webpack_require__(42),
+	    isIterateeCall = __webpack_require__(66);
 
 	/**
 	 * Creates a clone of `value`. If `isDeep` is `true` nested objects are cloned,
@@ -3283,18 +3468,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayCopy = __webpack_require__(74),
-	    arrayEach = __webpack_require__(53),
-	    baseAssign = __webpack_require__(62),
-	    baseForOwn = __webpack_require__(47),
-	    initCloneArray = __webpack_require__(79),
-	    initCloneByTag = __webpack_require__(80),
-	    initCloneObject = __webpack_require__(82),
-	    isArray = __webpack_require__(26),
-	    isObject = __webpack_require__(18);
+	var arrayCopy = __webpack_require__(75),
+	    arrayEach = __webpack_require__(54),
+	    baseAssign = __webpack_require__(63),
+	    baseForOwn = __webpack_require__(48),
+	    initCloneArray = __webpack_require__(80),
+	    initCloneByTag = __webpack_require__(81),
+	    initCloneObject = __webpack_require__(83),
+	    isArray = __webpack_require__(27),
+	    isObject = __webpack_require__(19);
 
 	/** `Object#toString` result references. */
 	var argsTag = '[object Arguments]',
@@ -3417,7 +3602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports) {
 
 	/** Used for native method references. */
@@ -3449,10 +3634,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var bufferClone = __webpack_require__(81);
+	var bufferClone = __webpack_require__(82);
 
 	/** `Object#toString` result references. */
 	var boolTag = '[object Boolean]',
@@ -3518,7 +3703,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/** Native method references. */
@@ -3545,7 +3730,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports) {
 
 	/**
@@ -3567,11 +3752,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 83 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIsEqual = __webpack_require__(8),
-	    bindCallback = __webpack_require__(41);
+	var baseIsEqual = __webpack_require__(9),
+	    bindCallback = __webpack_require__(42);
 
 	/**
 	 * Performs a deep comparison between two values to determine if they are
@@ -3627,13 +3812,363 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 84 */
+/* 85 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;// LocationBar module extracted from Backbone.js 1.1.0
+	//
+	// the dependency on backbone, underscore and jquery have been removed to turn
+	// this into a small standalone library for handling browser's history API
+	// cross browser and with a fallback to hashchange events or polling.
+
+	(function(define) {
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+	  // 3 helper functions we use to avoid pulling in entire _ and $
+	  var _ = {};
+	  _.extend = function extend(obj, source) {
+	    for (var prop in source) {
+	      obj[prop] = source[prop];
+	    }
+	    return obj;
+	  }
+	  _.any = function any(arr, fn) {
+	    for (var i = 0, l = arr.length; i < l; i++) {
+	      if (fn(arr[i])) {
+	        return true;
+	      }
+	    }
+	    return false;
+	  }
+	  
+	  function on(obj, type, fn) {
+	    if (obj.attachEvent) {
+	      obj['e'+type+fn] = fn;
+	      obj[type+fn] = function(){ obj['e'+type+fn]( window.event ); };
+	      obj.attachEvent( 'on'+type, obj[type+fn] );
+	    } else {
+	      obj.addEventListener( type, fn, false );
+	    }
+	  }
+	  function off(obj, type, fn) {
+	    if (obj.detachEvent) {
+	      obj.detachEvent('on'+type, obj[type+fn]);
+	      obj[type+fn] = null;
+	    } else {
+	      obj.removeEventListener(type, fn, false);
+	    }
+	  }
+
+
+
+
+
+	  // this is mostly original code with minor modifications
+	  // to avoid dependency on 3rd party libraries
+	  //
+	  // Backbone.History
+	  // ----------------
+
+	  // Handles cross-browser history management, based on either
+	  // [pushState](http://diveintohtml5.info/history.html) and real URLs, or
+	  // [onhashchange](https://developer.mozilla.org/en-US/docs/DOM/window.onhashchange)
+	  // and URL fragments. If the browser supports neither (old IE, natch),
+	  // falls back to polling.
+	  var History = function() {
+	    this.handlers = [];
+
+	    // MODIFICATION OF ORIGINAL BACKBONE.HISTORY
+	    //
+	    // _.bindAll(this, 'checkUrl');
+	    //
+	    var self = this;
+	    var checkUrl = this.checkUrl;
+	    this.checkUrl = function () {
+	      checkUrl.apply(self, arguments);
+	    };
+
+	    // Ensure that `History` can be used outside of the browser.
+	    if (typeof window !== 'undefined') {
+	      this.location = window.location;
+	      this.history = window.history;
+	    }
+	  };
+
+	  // Cached regex for stripping a leading hash/slash and trailing space.
+	  var routeStripper = /^[#\/]|\s+$/g;
+
+	  // Cached regex for stripping leading and trailing slashes.
+	  var rootStripper = /^\/+|\/+$/g;
+
+	  // Cached regex for detecting MSIE.
+	  var isExplorer = /msie [\w.]+/;
+
+	  // Cached regex for removing a trailing slash.
+	  var trailingSlash = /\/$/;
+
+	  // Cached regex for stripping urls of hash.
+	  var pathStripper = /#.*$/;
+
+	  // Has the history handling already been started?
+	  History.started = false;
+
+	  // Set up all inheritable **Backbone.History** properties and methods.
+	  _.extend(History.prototype, {
+
+	    // The default interval to poll for hash changes, if necessary, is
+	    // twenty times a second.
+	    interval: 50,
+
+	    // Are we at the app root?
+	    atRoot: function() {
+	      return this.location.pathname.replace(/[^\/]$/, '$&/') === this.root;
+	    },
+
+	    // Gets the true hash value. Cannot use location.hash directly due to bug
+	    // in Firefox where location.hash will always be decoded.
+	    getHash: function(window) {
+	      var match = (window || this).location.href.match(/#(.*)$/);
+	      return match ? match[1] : '';
+	    },
+
+	    // Get the cross-browser normalized URL fragment, either from the URL,
+	    // the hash, or the override.
+	    getFragment: function(fragment, forcePushState) {
+	      if (fragment == null) {
+	        if (this._hasPushState || !this._wantsHashChange || forcePushState) {
+	          fragment = decodeURI(this.location.pathname + this.location.search);
+	          var root = this.root.replace(trailingSlash, '');
+	          if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
+	        } else {
+	          fragment = this.getHash();
+	        }
+	      }
+	      return fragment.replace(routeStripper, '');
+	    },
+
+	    // Start the hash change handling, returning `true` if the current URL matches
+	    // an existing route, and `false` otherwise.
+	    start: function(options) {
+	      if (History.started) throw new Error("LocationBar has already been started");
+	      History.started = true;
+
+	      // Figure out the initial configuration. Do we need an iframe?
+	      // Is pushState desired ... is it available?
+	      this.options          = _.extend({root: '/'}, options);
+	      this.location         = this.options.location || this.location;
+	      this.history          = this.options.history || this.history;
+	      this.root             = this.options.root;
+	      this._wantsHashChange = this.options.hashChange !== false;
+	      this._wantsPushState  = !!this.options.pushState;
+	      this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
+	      var fragment          = this.getFragment();
+	      var docMode           = document.documentMode;
+	      var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
+
+	      // Normalize root to always include a leading and trailing slash.
+	      this.root = ('/' + this.root + '/').replace(rootStripper, '/');
+
+	      if (oldIE && this._wantsHashChange) {
+	        // MODIFICATION OF ORIGINAL BACKBONE.HISTORY
+	        //
+	        // var frame = Backbone.$('<iframe src="javascript:0" tabindex="-1">');
+	        // this.iframe = frame.hide().appendTo('body')[0].contentWindow;
+	        //
+	        this.iframe = document.createElement("iframe");
+	        this.iframe.setAttribute("src", "javascript:0");
+	        this.iframe.setAttribute("tabindex", -1);
+	        this.iframe.style.display = "none";
+	        document.body.appendChild(this.iframe);
+	        this.iframe = this.iframe.contentWindow;
+	        this.navigate(fragment);
+	      }
+
+	      // Depending on whether we're using pushState or hashes, and whether
+	      // 'onhashchange' is supported, determine how we check the URL state.
+	      if (this._hasPushState) {
+	        on(window, 'popstate', this.checkUrl);
+	      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
+	        on(window, 'hashchange', this.checkUrl);
+	      } else if (this._wantsHashChange) {
+	        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
+	      }
+
+	      // Determine if we need to change the base url, for a pushState link
+	      // opened by a non-pushState browser.
+	      this.fragment = fragment;
+	      var loc = this.location;
+
+	      // Transition from hashChange to pushState or vice versa if both are
+	      // requested.
+	      if (this._wantsHashChange && this._wantsPushState) {
+
+	        // If we've started off with a route from a `pushState`-enabled
+	        // browser, but we're currently in a browser that doesn't support it...
+	        if (!this._hasPushState && !this.atRoot()) {
+	          this.fragment = this.getFragment(null, true);
+	          this.location.replace(this.root + '#' + this.fragment);
+	          // Return immediately as browser will do redirect to new url
+	          return true;
+
+	        // Or if we've started out with a hash-based route, but we're currently
+	        // in a browser where it could be `pushState`-based instead...
+	        } else if (this._hasPushState && this.atRoot() && loc.hash) {
+	          this.fragment = this.getHash().replace(routeStripper, '');
+	          this.history.replaceState({}, document.title, this.root + this.fragment);
+	        }
+
+	      }
+
+	      if (!this.options.silent) return this.loadUrl();
+	    },
+
+	    // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
+	    // but possibly useful for unit testing Routers.
+	    stop: function() {
+	      off(window, 'popstate', this.checkUrl);
+	      off(window, 'hashchange', this.checkUrl);
+	      if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
+	      History.started = false;
+	    },
+
+	    // Add a route to be tested when the fragment changes. Routes added later
+	    // may override previous routes.
+	    route: function(route, callback) {
+	      this.handlers.unshift({route: route, callback: callback});
+	    },
+
+	    // Checks the current URL to see if it has changed, and if it has,
+	    // calls `loadUrl`, normalizing across the hidden iframe.
+	    checkUrl: function() {
+	      var current = this.getFragment();
+	      if (current === this.fragment && this.iframe) {
+	        current = this.getFragment(this.getHash(this.iframe));
+	      }
+	      if (current === this.fragment) return false;
+	      if (this.iframe) this.navigate(current);
+	      this.loadUrl();
+	    },
+
+	    // Attempt to load the current URL fragment. If a route succeeds with a
+	    // match, returns `true`. If no defined routes matches the fragment,
+	    // returns `false`.
+	    loadUrl: function(fragment) {
+	      fragment = this.fragment = this.getFragment(fragment);
+	      return _.any(this.handlers, function(handler) {
+	        if (handler.route.test(fragment)) {
+	          handler.callback(fragment);
+	          return true;
+	        }
+	      });
+	    },
+
+	    // Save a fragment into the hash history, or replace the URL state if the
+	    // 'replace' option is passed. You are responsible for properly URL-encoding
+	    // the fragment in advance.
+	    //
+	    // The options object can contain `trigger: true` if you wish to have the
+	    // route callback be fired (not usually desirable), or `replace: true`, if
+	    // you wish to modify the current URL without adding an entry to the history.
+	    navigate: function(fragment, options) {
+	      if (!History.started) return false;
+	      if (!options || options === true) options = {trigger: !!options};
+
+	      var url = this.root + (fragment = this.getFragment(fragment || ''));
+
+	      // Strip the hash for matching.
+	      fragment = fragment.replace(pathStripper, '');
+
+	      if (this.fragment === fragment) return;
+	      this.fragment = fragment;
+
+	      // Don't include a trailing slash on the root.
+	      if (fragment === '' && url !== '/') url = url.slice(0, -1);
+
+	      // If pushState is available, we use it to set the fragment as a real URL.
+	      if (this._hasPushState) {
+	        this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
+
+	      // If hash changes haven't been explicitly disabled, update the hash
+	      // fragment to store history.
+	      } else if (this._wantsHashChange) {
+	        this._updateHash(this.location, fragment, options.replace);
+	        if (this.iframe && (fragment !== this.getFragment(this.getHash(this.iframe)))) {
+	          // Opening and closing the iframe tricks IE7 and earlier to push a
+	          // history entry on hash-tag change.  When replace is true, we don't
+	          // want this.
+	          if(!options.replace) this.iframe.document.open().close();
+	          this._updateHash(this.iframe.location, fragment, options.replace);
+	        }
+
+	      // If you've told us that you explicitly don't want fallback hashchange-
+	      // based history, then `navigate` becomes a page refresh.
+	      } else {
+	        return this.location.assign(url);
+	      }
+	      if (options.trigger) return this.loadUrl(fragment);
+	    },
+
+	    // Update the hash location, either replacing the current entry, or adding
+	    // a new one to the browser history.
+	    _updateHash: function(location, fragment, replace) {
+	      if (replace) {
+	        var href = location.href.replace(/(javascript:|#).*$/, '');
+	        location.replace(href + '#' + fragment);
+	      } else {
+	        // Some browsers require that `hash` contains a leading #.
+	        location.hash = '#' + fragment;
+	      }
+	    }
+
+	  });
+
+
+
+	  // add some features to History
+
+	  // a more intuitive alias for navigate
+	  History.prototype.update = function () {
+	    this.navigate.apply(this, arguments);
+	  };
+
+	  // a generic callback for any changes
+	  History.prototype.onChange = function (callback) {
+	    this.route(/^(.*?)$/, callback);
+	  };
+
+	  // checks if the browser has pushstate support
+	  History.prototype.hasPushState = function () {
+	    if (!History.started) {
+	      throw new Error("only available after LocationBar.start()");
+	    }
+	    return this._hasPushState;
+	  };
+
+
+
+
+
+
+	  // export
+	  return History;
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	})(__webpack_require__(86));
+
+/***/ },
+/* 86 */
+/***/ function(module, exports) {
+
+	module.exports = function() { throw new Error("define cannot be used indirect"); };
+
+
+/***/ },
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _ = __webpack_require__(2);
-	var invariant = __webpack_require__(85);
+	var _ = __webpack_require__(3);
+	var invariant = __webpack_require__(88);
 
 	module.exports = function dsl(callback) {
 	  var ancestors = [];
@@ -3699,7 +4234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 85 */
+/* 88 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3725,16 +4260,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = invariant;
 
 /***/ },
-/* 86 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _ = __webpack_require__(2);
-	var invariant = __webpack_require__(85);
-	var merge = __webpack_require__(87).merge;
-	var qs = __webpack_require__(88);
-	var pathToRegexp = __webpack_require__(92);
+	var _ = __webpack_require__(3);
+	var invariant = __webpack_require__(88);
+	var merge = __webpack_require__(90).merge;
+	var qs = __webpack_require__(91);
+	var pathToRegexp = __webpack_require__(95);
 
 	var paramInjectMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$?]*[?+*]?)/g;
 	var specialParamChars = /[+*?]$/g;
@@ -3867,7 +4402,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Path;
 
 /***/ },
-/* 87 */
+/* 90 */
 /***/ function(module, exports) {
 
 	// Load modules
@@ -4005,20 +4540,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 88 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(89);
+	module.exports = __webpack_require__(92);
 
 
 /***/ },
-/* 89 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Load modules
 
-	var Stringify = __webpack_require__(90);
-	var Parse = __webpack_require__(91);
+	var Stringify = __webpack_require__(93);
+	var Parse = __webpack_require__(94);
 
 
 	// Declare internals
@@ -4033,12 +4568,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 90 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Load modules
 
-	var Utils = __webpack_require__(87);
+	var Utils = __webpack_require__(90);
 
 
 	// Declare internals
@@ -4136,12 +4671,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 91 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Load modules
 
-	var Utils = __webpack_require__(87);
+	var Utils = __webpack_require__(90);
 
 
 	// Declare internals
@@ -4299,10 +4834,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 92 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isarray = __webpack_require__(93)
+	var isarray = __webpack_require__(96)
 
 	/**
 	 * Expose `pathToRegexp`.
@@ -4691,7 +5226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 93 */
+/* 96 */
 /***/ function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
@@ -4700,761 +5235,48 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 94 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _ = __webpack_require__(2);
-	var links = __webpack_require__(95);
-	var LocationBar = __webpack_require__(97);
-
-	/**
-	 * Constructor
-	 */
-
-	var HistoryLocation = function HistoryLocation(options) {
-	  this.path = '';
-
-	  this.options = _.extend({
-	    pushState: false,
-	    interceptLinks: true,
-	    root: '/'
-	  }, options);
-
-	  // we're using the location-bar module for actual
-	  // URL management
-	  var self = this;
-	  this.locationBar = new LocationBar();
-	  this.locationBar.onChange(function (path) {
-	    self.handleURL('/' + (path || ''));
-	  });
-
-	  this.locationBar.start(_.extend({}, options));
-
-	  // we want to intercept all link clicks in case we're using push state,
-	  // because all link clicks should be handled via the router instead of
-	  // browser reloading the page
-	  if (this.usesPushState() && this.options.interceptLinks) {
-	    this.interceptLinks();
-	  }
-	};
-
-	/**
-	 * Check if we're actually using pushState. For browsers
-	 * that don't support it this would return false since
-	 * it would fallback to using hashState / polling
-	 * @return {Bool}
-	 */
-
-	HistoryLocation.prototype.usesPushState = function () {
-	  return this.options.pushState && this.locationBar.hasPushState();
-	};
-
-	/**
-	 * Get the current URL
-	 */
-
-	HistoryLocation.prototype.getURL = function () {
-	  return this.path;
-	};
-
-	/**
-	 * Set the current URL without triggering any events
-	 * back to the router. Add a new entry in browser's history.
-	 */
-
-	HistoryLocation.prototype.setURL = function (path, options) {
-	  if (this.path !== path) {
-	    this.path = path;
-	    this.locationBar.update(path, _.extend({ trigger: true }, options));
-	  }
-	};
-
-	/**
-	 * Set the current URL without triggering any events
-	 * back to the router. Replace the latest entry in broser's history.
-	 */
-
-	HistoryLocation.prototype.replaceURL = function (path, options) {
-	  if (this.path !== path) {
-	    this.path = path;
-	    this.locationBar.update(path, _.extend({ trigger: true, replace: true }, options));
-	  }
-	};
-
-	/**
-	 * Setup a URL change handler
-	 * @param  {Function} callback
-	 */
-	HistoryLocation.prototype.onChange = function (callback) {
-	  this.changeCallback = callback;
-	};
-
-	/**
-	 * Given a path, generate a URL appending root
-	 * if pushState is used and # if hash state is used
-	 */
-	HistoryLocation.prototype.formatURL = function (path) {
-	  if (this.locationBar.hasPushState()) {
-	    var rootURL = this.options.root;
-
-	    if (path !== '') {
-	      rootURL = rootURL.replace(/\/$/, '');
-	    }
-
-	    return rootURL + path;
-	  } else {
-	    if (path[0] === '/') {
-	      path = path.substr(1);
-	    }
-	    return '#' + path;
-	  }
-	};
-
-	/**
-	 * When we use pushState with a custom root option,
-	 * we need to take care of removingRoot at certain points.
-	 * Specifically
-	 * - history.update() can be called with the full URL by router
-	 * - history.navigate() can be called with the full URL by a link handler
-	 * - LocationBar expects all .update() calls to be called without root
-	 * - this method is public so that we could dispatch URLs without root in router
-	 */
-	HistoryLocation.prototype.removeRoot = function (url) {
-	  if (this.options.pushState && this.options.root && this.options.root !== '/') {
-	    return url.replace(this.options.root, '');
-	  } else {
-	    return url;
-	  }
-	};
-
-	/**
-	 * Stop listening to URL changes and link clicks
-	 */
-	HistoryLocation.prototype.destroy = function () {
-	  this.locationBar.stop();
-	  if (this.linkHandler) {
-	    links.undelegate(this.linkHandler);
-	  }
-	};
-
-	/**
-	 * @private
-	 */
-
-	HistoryLocation.prototype.interceptLinks = function () {
-	  var self = this;
-	  this.linkHandler = function (e, link) {
-	    e.preventDefault();
-	    // TODO use router.transitionTo instead, because
-	    // that way we're handling errors and what not? and don't
-	    // update url on failed requests or smth?
-	    self.navigate(self.removeRoot(link.getAttribute('href')));
-	  };
-	  links.delegate(this.linkHandler);
-	};
-
-	/**
-	 * Update the browser's location bar with a new URL.
-	 * Trigger an event so that we would inform the router
-	 * of the new URL.
-	 * @private
-	 */
-
-	HistoryLocation.prototype.navigate = function (url) {
-	  this.locationBar.update(url, { trigger: true });
-	};
-
-	/**
-	  initially, the changeCallback won't be defined yet, but that's good
-	  because we dont' want to kick off routing right away, the router
-	  does that later by manually calling this handleURL method with the
-	  url it reads of the location. But it's important this is called
-	  first by Backbone, because we wanna set a correct this.path value
-
-	  @private
-	 */
-	HistoryLocation.prototype.handleURL = function (url) {
-	  this.path = url;
-	  if (this.changeCallback) {
-	    this.changeCallback(url);
-	  }
-	};
-
-	module.exports = HistoryLocation;
-
-/***/ },
-/* 95 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var events = __webpack_require__(96);
-
-	var link = function link(element) {
-	  element = { parentNode: element };
-
-	  var root = document;
-
-	  // Make sure `element !== document` and `element != null`
-	  // otherwise we get an illegal invocation
-	  while ((element = element.parentNode) && element !== document) {
-	    if (element.tagName.toLowerCase() === 'a') {
-	      return element;
-	    }
-	    // After `matches` on the edge case that
-	    // the selector matches the root
-	    // (when the root is not the document)
-	    if (element === root) {
-	      return;
-	    }
-	  }
-	};
-
-	/**
-	 * Delegate event `type` to links
-	 * and invoke `fn(e)`. A callback function
-	 * is returned which may be passed to `.unbind()`.
-	 *
-	 * @param {Element} el
-	 * @param {String} selector
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @return {Function}
-	 * @api public
-	 */
-
-	var delegate = function delegate(el, type, fn) {
-	  return events.bind(el, type, function (e) {
-	    var target = e.target || e.srcElement;
-	    var el = link(target);
-	    if (el) {
-	      fn(e, el);
-	    }
-	  });
-	};
-
-	/**
-	 * Unbind event `type`'s callback `fn`.
-	 *
-	 * @param {Element} el
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @api public
-	 */
-
-	var undelegate = function undelegate(el, type, fn) {
-	  // TODO 2014-03-25 fix unbinding - this fn we're trying
-	  // to ubind has never been bound, we bound an anonymous function
-	  events.unbind(el, type, fn);
-	};
-
-	/**
-	 * Handle link delegation on `el` or the document,
-	 * and invoke `fn(e)` when clickable.
-	 *
-	 * @param {Element|Function} el or fn
-	 * @param {Function} [fn]
-	 * @api public
-	 */
-
-	module.exports.delegate = function (el, fn) {
-	  // default to document
-	  if (typeof el === 'function') {
-	    fn = el;
-	    el = document;
-	  }
-
-	  delegate(el, 'click', function (e, el) {
-	    if (clickable(e, el)) fn(e, el);
-	  });
-	};
-
-	module.exports.undelegate = function (el, fn) {
-	  // default to document
-	  if (typeof el === 'function') {
-	    fn = el;
-	    el = document;
-	  }
-
-	  // TODO 2014-03-25 fix undelegation here too
-	  undelegate(el, 'click', fn);
-	};
-
-	/**
-	 * Check if `e` is clickable.
-	 */
-
-	function clickable(e, el) {
-	  if (which(e) !== 1) return;
-	  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-	  if (e.defaultPrevented) return;
-
-	  // check target
-	  if (el.target) return;
-
-	  // check for data-bypass attribute
-	  if (el.getAttribute('data-bypass') !== null) return;
-
-	  // inspect the href
-	  var href = el.getAttribute('href');
-	  if (!href || href.length === 0) return;
-	  // don't handle hash links
-	  if (href[0] === '#') return;
-	  // external/absolute links
-	  if (href.indexOf('http://') === 0 || href.indexOf('https://') === 0) return;
-	  // don't intercept javascript links
-	  /* eslint-disable no-script-url */
-	  if (href.indexOf('javascript:') === 0) return;
-	  /* eslint-enable no-script-url */
-
-	  return true;
-	}
-
-	/**
-	 * Event button.
-	 */
-
-	function which(e) {
-	  e = e || window.event;
-	  return e.which === null ? e.button : e.which;
-	}
-
-/***/ },
-/* 96 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	var exp = {};
-
-	/**
-	* DOM Event bind/unbind
-	*/
-
-	var bind = window.addEventListener ? 'addEventListener' : 'attachEvent';
-	var unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
-	var prefix = bind !== 'addEventListener' ? 'on' : '';
-
-	/**
-	* Bind `el` event `type` to `fn`.
-	*
-	* @param {Element} el
-	* @param {String} type
-	* @param {Function} fn
-	* @param {Boolean} capture
-	* @return {Function}
-	* @api public
-	*/
-
-	exp.bind = function (el, type, fn, capture) {
-	  el[bind](prefix + type, fn, capture || false);
-	  return fn;
-	};
-
-	/**
-	* Unbind `el` event `type`'s callback `fn`.
-	*
-	* @param {Element} el
-	* @param {String} type
-	* @param {Function} fn
-	* @param {Boolean} capture
-	* @return {Function}
-	* @api public
-	*/
-
-	exp.unbind = function (el, type, fn, capture) {
-	  el[unbind](prefix + type, fn, capture || false);
-	  return fn;
-	};
-
-	module.exports = exp;
-
-/***/ },
 /* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;// LocationBar module extracted from Backbone.js 1.1.0
-	//
-	// the dependency on backbone, underscore and jquery have been removed to turn
-	// this into a small standalone library for handling browser's history API
-	// cross browser and with a fallback to hashchange events or polling.
-
-	(function(define) {
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-	  // 3 helper functions we use to avoid pulling in entire _ and $
-	  var _ = {};
-	  _.extend = function extend(obj, source) {
-	    for (var prop in source) {
-	      obj[prop] = source[prop];
-	    }
-	    return obj;
-	  }
-	  _.any = function any(arr, fn) {
-	    for (var i = 0, l = arr.length; i < l; i++) {
-	      if (fn(arr[i])) {
-	        return true;
-	      }
-	    }
-	    return false;
-	  }
-	  
-	  function on(obj, type, fn) {
-	    if (obj.attachEvent) {
-	      obj['e'+type+fn] = fn;
-	      obj[type+fn] = function(){ obj['e'+type+fn]( window.event ); };
-	      obj.attachEvent( 'on'+type, obj[type+fn] );
-	    } else {
-	      obj.addEventListener( type, fn, false );
-	    }
-	  }
-	  function off(obj, type, fn) {
-	    if (obj.detachEvent) {
-	      obj.detachEvent('on'+type, obj[type+fn]);
-	      obj[type+fn] = null;
-	    } else {
-	      obj.removeEventListener(type, fn, false);
-	    }
-	  }
-
-
-
-
-
-	  // this is mostly original code with minor modifications
-	  // to avoid dependency on 3rd party libraries
-	  //
-	  // Backbone.History
-	  // ----------------
-
-	  // Handles cross-browser history management, based on either
-	  // [pushState](http://diveintohtml5.info/history.html) and real URLs, or
-	  // [onhashchange](https://developer.mozilla.org/en-US/docs/DOM/window.onhashchange)
-	  // and URL fragments. If the browser supports neither (old IE, natch),
-	  // falls back to polling.
-	  var History = function() {
-	    this.handlers = [];
-
-	    // MODIFICATION OF ORIGINAL BACKBONE.HISTORY
-	    //
-	    // _.bindAll(this, 'checkUrl');
-	    //
-	    var self = this;
-	    var checkUrl = this.checkUrl;
-	    this.checkUrl = function () {
-	      checkUrl.apply(self, arguments);
-	    };
-
-	    // Ensure that `History` can be used outside of the browser.
-	    if (typeof window !== 'undefined') {
-	      this.location = window.location;
-	      this.history = window.history;
-	    }
-	  };
-
-	  // Cached regex for stripping a leading hash/slash and trailing space.
-	  var routeStripper = /^[#\/]|\s+$/g;
-
-	  // Cached regex for stripping leading and trailing slashes.
-	  var rootStripper = /^\/+|\/+$/g;
-
-	  // Cached regex for detecting MSIE.
-	  var isExplorer = /msie [\w.]+/;
-
-	  // Cached regex for removing a trailing slash.
-	  var trailingSlash = /\/$/;
-
-	  // Cached regex for stripping urls of hash.
-	  var pathStripper = /#.*$/;
-
-	  // Has the history handling already been started?
-	  History.started = false;
-
-	  // Set up all inheritable **Backbone.History** properties and methods.
-	  _.extend(History.prototype, {
-
-	    // The default interval to poll for hash changes, if necessary, is
-	    // twenty times a second.
-	    interval: 50,
-
-	    // Are we at the app root?
-	    atRoot: function() {
-	      return this.location.pathname.replace(/[^\/]$/, '$&/') === this.root;
-	    },
-
-	    // Gets the true hash value. Cannot use location.hash directly due to bug
-	    // in Firefox where location.hash will always be decoded.
-	    getHash: function(window) {
-	      var match = (window || this).location.href.match(/#(.*)$/);
-	      return match ? match[1] : '';
-	    },
-
-	    // Get the cross-browser normalized URL fragment, either from the URL,
-	    // the hash, or the override.
-	    getFragment: function(fragment, forcePushState) {
-	      if (fragment == null) {
-	        if (this._hasPushState || !this._wantsHashChange || forcePushState) {
-	          fragment = decodeURI(this.location.pathname + this.location.search);
-	          var root = this.root.replace(trailingSlash, '');
-	          if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
-	        } else {
-	          fragment = this.getHash();
-	        }
-	      }
-	      return fragment.replace(routeStripper, '');
-	    },
-
-	    // Start the hash change handling, returning `true` if the current URL matches
-	    // an existing route, and `false` otherwise.
-	    start: function(options) {
-	      if (History.started) throw new Error("LocationBar has already been started");
-	      History.started = true;
-
-	      // Figure out the initial configuration. Do we need an iframe?
-	      // Is pushState desired ... is it available?
-	      this.options          = _.extend({root: '/'}, options);
-	      this.location         = this.options.location || this.location;
-	      this.history          = this.options.history || this.history;
-	      this.root             = this.options.root;
-	      this._wantsHashChange = this.options.hashChange !== false;
-	      this._wantsPushState  = !!this.options.pushState;
-	      this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
-	      var fragment          = this.getFragment();
-	      var docMode           = document.documentMode;
-	      var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
-
-	      // Normalize root to always include a leading and trailing slash.
-	      this.root = ('/' + this.root + '/').replace(rootStripper, '/');
-
-	      if (oldIE && this._wantsHashChange) {
-	        // MODIFICATION OF ORIGINAL BACKBONE.HISTORY
-	        //
-	        // var frame = Backbone.$('<iframe src="javascript:0" tabindex="-1">');
-	        // this.iframe = frame.hide().appendTo('body')[0].contentWindow;
-	        //
-	        this.iframe = document.createElement("iframe");
-	        this.iframe.setAttribute("src", "javascript:0");
-	        this.iframe.setAttribute("tabindex", -1);
-	        this.iframe.style.display = "none";
-	        document.body.appendChild(this.iframe);
-	        this.iframe = this.iframe.contentWindow;
-	        this.navigate(fragment);
-	      }
-
-	      // Depending on whether we're using pushState or hashes, and whether
-	      // 'onhashchange' is supported, determine how we check the URL state.
-	      if (this._hasPushState) {
-	        on(window, 'popstate', this.checkUrl);
-	      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-	        on(window, 'hashchange', this.checkUrl);
-	      } else if (this._wantsHashChange) {
-	        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
-	      }
-
-	      // Determine if we need to change the base url, for a pushState link
-	      // opened by a non-pushState browser.
-	      this.fragment = fragment;
-	      var loc = this.location;
-
-	      // Transition from hashChange to pushState or vice versa if both are
-	      // requested.
-	      if (this._wantsHashChange && this._wantsPushState) {
-
-	        // If we've started off with a route from a `pushState`-enabled
-	        // browser, but we're currently in a browser that doesn't support it...
-	        if (!this._hasPushState && !this.atRoot()) {
-	          this.fragment = this.getFragment(null, true);
-	          this.location.replace(this.root + '#' + this.fragment);
-	          // Return immediately as browser will do redirect to new url
-	          return true;
-
-	        // Or if we've started out with a hash-based route, but we're currently
-	        // in a browser where it could be `pushState`-based instead...
-	        } else if (this._hasPushState && this.atRoot() && loc.hash) {
-	          this.fragment = this.getHash().replace(routeStripper, '');
-	          this.history.replaceState({}, document.title, this.root + this.fragment);
-	        }
-
-	      }
-
-	      if (!this.options.silent) return this.loadUrl();
-	    },
-
-	    // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
-	    // but possibly useful for unit testing Routers.
-	    stop: function() {
-	      off(window, 'popstate', this.checkUrl);
-	      off(window, 'hashchange', this.checkUrl);
-	      if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
-	      History.started = false;
-	    },
-
-	    // Add a route to be tested when the fragment changes. Routes added later
-	    // may override previous routes.
-	    route: function(route, callback) {
-	      this.handlers.unshift({route: route, callback: callback});
-	    },
-
-	    // Checks the current URL to see if it has changed, and if it has,
-	    // calls `loadUrl`, normalizing across the hidden iframe.
-	    checkUrl: function() {
-	      var current = this.getFragment();
-	      if (current === this.fragment && this.iframe) {
-	        current = this.getFragment(this.getHash(this.iframe));
-	      }
-	      if (current === this.fragment) return false;
-	      if (this.iframe) this.navigate(current);
-	      this.loadUrl();
-	    },
-
-	    // Attempt to load the current URL fragment. If a route succeeds with a
-	    // match, returns `true`. If no defined routes matches the fragment,
-	    // returns `false`.
-	    loadUrl: function(fragment) {
-	      fragment = this.fragment = this.getFragment(fragment);
-	      return _.any(this.handlers, function(handler) {
-	        if (handler.route.test(fragment)) {
-	          handler.callback(fragment);
-	          return true;
-	        }
-	      });
-	    },
-
-	    // Save a fragment into the hash history, or replace the URL state if the
-	    // 'replace' option is passed. You are responsible for properly URL-encoding
-	    // the fragment in advance.
-	    //
-	    // The options object can contain `trigger: true` if you wish to have the
-	    // route callback be fired (not usually desirable), or `replace: true`, if
-	    // you wish to modify the current URL without adding an entry to the history.
-	    navigate: function(fragment, options) {
-	      if (!History.started) return false;
-	      if (!options || options === true) options = {trigger: !!options};
-
-	      var url = this.root + (fragment = this.getFragment(fragment || ''));
-
-	      // Strip the hash for matching.
-	      fragment = fragment.replace(pathStripper, '');
-
-	      if (this.fragment === fragment) return;
-	      this.fragment = fragment;
-
-	      // Don't include a trailing slash on the root.
-	      if (fragment === '' && url !== '/') url = url.slice(0, -1);
-
-	      // If pushState is available, we use it to set the fragment as a real URL.
-	      if (this._hasPushState) {
-	        this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
-
-	      // If hash changes haven't been explicitly disabled, update the hash
-	      // fragment to store history.
-	      } else if (this._wantsHashChange) {
-	        this._updateHash(this.location, fragment, options.replace);
-	        if (this.iframe && (fragment !== this.getFragment(this.getHash(this.iframe)))) {
-	          // Opening and closing the iframe tricks IE7 and earlier to push a
-	          // history entry on hash-tag change.  When replace is true, we don't
-	          // want this.
-	          if(!options.replace) this.iframe.document.open().close();
-	          this._updateHash(this.iframe.location, fragment, options.replace);
-	        }
-
-	      // If you've told us that you explicitly don't want fallback hashchange-
-	      // based history, then `navigate` becomes a page refresh.
-	      } else {
-	        return this.location.assign(url);
-	      }
-	      if (options.trigger) return this.loadUrl(fragment);
-	    },
-
-	    // Update the hash location, either replacing the current entry, or adding
-	    // a new one to the browser history.
-	    _updateHash: function(location, fragment, replace) {
-	      if (replace) {
-	        var href = location.href.replace(/(javascript:|#).*$/, '');
-	        location.replace(href + '#' + fragment);
-	      } else {
-	        // Some browsers require that `hash` contains a leading #.
-	        location.hash = '#' + fragment;
-	      }
-	    }
-
-	  });
-
-
-
-	  // add some features to History
-
-	  // a more intuitive alias for navigate
-	  History.prototype.update = function () {
-	    this.navigate.apply(this, arguments);
-	  };
-
-	  // a generic callback for any changes
-	  History.prototype.onChange = function (callback) {
-	    this.route(/^(.*?)$/, callback);
-	  };
-
-	  // checks if the browser has pushstate support
-	  History.prototype.hasPushState = function () {
-	    if (!History.started) {
-	      throw new Error("only available after LocationBar.start()");
-	    }
-	    return this._hasPushState;
-	  };
-
-
-
-
-
-
-	  // export
-	  return History;
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(98));
-
-/***/ },
-/* 98 */
-/***/ function(module, exports) {
-
-	module.exports = function() { throw new Error("define cannot be used indirect"); };
-
-
-/***/ },
-/* 99 */
-/***/ function(module, exports) {
-
 	'use strict';
 
-	module.exports = function () {
+	var _ = __webpack_require__(3);
+
+	module.exports = function (path) {
 	  return {
-	    path: '',
+	    path: path || '',
 
 	    getURL: function getURL() {
 	      return this.path;
 	    },
 
-	    setURL: function setURL(path) {
-	      this.path = path;
-	      this.handleURL(this.getURL());
+	    setURL: function setURL(path, options) {
+	      if (this.path !== path) {
+	        this.path = path;
+	        this.handleURL(this.getURL(), options);
+	      }
 	    },
 
-	    replaceURL: function replaceURL(path) {
-	      this.setURL(path);
+	    replaceURL: function replaceURL(path, options) {
+	      if (this.path !== path) {
+	        this.setURL(path, options);
+	      }
 	    },
 
 	    onChange: function onChange(callback) {
 	      this.changeCallback = callback;
 	    },
 
-	    handleURL: function handleURL(url) {
+	    handleURL: function handleURL(url, options) {
 	      this.path = url;
-	      if (this.changeCallback) {
+	      options = _.extend({ trigger: true }, options);
+	      if (this.changeCallback && options.trigger) {
 	        this.changeCallback(url);
 	      }
+	    },
+
+	    usesPushState: function usesPushState() {
+	      return false;
 	    },
 
 	    removeRoot: function removeRoot(url) {
@@ -5468,15 +5290,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 100 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _ = __webpack_require__(2);
-	var Promise = __webpack_require__(101).Promise;
-	var invariant = __webpack_require__(85);
-	var Path = __webpack_require__(86);
+	var _ = __webpack_require__(3);
+	var Promise = __webpack_require__(99).Promise;
+	var invariant = __webpack_require__(88);
+	var Path = __webpack_require__(89);
 
 	module.exports = function transition(options) {
 	  options = options || {};
@@ -5631,7 +5453,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 101 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
@@ -5770,7 +5592,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function lib$es6$promise$asap$$attemptVertex() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(105);
+	        var vertx = __webpack_require__(103);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -6595,7 +6417,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(98)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(86)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -6607,10 +6429,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}).call(this);
 
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(102), __webpack_require__(103).setImmediate, (function() { return this; }()), __webpack_require__(104)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(100), __webpack_require__(101).setImmediate, (function() { return this; }()), __webpack_require__(102)(module)))
 
 /***/ },
-/* 102 */
+/* 100 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -6706,10 +6528,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 103 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(102).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(100).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -6785,10 +6607,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(103).setImmediate, __webpack_require__(103).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(101).setImmediate, __webpack_require__(101).clearImmediate))
 
 /***/ },
-/* 104 */
+/* 102 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -6804,10 +6626,198 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 105 */
+/* 103 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
+
+/***/ },
+/* 104 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var events = __webpack_require__(105);
+
+	var link = function link(element) {
+	  element = { parentNode: element };
+
+	  var root = document;
+
+	  // Make sure `element !== document` and `element != null`
+	  // otherwise we get an illegal invocation
+	  while ((element = element.parentNode) && element !== document) {
+	    if (element.tagName.toLowerCase() === 'a') {
+	      return element;
+	    }
+	    // After `matches` on the edge case that
+	    // the selector matches the root
+	    // (when the root is not the document)
+	    if (element === root) {
+	      return;
+	    }
+	  }
+	};
+
+	/**
+	 * Delegate event `type` to links
+	 * and invoke `fn(e)`. A callback function
+	 * is returned which may be passed to `.unbind()`.
+	 *
+	 * @param {Element} el
+	 * @param {String} selector
+	 * @param {String} type
+	 * @param {Function} fn
+	 * @param {Boolean} capture
+	 * @return {Function}
+	 * @api public
+	 */
+
+	var delegate = function delegate(el, type, fn) {
+	  return events.bind(el, type, function (e) {
+	    var target = e.target || e.srcElement;
+	    var el = link(target);
+	    if (el) {
+	      fn(e, el);
+	    }
+	  });
+	};
+
+	/**
+	 * Unbind event `type`'s callback `fn`.
+	 *
+	 * @param {Element} el
+	 * @param {String} type
+	 * @param {Function} fn
+	 * @param {Boolean} capture
+	 * @api public
+	 */
+
+	var undelegate = function undelegate(el, type, fn) {
+	  events.unbind(el, type, fn);
+	};
+
+	/**
+	 * Check if `e` is clickable.
+	 */
+
+	function clickable(e, el) {
+	  if (which(e) !== 1) return;
+	  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+	  if (e.defaultPrevented) return;
+
+	  // check target
+	  if (el.target) return;
+
+	  // check for data-bypass attribute
+	  if (el.getAttribute('data-bypass') !== null) return;
+
+	  // inspect the href
+	  var href = el.getAttribute('href');
+	  if (!href || href.length === 0) return;
+	  // don't handle hash links
+	  if (href[0] === '#') return;
+	  // external/absolute links
+	  if (href.indexOf('http://') === 0 || href.indexOf('https://') === 0) return;
+	  // don't intercept javascript links
+	  /* eslint-disable no-script-url */
+	  if (href.indexOf('javascript:') === 0) return;
+	  /* eslint-enable no-script-url */
+
+	  return true;
+	}
+
+	/**
+	 * Event button.
+	 */
+
+	function which(e) {
+	  e = e || window.event;
+	  return e.which === null ? e.button : e.which;
+	}
+
+	/**
+	 * Handle link delegation on `el` or the document,
+	 * and invoke `fn(e)` when clickable.
+	 *
+	 * @param {Element|Function} el or fn
+	 * @param {Function} [fn]
+	 * @api public
+	 */
+
+	module.exports.intercept = function intercept(el, fn) {
+	  // default to document
+	  if (typeof el === 'function') {
+	    fn = el;
+	    el = document;
+	  }
+
+	  var cb = delegate(el, 'click', function (e, el) {
+	    if (clickable(e, el)) fn(e, el);
+	  });
+
+	  return function dispose() {
+	    undelegate(el, 'click', cb);
+	  };
+	};
+
+/***/ },
+/* 105 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	function createEvents() {
+	  var exp = {};
+
+	  if (typeof window === 'undefined') {
+	    return exp;
+	  }
+
+	  /**
+	  * DOM Event bind/unbind
+	  */
+
+	  var bind = window.addEventListener ? 'addEventListener' : 'attachEvent';
+	  var unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
+	  var prefix = bind !== 'addEventListener' ? 'on' : '';
+
+	  /**
+	  * Bind `el` event `type` to `fn`.
+	  *
+	  * @param {Element} el
+	  * @param {String} type
+	  * @param {Function} fn
+	  * @param {Boolean} capture
+	  * @return {Function}
+	  * @api public
+	  */
+
+	  exp.bind = function (el, type, fn, capture) {
+	    el[bind](prefix + type, fn, capture || false);
+	    return fn;
+	  };
+
+	  /**
+	  * Unbind `el` event `type`'s callback `fn`.
+	  *
+	  * @param {Element} el
+	  * @param {String} type
+	  * @param {Function} fn
+	  * @param {Boolean} capture
+	  * @return {Function}
+	  * @api public
+	  */
+
+	  exp.unbind = function (el, type, fn, capture) {
+	    el[unbind](prefix + type, fn, capture || false);
+	    return fn;
+	  };
+
+	  return exp;
+	}
+
+	module.exports = createEvents();
 
 /***/ }
 /******/ ])

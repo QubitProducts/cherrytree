@@ -7,6 +7,7 @@ var invariant = require('./invariant');
 var HistoryLocation = require('./locations/history');
 var MemoryLocation = require('./locations/memory');
 var transition = require('./transition');
+var links = require('./links');
 
 function createLogger(log, error) {
   // falsy means no logging
@@ -35,7 +36,9 @@ Cherrytree.prototype.initialize = function (options) {
   this.nextId = 1;
   this.state = {};
   this.middleware = [];
-  this.options = _.extend({}, options);
+  this.options = _.extend({
+    interceptLinks: true
+  }, options);
   this.log = createLogger(this.options.log);
   this.logError = createLogger(this.options.logError, true);
 };
@@ -113,6 +116,10 @@ Cherrytree.prototype.listen = function (location) {
   location.onChange(function (url) {
     return _this.dispatch(url);
   });
+  // start intercepting links
+  if (this.options.interceptLinks && location.usesPushState()) {
+    this.interceptLinks();
+  }
   // and also kick off the initial transition
   return this.dispatch(location.getURL());
 };
@@ -195,6 +202,9 @@ Cherrytree.prototype.generate = function (name, params, query) {
 Cherrytree.prototype.destroy = function () {
   if (this.location && this.location.destroy && this.location.destroy) {
     this.location.destroy();
+  }
+  if (this.disposeIntercept) {
+    this.disposeIntercept();
   }
   if (this.state.activeTransition) {
     this.state.activeTransition.cancel();
@@ -308,6 +318,7 @@ Cherrytree.prototype.dispatch = function (path) {
   if (activeTransition) {
     var err = new Error('TransitionRedirected');
     err.type = 'TransitionRedirected';
+    err.nextPath = path;
     activeTransition.cancel(err);
   }
 
@@ -348,8 +359,25 @@ Cherrytree.prototype.dispatch = function (path) {
  * @api private
  */
 Cherrytree.prototype.createDefaultLocation = function () {
-  var locationOptions = _.pick(this.options, ['pushState', 'root', 'interceptLinks', 'location', 'history']);
+  var locationOptions = _.pick(this.options, ['pushState', 'root', 'location', 'history']);
   return new HistoryLocation(locationOptions);
+};
+
+/**
+ * When using pushState, it's important to setup link interception
+ * because all link clicks should be handled via the router instead of
+ * browser reloading the page
+ */
+Cherrytree.prototype.interceptLinks = function () {
+  var _this3 = this;
+
+  this.disposeIntercept = links.intercept(function (e, link) {
+    e.preventDefault();
+    // TODO use router.transitionTo instead, because
+    // that way we're handling errors and what not? and don't
+    // update url on failed requests or smth?
+    _this3.transitionTo(_this3.location.removeRoot(link.getAttribute('href')));
+  });
 };
 
 module.exports = function cherrytree(options) {
