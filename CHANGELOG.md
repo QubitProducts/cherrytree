@@ -6,6 +6,7 @@
   * MemoryLocation correctly handles option flags and can be instantiated with a starting `path`
 * Add a [server-side-react example](../examples/server-side-react)
 * When transition is rejected with a `TransitionRedirected` error - the `err.nextPath` is now available
+* Log errors by default (i.e. options.logError: true by default)
 
 ### v2.0.0-alpha.8
 

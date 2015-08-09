@@ -130,7 +130,8 @@ You can clone this repo if you want to run the `examples` locally. Currently the
 
 ### var router = cherrytree(options)
 
-* **options.log** - a function that is called with logging info, default is noop. Pass in `true` or a custom logging function.
+* **options.log** - a function that is called with logging info, default is noop. Pass in `true`/`false` or a custom logging function.
+* **options.logError** - default is true. A function that is called when transitions error (except for the special `TransitionRedirected` and `TransitionCancelled` errors). Pass in `true`/`false` or a custom error handling function.
 * **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
 * **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
