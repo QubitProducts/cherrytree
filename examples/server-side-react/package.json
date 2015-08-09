@@ -1,0 +1,22 @@
+{
+  "name": "server-side-react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "test": "standard"
+  },
+  "author": "Karolis Narkevicius <karolis.n@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^5.8.20"
+  },
+  "dependencies": {
+    "cherrytree": "file:../..",
+    "cherrytree-for-react": "kidkarolis/cherrytree-for-react",
+    "express": "^4.13.3",
+    "morgan": "^1.6.1",
+    "react": "^0.13.3"
+  }
+}
