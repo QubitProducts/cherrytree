@@ -359,3 +359,7 @@ The clicks that **are never** intercepted:
   * `javascript:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
+
+## FAQ
+
+* Why is `cherrytree` written as one word? You got me, I'd say that represents the [wabisabi](https://en.wikipedia.org/wiki/Wabi-sabi) nature of the library.
