@@ -9,6 +9,8 @@ Cherrytree is a flexible hierarchical router. Cherrytree translates each URL cha
 
 You can get cherrytree from npm - it supports both AMD and CJS.
 
+**IMPORTANT!** - to get the latest (alpha) version, atm you need to use the `@latest` tag. There are a couple of small API tweaks I want to make before I release the 2.0.0 stable.
+
     $ npm install --save cherrytree@latest
 
 In a CJS environment, simply require it as usual, the dependencies will be loaded from npm
