@@ -1,6 +1,6 @@
 let {assert} = require('referee')
 let {suite, test} = window
-let Path = require('../lib/path')
+let Path = require('../../lib/path')
 
 suite('Path')
 
