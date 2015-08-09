@@ -3,3 +3,4 @@ node_modules
 sauce.json
 .sublimelinterrc
 examples/*/dist
+coverage

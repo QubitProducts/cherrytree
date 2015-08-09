@@ -103,6 +103,7 @@ You can clone this repo if you want to run the `examples` locally. Currently the
 * [hello-world](examples/hello-world) - a single file example of how to get started
 * [cherry-pick](examples/cherry-pick) - a mini GitHub clone written in React.js
 * [vanilla-blog](examples/vanilla-blog) - a simple static demo of blog like app that uses no framework
+* [server-side-react](examples/server-side-react) - a simple server side express app using cherrytree for routing and react for rendering
 
 
 # Features
