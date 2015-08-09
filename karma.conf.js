@@ -1,4 +1,5 @@
 var _ = require('lodash')
+var webpackConfig = require('./webpack.config')
 
 var config = {
 
@@ -13,15 +14,22 @@ var config = {
   ],
 
   // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-  reporters: ['progress'],
+  reporters: ['progress', 'coverage'],
 
   // this watcher watches when bundled files are updated
   autoWatch: true,
 
-  webpack: _.extend(require('./webpack.config'), {
+  webpack: _.extend(webpackConfig, {
     entry: undefined,
     // this watcher watches when source files are updated
-    watch: true
+    watch: true,
+    module: _.extend(webpackConfig.module, {
+      postLoaders: [{
+        test: /\.js/,
+        exclude: /(test|node_modules)/,
+        loader: 'istanbul-instrumenter'
+      }]
+    })
   }),
 
   webpackServer: {
@@ -36,7 +44,14 @@ var config = {
     }
   },
 
-  browsers: ['Chrome']
+  browsers: ['Chrome'],
+
+  coverageReporter: {
+    reporters: [
+      {type: 'html', dir: 'coverage/'},
+      {type: 'text-summary'}
+    ]
+  }
 }
 
 module.exports = function (c) {
