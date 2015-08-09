@@ -2,11 +2,11 @@ let $ = require('jquery')
 let {assert} = require('referee')
 let {suite, test, beforeEach, afterEach} = window
 let mouse = window.effroi.mouse
-let links = require('../../lib/locations/history/linkDelegate')
+let links = require('../../lib/links')
 
 let $container
 
-suite('linkDelegate')
+suite('links')
 
 beforeEach(() => {
   $container = $('<div/>').appendTo('body')
