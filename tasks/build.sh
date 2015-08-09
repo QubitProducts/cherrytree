@@ -10,6 +10,6 @@ cp package.json build
 # standalone UMD
 webpack index.js build/standalone.js
 
-echo "\nnpm build including deps is\n `bro-size build/index.js`"
-echo "\nnpm build excluding deps is\n `bro-size build/index.js -u location-bar -u lodash/** -u qs -u path-to-regexp -u es6-promise`"
-echo "\nstandalone build including deps is\n `bro-size build/index.js`"
+echo "\nnpm build including deps is\n `bro-size build`"
+echo "\nnpm build excluding deps is\n `bro-size build -u location-bar -u lodash/** -u qs -u path-to-regexp -u es6-promise`"
+echo "\nstandalone build including deps is\n `bro-size build/standalone.js`"

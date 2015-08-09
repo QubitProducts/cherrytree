@@ -5,7 +5,7 @@
   "main": "index",
   "scripts": {
     "build": "./tasks/build.sh",
-    "release": "./tasks/release.sh",
+    "release": "release --build",
     "test": "standard | snazzy && karma start --single-run",
     "watch": "DEBUG=1 webpack -w index.js build/standalone.js"
   },
@@ -50,6 +50,7 @@
     "karma-sauce-launcher": "^0.2.10",
     "karma-sourcemap-loader": "^0.3.4",
     "karma-webpack": "^1.7.0",
+    "kn-release": "^1.0.1",
     "mocha": "^2.2.0",
     "prompt": "^0.2.14",
     "referee": "^1.1.1",
