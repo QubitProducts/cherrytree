@@ -3,7 +3,7 @@ var webpackConfig = require('./webpack.config')
 
 var config = {
 
-  frameworks: ['mocha'],
+  frameworks: ['mocha', 'effroi'],
 
   preprocessors: {
     'tests/index.js': ['webpack', 'sourcemap']
