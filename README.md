@@ -279,6 +279,17 @@ It generates a URL with # if router is in hashChange mode and with no # if route
 
 The state of the route is always available on the `router.state` object. It contains `activeTransition`, `routes`, `path`, `pathname`, `params` and `query`.
 
+## Errors
+
+Transitions can fail, in which case the transition promise is rejected with the error object. This could happen, for example, if some middleware throws or returns a rejected promise.
+
+There are also two special errors that can be thrown when a redirect happens or when transition is cancelled completely.
+
+In case of redirect (someone initiating a router.transitionTo() while another transition was active) and error object will have a `type` attribute set to 'TransitionRedirected' and `nextPath` attribute set to the path of the new transition.
+
+In case of cancelling (someone calling transition.cancel()) the error object will have a `type` attribute set to 'TransitionCancelled'.
+
+If you have some error handling middleware - you most likely want to check for these two special errors, because they're normal to the functioning of the router, it's common to perform redirects.
 
 ## HistoryLocation
 
@@ -313,21 +324,6 @@ Create an instance of history location. Note that only one instance of HistoryLo
 
 * options.pushState - default is false, which means using hashchange events. Set to true to use pushState.
 * options.root - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
-* options.interceptLinks - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router.
-
-### Intercepting Links
-
-The clicks **are** intercepted only if:
-
-  * clicked with the left mouse button with no cmd or shift key
-
-The clicks that **are never** intercepted:
-
-  * external links
-  * `javascript:` links
-  * links with a `data-bypass` attribute
-  * links starting with `#`
-
 
 
 # MemoryLocation
@@ -342,3 +338,19 @@ var MemoryLocation = require('cherrytree/lib/locations/memory')
 var router = cherrytree()
 routerlisten(new MemoryLocation())
 ```
+
+
+## Intercepting Links
+
+The clicks **are** intercepted only if:
+
+  * router is passed a `interceptLinks: true` (default)
+  * the currently used location and browser supports pushState
+  * clicked with the left mouse button with no cmd or shift key
+
+The clicks that **are never** intercepted:
+
+  * external links
+  * `javascript:` links
+  * links with a `data-bypass` attribute
+  * links starting with `#`
