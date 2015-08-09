@@ -37,7 +37,8 @@ Cherrytree.prototype.initialize = function (options) {
   this.state = {};
   this.middleware = [];
   this.options = _.extend({
-    interceptLinks: true
+    interceptLinks: true,
+    logError: true
   }, options);
   this.log = createLogger(this.options.log);
   this.logError = createLogger(this.options.logError, true);

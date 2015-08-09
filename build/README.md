@@ -123,14 +123,19 @@ You can clone this repo if you want to run the `examples` locally. Currently the
 
 * **Backbone router** is nice and simple and can be enough. In fact cherrytree uses some bits from Backbone router under the hood. Cherrytree adds nested routing, support for asynchronous transitions, more flexible dynamic params, url generation, automatic click handling.
 * **Ember router / router.js** is the inspiration for cherrytree. It's where cherrytree inherits the idea of declaring hierarchical nested route maps. The scope of cherrytree is slightly different than that of router.js, for example cherrytree doesn't have the concept of handler objects or model hooks. On the other hand, unlike router.js - cherrytree handles browser url changes and intercepts link clicks with pushState out of the box. The handler concept and model hooks can be implemented based on the specific application needs using the middleware mechanism. Overall, cherrytree is less prescriptive, more flexible and easier to use out of the box.
-* **react-router** is also inspired by router.js. React-router is trying to solve a lot of routing related aspects out of the box in the most React idiomatic way whereas with `cherrytree` you'll have to write all of the glue code for integrating into React yourself. However, what you get instead is a smaller, simpler and hopefully more flexible library which should be more adaptable to your specific needs. This also means that you can use a `react-router` like a approach with other `React` inspired libraries such as `mercury`, `riot` or `om`.
+* **react-router** is also inspired by router.js. React-router is trying to solve a lot of routing related aspects out of the box in the most React idiomatic way whereas with `cherrytree` you'll have to write all of the glue code for integrating into React yourself. However, what you get instead is a smaller, simpler and hopefully more flexible library which should be more adaptable to your specific needs. This also means that you can use a `react-router` like approach with other `React` inspired libraries such as `mercury`, `riot`, `om`, `cycle`, `deku` and so on.
+
+# Plugins
+
+To use `cherrytree` with React, check out [`cherrytree-for-react`](https://github.com/KidkArolis/cherrytree-for-react).
 
 
 # Docs
 
 ### var router = cherrytree(options)
 
-* **options.log** - a function that is called with logging info, default is noop. Pass in `true` or a custom logging function.
+* **options.log** - a function that is called with logging info, default is noop. Pass in `true`/`false` or a custom logging function.
+* **options.logError** - default is true. A function that is called when transitions error (except for the special `TransitionRedirected` and `TransitionCancelled` errors). Pass in `true`/`false` or a custom error handling function.
 * **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
 * **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
@@ -354,3 +359,7 @@ The clicks that **are never** intercepted:
   * `javascript:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
+
+## FAQ
+
+* Why is `cherrytree` written as one word? You got me, I'd say that represents the [wabisabi](https://en.wikipedia.org/wiki/Wabi-sabi) nature of the library.
