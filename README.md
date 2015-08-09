@@ -105,6 +105,10 @@ You can clone this repo if you want to run the `examples` locally. Currently the
 * [vanilla-blog](examples/vanilla-blog) - a simple static demo of blog like app that uses no framework
 * [server-side-react](examples/server-side-react) - a simple server side express app using cherrytree for routing and react for rendering
 
+There is also an example in a separate repo
+
+* [cherrytree-redux-react-example](https://github.com/KidkArolis/cherrytree-redux-react-example) - a more modern stack - redux + react + react-hot-loader
+
 
 # Features
 
