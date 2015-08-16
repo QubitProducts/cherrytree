@@ -1,3 +1,7 @@
+### v2.0.0-alpha.11
+
+* Add `transition.redirectTo` so that middleware could initiate redirects without having the router
+
 ### v2.0.0-alpha.10
 
 * Log errors by default (i.e. options.logError: true by default)

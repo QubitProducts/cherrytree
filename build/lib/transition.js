@@ -62,6 +62,9 @@ module.exports = function transition(options) {
     pathname: Path.withoutQuery(path),
     params: params,
     query: query,
+    redirectTo: function redirectTo() {
+      return router.transitionTo.apply(router, arguments);
+    },
     retry: function retry() {
       return router.transitionTo(path);
     },
@@ -99,6 +102,7 @@ module.exports = function transition(options) {
         return Promise.reject(reason);
       });
     },
+
     then: promise.then.bind(promise),
     'catch': promise['catch'].bind(promise)
   };

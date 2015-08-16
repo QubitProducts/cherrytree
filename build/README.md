@@ -2,12 +2,14 @@
 
 [![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)](https://codeship.com/projects/19734)
 
-Cherrytree is a flexible hierarchical client side router. Cherrytree translates each URL change to a transition object and applies your middleware functions that translate the transition data into the desired state of your application.
+Cherrytree is a flexible hierarchical router. Cherrytree translates each URL change to a transition object and applies your middleware functions that translate the transition data into the desired state of your application.
 
 
 # Installation
 
 You can get cherrytree from npm - it supports both AMD and CJS.
+
+**IMPORTANT!** - to get the latest (alpha) version, atm you need to use the `@latest` tag. There are a couple of small API tweaks I want to make before I release the 2.0.0 stable.
 
     $ npm install --save cherrytree@latest
 
@@ -98,12 +100,17 @@ Read [the brief guide](guide.md).
 
 # Examples
 
-You can clone this repo if you want to run the `examples` locally. Currently the examples are
+You can clone this repo if you want to run the `examples` locally. Currently the examples are:
 
-* [hello-world](examples/hello-world) - a single file example of how to get started
+* [hello-world-react](examples/hello-world-react) - a small example of how to get started
+* [hello-world-jquery](examples/hello-world-jquery) - a single file example of how to get started
 * [cherry-pick](examples/cherry-pick) - a mini GitHub clone written in React.js
-* [vanilla-blog](examples/vanilla-blog) - a simple static demo of blog like app that uses no framework
-* [server-side-react](examples/server-side-react) - a simple server side express app using cherrytree for routing and react for rendering
+* [vanilla-blog](examples/vanilla-blog) - a small static demo of blog like app that uses no framework
+* [server-side-react](examples/server-side-react) - a server side express app using cherrytree for routing and react for rendering
+
+There is also an example in a separate repo:
+
+* [cherrytree-redux-react-example](https://github.com/KidkArolis/cherrytree-redux-react-example) - a more modern stack - redux + react + react-hot-loader + cherrytree-for-react
 
 
 # Features
@@ -239,6 +246,7 @@ And the following methods
 * `cancel`
 * `retry`
 * `followRedirects`
+* `redirectTo`
 
 #### route
 
