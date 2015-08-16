@@ -39,7 +39,7 @@ test('#use registers middleware', () => {
 
 test('#use middleware gets passed a transition object', (done) => {
   let m = (transition) => {
-    let t = _.omit(transition, ['catch', 'then', 'cancel', 'retry', 'followRedirects'])
+    let t = _.omit(transition, ['catch', 'then', 'redirectTo', 'cancel', 'retry', 'followRedirects'])
     let et = {
       id: 3,
       prev: {

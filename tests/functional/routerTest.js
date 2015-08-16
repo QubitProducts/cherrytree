@@ -71,10 +71,10 @@ test('transition.followRedirects resolves when all of the redirects have finishe
     assert(rejected)
 
     yield router.transitionTo('index')
-    // initiate a redirect
-    router.transitionTo('/posts/filter/foo')
-    // and a redirect
-    router.transitionTo('/about')
+    // initiate a transition
+    var t = router.transitionTo('/posts/filter/foo')
+    // and a redirect, this time using `redirectTo`
+    t.redirectTo('/about')
 
     // when followRedirects is used - the promise is only
     // resolved when both transitions finish

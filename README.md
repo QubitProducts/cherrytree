@@ -246,6 +246,7 @@ And the following methods
 * `cancel`
 * `retry`
 * `followRedirects`
+* `redirectTo`
 
 #### route
 
