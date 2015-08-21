@@ -44,7 +44,8 @@ var config = {
     }
   },
 
-  browsers: ['Chrome'],
+  browsers: [process.env.TRAVIS ? 'Firefox' : 'Chrome'],
+  browserNoActivityTimeout: 30000,
 
   coverageReporter: {
     reporters: [
