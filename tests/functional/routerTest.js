@@ -6,6 +6,8 @@ let TestApp = require('./testApp')
 let Promise = require('es6-promise').Promise
 let app, router
 
+const cotest = (fn) => () => co(fn.call(this))
+
 suite('Cherrytree app')
 
 beforeEach(() => {
@@ -226,3 +228,21 @@ test('url behaviour during failed transitions', () => {
     })
   })
 })
+
+test('uses a custom provided Promise implementation', cotest(function *() {
+  let called = 0
+  var LocalPromise = function (fn) {
+    called++
+    return new Promise(fn)
+  }
+  let statics = ['reject', 'resolve', 'race', 'all']
+  statics.forEach(s => LocalPromise[s] = Promise[s].bind(Promise))
+
+  app.destroy()
+  app = new TestApp({ Promise: LocalPromise })
+  yield app.start()
+  assert.equals(called, 1)
+
+  yield app.router.transitionTo('faq')
+  assert.equals(called, 2)
+}))
