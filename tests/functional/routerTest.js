@@ -144,10 +144,8 @@ test.skip('cancelling transition does not add a history entry', () => {
     assert.equals(window.location.hash, '#posts/filter/foo')
 
     // going back should now take as to faq
-    console.log('HERE')
     yield new Promise((resolve, reject) => {
       router.use((transition) => {
-        console.log('TRANS')
         transition.then(() => {
           assert.equals(window.location.hash, '#faq')
           resolve()
