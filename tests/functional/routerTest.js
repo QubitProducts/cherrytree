@@ -6,8 +6,6 @@ let TestApp = require('./testApp')
 let Promise = require('es6-promise').Promise
 let app, router
 
-const cotest = (fn) => () => co(fn.call(this))
-
 suite('Cherrytree app')
 
 beforeEach(() => {
@@ -229,7 +227,7 @@ test('url behaviour during failed transitions', () => {
   })
 })
 
-test('uses a custom provided Promise implementation', cotest(function *() {
+test('uses a custom provided Promise implementation', co.wrap(function *() {
   let called = 0
   var LocalPromise = function (fn) {
     called++
