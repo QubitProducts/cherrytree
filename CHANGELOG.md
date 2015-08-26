@@ -1,3 +1,9 @@
+### v2.0.0-alpha.13
+
+* Make params, query and route array immutable between transitions, i.e. modifying those directly on the transition only affects that transition
+* Replace `paramNames` with `params` in the route descriptor
+* Drop the `ancestors` attribute from the route descriptor
+
 ### v2.0.0-alpha.12
 
 * BYOP - Cherrytree now requires a global Promise implementation to be available or a Promise constructor passed in as an option

@@ -256,9 +256,8 @@ During every transition, you can inspect `transition.routes` and `transition.pre
 
 * `name` - e.g. `'message'`
 * `path` - the path segment, e.g. `'message/:id'`
-* `paramNames` - a list of dynamic param names, e.g `['id']`
+* `params` - a list of params specifically for this route, e.g `{id: 1}`
 * `options` - the options object that was passed to the `route` function in the `map`
-* `ancestors` - an array of route names that are parents of this route, e.g. `['application', 'profile']`
 
 ### router.listen()
 
