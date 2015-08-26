@@ -23,6 +23,7 @@ var config = {
     entry: undefined,
     // this watcher watches when source files are updated
     watch: true,
+    devtool: 'inline-source-map',
     module: _.extend(webpackConfig.module, {
       postLoaders: [{
         test: /\.js/,
