@@ -38,10 +38,13 @@ Cherrytree.prototype.initialize = function (options) {
   this.middleware = [];
   this.options = _.extend({
     interceptLinks: true,
-    logError: true
+    logError: true,
+    Promise: global.Promise
   }, options);
   this.log = createLogger(this.options.log);
   this.logError = createLogger(this.options.logError, true);
+
+  invariant(typeof this.options.Promise === 'function', 'Cherrytree requires an ES6 Promise implementation, ' + 'either as an explicit option or a global Promise');
 };
 
 /**
@@ -335,7 +338,7 @@ Cherrytree.prototype.dispatch = function (path) {
         match: match,
         noop: true,
         router: this
-      });
+      }, this.options.Promise);
     }
   }
 
@@ -344,7 +347,7 @@ Cherrytree.prototype.dispatch = function (path) {
     path: path,
     match: match,
     router: this
-  });
+  }, this.options.Promise);
 
   this.state.activeTransition = t;
 

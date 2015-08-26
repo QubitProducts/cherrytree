@@ -1,5 +1,6 @@
 # Cherrytree
 
+[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg)](https://travis-ci.org/QubitProducts/cherrytree)
 [![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status)](https://codeship.com/projects/19734)
 
 Cherrytree is a flexible hierarchical router. Cherrytree translates each URL change to a transition object and applies your middleware functions that translate the transition data into the desired state of your application.
@@ -23,7 +24,7 @@ In an AMD environment, require the standalone UMD build - this version has all o
 
 # Size
 
-The size excluding all deps is ~10.23 kB gzipped and the standalone build with all deps is ~15.27 kB gzipped.
+The size excluding all deps is ~10.96 kB gzipped and the standalone build with all deps is ~12.82 kB gzipped.
 
 # Usage
 
@@ -146,6 +147,7 @@ To use `cherrytree` with React, check out [`cherrytree-for-react`](https://githu
 * **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
 * **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
+* **options.Promise** - default is window.Promise or global.Promise. Promise implementation to be used when constructing transitions.
 
 ### router.map(fn)
 

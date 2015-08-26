@@ -1,11 +1,10 @@
 'use strict';
 
 var _ = require('./dash');
-var Promise = require('es6-promise').Promise;
 var invariant = require('./invariant');
 var Path = require('./path');
 
-module.exports = function transition(options) {
+module.exports = function transition(options, Promise) {
   options = options || {};
 
   var router = options.router;
