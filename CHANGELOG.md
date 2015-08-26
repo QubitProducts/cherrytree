@@ -1,3 +1,7 @@
+### v2.0.0-alpha.12
+
+* BYOP - Cherrytree now requires a global Promise implementation to be available or a Promise constructor passed in as an option
+
 ### v2.0.0-alpha.11
 
 * Add `transition.redirectTo` so that middleware could initiate redirects without having the router
