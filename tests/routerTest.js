@@ -1,5 +1,6 @@
 let _ = require('lodash')
 let Promise = require('es6-promise').Promise
+let co = require('co')
 let {assert} = require('referee')
 let {suite, test, beforeEach, afterEach} = window
 let cherrytree = require('..')
@@ -46,19 +47,17 @@ test('#use middleware gets passed a transition object', (done) => {
         routes: [{
           name: 'application',
           path: 'application',
-          paramNames: [],
+          params: {},
           options: {
             path: 'application'
-          },
-          ancestors: []
+          }
         }, {
           name: 'home',
           path: '',
-          paramNames: [],
+          params: {},
           options: {
             path: ''
-          },
-          ancestors: ['application']
+          }
         }],
         path: '/application',
         pathname: '/application',
@@ -68,21 +67,20 @@ test('#use middleware gets passed a transition object', (done) => {
       routes: [{
         name: 'application',
         path: 'application',
-        paramNames: [],
+        params: {},
         options: {
           path: 'application'
-        },
-        ancestors: []
+        }
       }, {
         name: 'status',
         path: ':user/status/:id',
-        paramNames: ['user', 'id'],
+        params: {
+          user: '1',
+          id: '2'
+        },
         options: {
           path: ':user/status/:id'
-        },
-        ancestors: [
-          'application'
-        ]
+        }
       }],
       path: '/application/1/status/2?withReplies=true',
       pathname: '/application/1/status/2',
@@ -243,21 +241,19 @@ test('#match returns an array of route descriptors', () => {
   assert.equals(match.routes, [{
     name: 'foo',
     path: 'foo',
-    paramNames: [],
+    params: {},
     options: {
       customData: 1,
       path: 'foo'
-    },
-    ancestors: []
+    }
   }, {
     name: 'bar',
     path: 'bar',
-    paramNames: [],
+    params: {},
     options: {
       customData: 2,
       path: 'bar'
-    },
-    ancestors: ['foo']
+    }
   }])
 })
 
@@ -369,3 +365,20 @@ test('routes with duplicate names throw a useful error', () => {
   }
   assert(false, 'Should not reach this')
 })
+
+test('modifying params or query in middleware does not affect the router state', co.wrap(function *() {
+  router.map(routes)
+  yield router.listen()
+  router.use(transition => {
+    transition.params.foo = 1
+    transition.query.bar = 2
+    transition.routes.push({})
+    transition.routes[0].foobar = 123
+  })
+  yield router.transitionTo('status', {user: 'me', id: 42}, {q: 'abc'})
+  // none of the modifications to params, query or routes
+  // array are persisted to the router state
+  assert.equals(router.state.params, {user: 'me', id: '42'})
+  assert.equals(router.state.query, {q: 'abc'})
+  assert.equals(router.state.routes.length, 2)
+}))
