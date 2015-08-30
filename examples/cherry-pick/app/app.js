@@ -26,7 +26,7 @@ router.use(loader);
 // load route handlers
 router.use((transition) => {
   transition.routes.forEach(
-    (route) => route.RouteHandler = route.RouteHandler || getRouteHandler(route)
+    (route) => route.RouteHandler = route.RouteHandler || getRouteHandler(route, transition.routes)
   );
 });
 
@@ -82,8 +82,15 @@ router.listen();
 // 
 // We could also load the routes asynchronously here if we wanted to split the app
 // into multiple bundles based on routes.
-function getRouteHandler(route) {
-  let path = route.ancestors.concat(route.name);
+function getRouteHandler(route, routes) {
+  let ancestors = [];
+  routes.find(function (r) {
+    if (r.name === route.name) {
+      return true;
+    }
+    ancestors.push(r.name);
+  });
+  let path = ancestors.concat(route.name);
   let normalizedPath = path.map((a) => a.includes('.') ? a.split('.')[1] : a);
   var req = require.context("./", true, /^\.(\/screens\/[^\/]*)+\/index$/)
   return req("./screens/" + normalizedPath.join("/screens/") + "/index");
