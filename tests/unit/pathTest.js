@@ -14,7 +14,7 @@ test('Path.extractParams', () => {
   assert.equals(Path.extractParams('a/b/c', 'a/b/c'), {})
   assert.equals(Path.extractParams('a/b/c', 'd/e/f'), null)
 
-  assert.equals(Path.extractParams('comments/:id.:ext/edit', 'comments/abc.js/edit'), { id: 'abc', ext: 'js'})
+  assert.equals(Path.extractParams('comments/:id.:ext/edit', 'comments/abc.js/edit'), { id: 'abc', ext: 'js' })
 
   assert.equals(Path.extractParams('comments/:id?/edit', 'comments/123/edit'), { id: '123' })
   assert.equals(Path.extractParams('comments/:id?/edit', 'comments//edit'), null)
