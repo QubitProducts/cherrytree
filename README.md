@@ -22,16 +22,18 @@ In an AMD environment, require the standalone UMD build - this version has all o
 
     require('cherrytree/standalone')
 
-# Environment
+# Browser Support
 
-Cherrytree requires es5 environment and es6 promises. If you have to support older browsers, you will have to use polyfills, e.g.:
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/cherrytree.svg)](https://saucelabs.com/u/cherrytree)
+
+Cherrytree works in all modern browsers. It requires es5 environment and es6 promises. Use polyfills for those if you have to support older browsers, e.g.:
 
 * https://github.com/es-shims/es5-shim
 * https://github.com/jakearchibald/es6-promise
 
 # Size
 
-The size excluding all deps is ~10.96 kB gzipped and the standalone build with all deps is ~12.82 kB gzipped.
+The size excluding all deps is ~4.9kB gzipped and the standalone build with all deps is ~8.7kB gzipped.
 
 # Usage
 

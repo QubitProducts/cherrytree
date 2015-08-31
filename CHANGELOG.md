@@ -3,7 +3,7 @@
 * Make params, query and route array immutable between transitions, i.e. modifying those directly on the transition only affects that transition
 * Replace `paramNames` with `params` in the route descriptor
 * Drop the `ancestors` attribute from the route descriptor
-* Drop support for es3 environments (IE8), to use Cherrytree - es5 polyfills for native `map`, `reduce` and `forEach` needs to be used now
+* Drop out of the box support for ES3 environments (IE8), to use Cherrytree - es5 polyfills for native `map`, `reduce` and `forEach` need to be used now. This was possible always the case since usage of babel requires an es5 environment.
 
 ### v2.0.0-alpha.12
 
