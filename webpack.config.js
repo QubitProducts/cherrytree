@@ -12,7 +12,7 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel?optional=runtime' }
+      { test: /\.js$/, exclude: /node_modules/, loader: 'babel' }
     ]
   },
   devtool: process.env.DEBUG ? 'inline-source-map' : false

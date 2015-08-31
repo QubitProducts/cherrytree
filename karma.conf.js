@@ -24,6 +24,11 @@ var config = {
     watch: true,
     devtool: 'inline-source-map',
     module: Object.assign(webpackConfig.module, {
+      loaders: [{
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel?optional=runtime'
+      }],
       postLoaders: [{
         test: /\.js/,
         exclude: /(test|node_modules)/,

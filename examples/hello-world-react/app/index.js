@@ -48,7 +48,7 @@ router.use(function render (transition) {
         params: params,
         query: query,
         children: element
-       })
+      })
     } else {
       return element
     }

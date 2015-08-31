@@ -1,6 +1,6 @@
-var R = require('ramda');
-var React = require('react');
-var Route = require("cherrytree/route");
+import R from 'ramda'
+import React from 'react'
+import Route from 'cherrytree/route'
 
 module.exports = Route.extend({
 
@@ -8,58 +8,51 @@ module.exports = Route.extend({
 
   initialize: function () {
     if (this.componentClass) {
-      this.componentFactory = React.createFactory(this.componentClass);
+      this.componentFactory = React.createFactory(this.componentClass)
     }
   },
 
   activate: function (context) {
-    this.render(context);
-    this.afterActivate();
+    this.render(context)
+    this.afterActivate()
   },
 
   afterActivate: function () {},
 
   deactivate: function () {
-    // if (this.name === "application") {
-      React.unmountComponentAtNode(this.targetEl());
-    // }
+    React.unmountComponentAtNode(this.targetEl())
   },
 
   createComponent: function (context) {
     if (this.componentFactory) {
       var props = R.mixin(context || {}, {
         router: this.router
-      });
-      return this.componentFactory(props, this.children);
+      })
+      return this.componentFactory(props, this.children)
     }
   },
 
   targetEl: function () {
-    return this.parent ? this.parent.outletEl : this.rootEl;
+    return this.parent ? this.parent.outletEl : this.rootEl
   },
 
   render: function (context) {
-    this.component = this.createComponent(context);
-    
-    var targetEl = this.targetEl();
+    this.component = this.createComponent(context)
+
+    var targetEl = this.targetEl()
     if (this.component) {
-      var c = React.render(this.component, targetEl);
-      this.outletEl = c.getDOMNode().querySelectorAll(".outlet")[0];
+      var c = React.render(this.component, targetEl)
+      this.outletEl = c.getDOMNode().querySelectorAll('.outlet')[0]
     } else {
-      this.outletEl = targetEl;
+      this.outletEl = targetEl
     }
-    // if (this.name === "application") {
-    //   React.render(this.component, this.rootEl);
-    // } else {
-    //   this.rerenderParents();
-    // }
   },
 
   rerenderParents: function () {
     if (this.parent && this.parent.render) {
-      var component = this.component || this.children;
-      this.parent.children = component;
-      this.parent.render(this.parent.getContext());
+      var component = this.component || this.children
+      this.parent.children = component
+      this.parent.render(this.parent.getContext())
     }
   }
-});
+})

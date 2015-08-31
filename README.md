@@ -33,7 +33,7 @@ Cherrytree works in all modern browsers. It requires es5 environment and es6 pro
 
 # Size
 
-The size excluding all deps is ~4.9kB gzipped and the standalone build with all deps is ~8.7kB gzipped.
+The size excluding all deps is ~4.9kB gzipped and the standalone build with all deps is ~8.15kB gzipped.
 
 # Usage
 

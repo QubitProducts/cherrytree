@@ -3,31 +3,31 @@
  * It renders a global loading animation for async transitions.
  */
 
-import 'nprogress/nprogress.css';
-import NProgress from 'nprogress';
+import 'nprogress/nprogress.css'
+import NProgress from 'nprogress'
 
-let loaderTimeout;
+let loaderTimeout
 
-export default function loading(transition) {
+export default function loading (transition) {
   if (!loaderTimeout) {
-    loaderTimeout = setTimeout(startAnimation, 200);
+    loaderTimeout = setTimeout(startAnimation, 200)
   }
 
   transition.then(stopAnimation).catch(function (err) {
     if (err.type !== 'TransitionRedirected') {
-      stopAnimation();
+      stopAnimation()
     }
     // don't swallow the error
-    throw err;
-  });
-};
-
-function startAnimation() {
-  NProgress.start();
+    throw err
+  })
 }
 
-function stopAnimation() {
-  clearTimeout(loaderTimeout);
-  loaderTimeout = null;
-  NProgress.done();
+function startAnimation () {
+  NProgress.start()
+}
+
+function stopAnimation () {
+  clearTimeout(loaderTimeout)
+  loaderTimeout = null
+  NProgress.done()
 }

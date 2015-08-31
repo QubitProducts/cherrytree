@@ -1,29 +1,33 @@
-import './base.css';
-import './application.css';
-import 'suitcss-base';
-import 'suitcss-utils-text';
-import 'suitcss-components-arrange';
-import React from 'react';
+import './base.css'
+import './application.css'
+import 'suitcss-base'
+import 'suitcss-utils-text'
+import 'suitcss-components-arrange'
+import React from 'react'
 
 module.exports = React.createClass({
+  propTypes: {
+    children: React.PropTypes.any
+  },
+
   contextTypes: {
     router: React.PropTypes.object.isRequired
   },
 
-  link: function () {
-    var router = this.context.router;
-    return router.generate.apply(router, arguments);
+  link () {
+    var router = this.context.router
+    return router.generate.apply(router, arguments)
   },
 
-  getInitialState() {
-    var time = new Date().getTime();
-    // setInterval(this.updateTime, 1000);
-    return { time };
+  getInitialState () {
+    var time = new Date().getTime()
+    // setInterval(this.updateTime, 1000)
+    return { time }
   },
 
-  updateTime() {
-    var time = new Date().getTime();
-    this.setState({time});
+  updateTime () {
+    var time = new Date().getTime()
+    this.setState({time})
   },
 
   render: function () {
@@ -46,6 +50,6 @@ module.exports = React.createClass({
           </p>
         </footer>
       </div>
-    );
+    )
   }
-});
+})
