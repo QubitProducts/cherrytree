@@ -1,9 +1,9 @@
-let $ = require('jquery')
-let {assert} = require('referee')
+import $ from 'jquery'
+import { assert } from 'referee'
+import { intercept } from '../../lib/links'
+
 let {suite, test, beforeEach, afterEach} = window
 let mouse = window.effroi.mouse
-let links = require('../../lib/links')
-
 let $container
 
 suite('links')
@@ -23,7 +23,7 @@ test('intercepts link clicks', () => {
   let cb = (event, el) => calledWith.push({event, el})
 
   // proxy all clicks via this callback
-  let dispose = links.intercept(cb)
+  let dispose = intercept(cb)
 
   // install another click handler that will prevent
   // the navigation, we must install this after the

@@ -1,6 +1,7 @@
-let {assert} = require('referee')
+import { assert } from 'referee'
+import Path from '../../lib/path'
+
 let {suite, test} = window
-let Path = require('../../lib/path')
 
 suite('Path')
 

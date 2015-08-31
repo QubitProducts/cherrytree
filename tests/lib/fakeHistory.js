@@ -1,4 +1,4 @@
-module.exports = function fakeHistory (location) {
+export default function fakeHistory (location) {
   let history = []
 
   var originalPushState = window.history.pushState

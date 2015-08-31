@@ -1,5 +1,5 @@
 // need to do this for co to work
-let Promise = require('es6-promise').Promise
+import { Promise } from 'es6-promise'
 window.Promise = Promise
 
 // do the webpack thing
