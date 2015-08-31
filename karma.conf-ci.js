@@ -1,6 +1,8 @@
 var fs = require('fs')
-var _ = require('lodash')
 var config = require('./karma.conf').config
+var yargs = require('yargs')
+
+var browsers = (yargs.argv.b || '').split(',')
 
 // Use ENV vars on CI and sauce.json locally to get credentials
 if (!process.env.SAUCE_USERNAME) {
@@ -14,45 +16,39 @@ if (!process.env.SAUCE_USERNAME) {
   }
 }
 
-var customLaunchers = {
-  'SL_Chrome': {
-    base: 'SauceLabs',
-    browserName: 'chrome'
-  },
-  'SL_Firefox': {
-    base: 'SauceLabs',
-    browserName: 'firefox'
-  },
-  'SL_Safari': {
-    base: 'SauceLabs',
-    browserName: 'safari',
-    platform: 'OS X 10.9',
-    version: '7'
-  },
-  'SL_IE_9': {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 2008',
-    version: '9'
-  },
-  'SL_IE_10': {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 2012',
-    version: '10'
-  },
-  'SL_IE_11': {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 8.1',
-    version: '11'
+var platforms = [
+  ['android', '5.1', 'Linux'],
+  ['chrome', '32', 'Windows 8.1'],
+  ['chrome', '43', 'Linux'],
+  ['chrome', 'beta', 'OS X 10.11'],
+  ['firefox', '26', 'Windows 8.1'],
+  ['firefox', '40', 'Windows 8.1'],
+  ['safari', '6', 'OS X 10.8'],
+  ['safari', '7', 'OS X 10.9'],
+  ['internet explorer', '9', 'Windows 7'],
+  ['internet explorer', '10', 'Windows 8'],
+  ['internet explorer', '11', 'Windows 8.1']
+]
+
+var customLaunchers = platforms.reduce(function (memo, platform, i) {
+  if (!browsers || browsers.indexOf(platform[0]) > -1) {
+    memo['SL_' + i + '_' + platform[0] + platform[1]] = {
+      base: 'SauceLabs',
+      platform: platform[2],
+      browserName: platform[0],
+      version: platform[1]
+    }
   }
-}
+  return memo
+}, {})
 
 module.exports = function (c) {
-  c.set(_.extend(config, {
+  c.set(Object.assign(config, {
     sauceLabs: {
-      testName: 'Cherrytree Tests'
+      testName: 'Cherrytree',
+      build: process.env.CI_BUILD_NUMBER,
+      recordVideo: false,
+      recordScreenshots: false
     },
     customLaunchers: customLaunchers,
     browsers: Object.keys(customLaunchers),
@@ -60,7 +56,7 @@ module.exports = function (c) {
     singleRun: true,
     browserDisconnectTimeout: 10000, // default 2000
     browserDisconnectTolerance: 1, // default 0
-    browserNoActivityTimeout: 4 * 60 * 1000, // default 10000
-    captureTimeout: 4 * 60 * 1000 // default 60000
+    browserNoActivityTimeout: 3 * 60 * 1000, // default 10000
+    captureTimeout: 3 * 60 * 1000 // default 60000
   }))
 }
