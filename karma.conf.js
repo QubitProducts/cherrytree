@@ -1,4 +1,3 @@
-var _ = require('lodash')
 var webpackConfig = require('./webpack.config')
 
 var config = {
@@ -19,12 +18,12 @@ var config = {
   // this watcher watches when bundled files are updated
   autoWatch: true,
 
-  webpack: _.extend(webpackConfig, {
+  webpack: Object.assign(webpackConfig, {
     entry: undefined,
     // this watcher watches when source files are updated
     watch: true,
     devtool: 'inline-source-map',
-    module: _.extend(webpackConfig.module, {
+    module: Object.assign(webpackConfig.module, {
       postLoaders: [{
         test: /\.js/,
         exclude: /(test|node_modules)/,

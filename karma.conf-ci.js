@@ -1,5 +1,4 @@
 var fs = require('fs')
-var _ = require('lodash')
 var config = require('./karma.conf').config
 
 // Use ENV vars on CI and sauce.json locally to get credentials
@@ -50,7 +49,7 @@ var customLaunchers = {
 }
 
 module.exports = function (c) {
-  c.set(_.extend(config, {
+  c.set(Object.assign(config, {
     sauceLabs: {
       testName: 'Cherrytree Tests'
     },

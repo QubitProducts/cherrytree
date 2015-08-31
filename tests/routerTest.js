@@ -1,9 +1,9 @@
-let _ = require('lodash')
 let Promise = require('es6-promise').Promise
 let co = require('co')
 let {assert} = require('referee')
 let {suite, test, beforeEach, afterEach} = window
 let cherrytree = require('..')
+let extend = require('../lib/dash').extend
 
 let delay = (t) => new Promise((resolve) => setTimeout(resolve, t))
 
@@ -40,7 +40,8 @@ test('#use registers middleware', () => {
 
 test('#use middleware gets passed a transition object', (done) => {
   let m = (transition) => {
-    let t = _.omit(transition, ['catch', 'then', 'redirectTo', 'cancel', 'retry', 'followRedirects'])
+    let t = extend({}, transition)
+    ;['catch', 'then', 'redirectTo', 'cancel', 'retry', 'followRedirects'].forEach(attr => delete t[attr])
     let et = {
       id: 3,
       prev: {
@@ -113,7 +114,7 @@ test('#use middleware gets passed a transition object', (done) => {
 test('#map registers the routes', () => {
   router.map(routes)
   // check that the internal matchers object is created
-  assert.equals(_.pluck(router.matchers, 'path'), [
+  assert.equals(router.matchers.map(m => m.path), [
     '/application',
     '/application/notifications',
     '/application/messages',
@@ -215,7 +216,7 @@ test('#match matches a path against the routes', () => {
     user: 'KidkArolis',
     id: '42'
   })
-  assert.equals(_.pluck(match.routes, 'name'), ['application', 'status'])
+  assert.equals(match.routes.map(r => r.name), ['application', 'status'])
 })
 
 test('#match matches a path with query params', () => {
@@ -313,7 +314,7 @@ test('routes with name "index" or that end int ".index" default to an empty path
       route('bar.index')
     })
   })
-  assert.equals(_.pluck(router.matchers, 'path'), [
+  assert.equals(router.matchers.map(m => m.path), [
     '/',
     '/foo',
     '/bar'
@@ -341,7 +342,7 @@ test('a complex route map', () => {
     })
   })
   // check that the internal matchers object is created
-  assert.equals(_.pluck(router.matchers, 'path'), [
+  assert.equals(router.matchers.map(m => m.path), [
     '/application',
     '/application/notifications',
     '/application/messages/unread/priority',

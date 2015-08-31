@@ -53,7 +53,6 @@
     "karma-sourcemap-loader": "^0.3.4",
     "karma-webpack": "^1.7.0",
     "kn-release": "^1.0.1",
-    "lodash": "^3.3.0",
     "mocha": "^2.2.0",
     "prompt": "^0.2.14",
     "referee": "^1.1.1",
