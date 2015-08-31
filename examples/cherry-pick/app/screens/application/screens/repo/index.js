@@ -1,10 +1,16 @@
-import './repo.css';
-import 'suitcss-utils-layout';
-import React from 'react';
+import './repo.css'
+import 'suitcss-utils-layout'
+import React from 'react'
 
 export default React.createClass({
   contextTypes: {
     router: React.PropTypes.object.isRequired
+  },
+
+  propTypes: {
+    org: React.PropTypes.string,
+    repo: React.PropTypes.string,
+    children: React.PropTypes.any
   },
 
   render: function () {
@@ -25,6 +31,6 @@ export default React.createClass({
         </div>
         <div>{this.props.children}</div>
       </div>
-    );
+    )
   }
-});
+})
