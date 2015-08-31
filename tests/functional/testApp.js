@@ -1,7 +1,7 @@
-let $ = require('jquery')
-let cherrytree = require('cherrytree')
+import $ from 'jquery'
+import cherrytree from 'cherrytree'
 
-function TestApp (options) {
+export default function TestApp (options) {
   options = options || {}
 
   // create the router
@@ -92,5 +92,3 @@ TestApp.prototype.destroy = function () {
   $(document.body).empty()
   return this.router.destroy()
 }
-
-module.exports = TestApp

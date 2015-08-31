@@ -1,9 +1,10 @@
-let $ = require('jquery')
-let co = require('co')
-let {assert} = require('referee')
-let {suite, test, beforeEach, afterEach} = window
-let TestApp = require('./testApp')
-let Promise = require('es6-promise').Promise
+import $ from 'jquery'
+import co from 'co'
+import { Promise } from 'es6-promise'
+import { assert } from 'referee'
+import TestApp from './testApp'
+
+let { suite, test, beforeEach, afterEach } = window
 let app, router
 
 suite('Cherrytree app')

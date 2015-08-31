@@ -1,9 +1,9 @@
-let Promise = require('es6-promise').Promise
-let co = require('co')
-let {assert} = require('referee')
+import co from 'co'
+import { assert } from 'referee'
+import { extend } from '../../lib/dash'
+import cherrytree from '../..'
+
 let {suite, test, beforeEach, afterEach} = window
-let cherrytree = require('..')
-let extend = require('../lib/dash').extend
 
 let delay = (t) => new Promise((resolve) => setTimeout(resolve, t))
 

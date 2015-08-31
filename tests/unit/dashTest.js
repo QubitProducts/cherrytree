@@ -1,6 +1,7 @@
-let {assert, refute} = require('referee')
+import { assert, refute } from 'referee'
+import { clone, pick, isEqual, extend } from '../../lib/dash'
+
 let {suite, test} = window
-let {clone, pick, isEqual, extend} = require('../../lib/dash')
 
 suite('dash')
 
