@@ -335,16 +335,16 @@ test('a complex route map', () => {
   ])
 })
 
-test('a parent route can be excluded from the route map by setting routable to false', () => {
+test('a parent route can be excluded from the route map by setting abstract to true', () => {
   router.map((route) => {
-    route('application', { routable: false }, () => {
+    route('application', { abstract: true }, () => {
       route('notifications')
       route('messages', () => {
         route('unread', () => {
           route('priority')
         })
         route('read')
-        route('draft', { routable: false }, () => {
+        route('draft', { abstract: true }, () => {
           route('recent')
         })
       })
