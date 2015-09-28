@@ -59,7 +59,7 @@ router.generate('application');
 router.generate('messages', {id: 24});
 ```
 
-You may opt out of a route being generated for a parent by setting `routeable: true` in the options.
+You may opt out of a route being generated for a parent by setting `absract: true` in the options.
 
 If you configure the HistoryLocation to use hashchange event (by setting `pushState: false`), the generated links will start with `#`.
 
