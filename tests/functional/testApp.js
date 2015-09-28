@@ -10,7 +10,6 @@ export default function TestApp (options) {
   // provide the route map
   router.map(function (route) {
     route('application', { path: '/' }, function () {
-      route('index')
       route('about')
       route('faq')
       route('posts', function () {
@@ -37,13 +36,8 @@ export default function TestApp (options) {
       })
       this.$view.html('<h1>Cherrytree Application</h1><div class="outlet"></div>')
       this.$outlet = this.$view.find('.outlet')
+      this.$outlet.html('Welcome to this application')
       $(document.body).html(this.$view)
-    }
-  }
-
-  handlers['index'] = {
-    activate: function () {
-      this.parent.$outlet.html('Welcome to this application')
     }
   }
 
