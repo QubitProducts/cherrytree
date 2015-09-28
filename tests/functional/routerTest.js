@@ -54,7 +54,7 @@ test('cancelling and retrying transitions', async function () {
 test('transition.followRedirects resolves when all of the redirects have finished', async function () {
   var transition
 
-  await router.transitionTo('index')
+  await router.transitionTo('application')
   // initiate a transition
   transition = router.transitionTo('/posts/filter/foo')
   // and a redirect
@@ -65,7 +65,7 @@ test('transition.followRedirects resolves when all of the redirects have finishe
   await transition.catch(() => rejected = true)
   assert(rejected)
 
-  await router.transitionTo('index')
+  await router.transitionTo('application')
   // initiate a transition
   var t = router.transitionTo('/posts/filter/foo')
   // and a redirect, this time using `redirectTo`

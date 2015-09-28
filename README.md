@@ -49,7 +49,6 @@ router.map(function (route) {
     route('messages')
     route('status', {path: ':user/status/:id'})
     route('profile', {path: ':user'}, function () {
-      route('profile.index')
       route('profile.lists')
       route('profile.edit')
     })
@@ -166,7 +165,6 @@ Configure the router with a route map. E.g.
 ```js
 router.map(function (route) {
   route('app', {path: '/'}, function () {
-    route('index')
     route('about')
     route('post', {path: ':postId'}, function () {
       route('show')
