@@ -333,39 +333,6 @@ test('a complex route map', () => {
   ])
 })
 
-test('a parent route can be excluded from the route map by setting abstract to true', () => {
-  router.map((route) => {
-    route('application', { abstract: true }, () => {
-      route('notifications')
-      route('messages', () => {
-        route('unread', () => {
-          route('priority')
-        })
-        route('read')
-        route('draft', { abstract: true }, () => {
-          route('recent')
-        })
-      })
-      route('status', {path: ':user/status/:id'})
-    })
-    route('anotherTopLevel', () => {
-      route('withChildren')
-    })
-  })
-
-  assert.equals(router.matchers.map(m => m.path), [
-    '/application/notifications',
-    '/application/messages',
-    '/application/messages/unread',
-    '/application/messages/unread/priority',
-    '/application/messages/read',
-    '/application/messages/draft/recent',
-    '/application/:user/status/:id',
-    '/anotherTopLevel',
-    '/anotherTopLevel/withChildren'
-  ])
-})
-
 test('routes with duplicate names throw a useful error', () => {
   try {
     router.map((route) => {
