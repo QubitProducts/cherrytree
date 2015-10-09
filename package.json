@@ -21,7 +21,7 @@
   "dependencies": {
     "location-bar": "^2.0.0",
     "path-to-regexp": "^1.0.3",
-    "qs": "^2.3.3"
+    "qs": "^5.2.0"
   },
   "keywords": [
     "router",
