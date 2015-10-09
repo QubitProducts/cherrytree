@@ -21,8 +21,16 @@ test('clone objects', () => {
   assert.equals(b, {a: 1, b: 2, c: 3})
 })
 
+test('clone falsy values', () => {
+  assert.equals(clone(undefined), undefined)
+  assert.equals(clone(null), null)
+  assert.equals(clone(false), false)
+  assert.equals(clone(0), 0)
+})
+
 test('pick', () => {
   assert.equals(pick({a: 1, b: 2, c: 3}, ['a', 'c']), {a: 1, c: 3})
+  assert.equals(pick({a: 1}, ['a', 'c']), {a: 1})
 })
 
 test('isEqual', () => {
