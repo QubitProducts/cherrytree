@@ -29,7 +29,10 @@ test('intercepts link clicks', () => {
   // the navigation, we must install this after the
   // link.intercept has been already called
   let navPreventedCount = 0
-  $(document).on('click', e => {navPreventedCount++; e.preventDefault()})
+  $(document).on('click', e => {
+    navPreventedCount++
+    e.preventDefault()
+  })
 
   // now test that when clicking the link, the calledWith
   mouse.click($a.get(0))

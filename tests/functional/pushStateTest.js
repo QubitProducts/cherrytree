@@ -8,7 +8,6 @@ let app, router, history
 
 // This is to avoid running these tests in IE9 in CI
 if (window.history && window.history.pushState) {
-
   suite('Cherrytree app using pushState')
 
   beforeEach(() => {
@@ -47,5 +46,4 @@ if (window.history && window.history.pushState) {
     yield router.transitionTo('faq', {}, { sortBy: 'user' })
     assert.equals($('.application .outlet').html(), 'FAQ. Sorted By: user')
   }))
-
 }
