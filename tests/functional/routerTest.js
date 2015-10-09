@@ -55,7 +55,7 @@ test('cancelling and retrying transitions', co.wrap(function * () {
 test('transition.followRedirects resolves when all of the redirects have finished', co.wrap(function * () {
   var transition
 
-  yield router.transitionTo('index')
+  yield router.transitionTo('application')
   // initiate a transition
   transition = router.transitionTo('/posts/filter/foo')
   // and a redirect
@@ -66,7 +66,7 @@ test('transition.followRedirects resolves when all of the redirects have finishe
   yield transition.catch(() => rejected = true)
   assert(rejected)
 
-  yield router.transitionTo('index')
+  yield router.transitionTo('application')
   // initiate a transition
   var t = router.transitionTo('/posts/filter/foo')
   // and a redirect, this time using `redirectTo`

@@ -16,7 +16,6 @@ Then use the `map` method to define the route map.
 ```js
 router.map(function(route) {
   route('application', { path: '/', handler: App }, function () {
-    route('index')
     route('about', { handler: About })
     route('favorites', { path: 'favs', handler: Favorites })
     route('message', { path: 'message/:id', handler: Message })
@@ -50,37 +49,15 @@ router.map(function(route) {
 });
 ```
 
-If the route is named 'index' or ends with '.index', the path defaults to '' and not the name of the route. For example, these are equivalent
-
-```js
-router.map(function(route) {
-  route('index')
-  route('profile', function () {
-    route('profile.index')
-  });
-});
-
-// or
-
-router.map(function(route) {
-  route('index', {path: ''})
-  route('profile', function () {
-    route('profile.index', {path: ''})
-  });
-});
-```
-
 To generate links to the different routes use `generate` and pass the name of the route:
 
 ```js
 router.generate('favorites')
 // => /favs
-router.generate('index');
+router.generate('application');
 // => /
 router.generate('messages', {id: 24});
 ```
-
-It's only possible to transition to or generate urls for leaf routes.
 
 If you configure the HistoryLocation to use hashchange event (by setting `pushState: false`), the generated links will start with `#`.
 
@@ -111,11 +88,8 @@ Route nesting is one of the core features of cherrytree. It's useful to nest rou
 ```js
 router.map(function(route) {
   route('gmail', {path: '/'}, function () {
-    route('index')
     route('inbox', function() {
-      route('inbox.index')
       route('mail', {path: 'm/:mailId'}, function () {
-        route('mail.index')
         route('mail.raw')
       })
     })
@@ -135,14 +109,9 @@ This router creates the following routes:
     </tr>
     </thead>
     <tr>
-      <td><code>N/A</code></td>
-      <td><code>gmail</code></td>
-      <td>Initialize core app state and render the app layout</td>
-    </tr>
-    <tr>
       <td><code>/</code></td>
-      <td><code>index</code></td>
-      <td>Redirect to inbox.index</td>
+      <td><code>gmail</code></td>
+      <td>Redirect to inbox</td>
     </tr>
     <tr>
       <td>N/A</td>
@@ -150,19 +119,9 @@ This router creates the following routes:
       <td>Load 1 page of emails and render it</td>
     </tr>
     <tr>
-      <td>/inbox</td>
-      <td><code>inbox.index</code></td>
-      <td>The leaf route for index - this route doesn't need to do anything</td>
-    </tr>
-    <tr>
       <td>N/A</td>
       <td><code>mail</code></td>
       <td>Load the email contents of email with id `transition.params.mailId` and expand it in the list of emails while keeping the email list rendered</td>
-    </tr>
-    <tr>
-      <td><code>/inbox/m/:mailId</code></td>
-      <td><code>mail.index</code></td>
-      <td>Render the email content in the expanded pane</td>
     </tr>
     <tr>
       <td><code>/inbox/m/:mailId/raw</code></td>
