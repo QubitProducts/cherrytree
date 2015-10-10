@@ -1,5 +1,12 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+var events = createEvents();
+
+exports['default'] = events;
+
 function createEvents() {
   var exp = {};
 
@@ -49,5 +56,4 @@ function createEvents() {
 
   return exp;
 }
-
-module.exports = createEvents();
+module.exports = exports['default'];

@@ -1,10 +1,23 @@
 'use strict';
 
-var _ = require('./dash');
-var invariant = require('./invariant');
-var Path = require('./path');
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports['default'] = transition;
 
-module.exports = function transition(options, Promise) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _dash = require('./dash');
+
+var _invariant = require('./invariant');
+
+var _invariant2 = _interopRequireDefault(_invariant);
+
+var _path = require('./path');
+
+var _path2 = _interopRequireDefault(_path);
+
+function transition(options, Promise) {
   options = options || {};
 
   var router = options.router;
@@ -21,12 +34,15 @@ module.exports = function transition(options, Promise) {
   var startTime = Date.now();
   log('---');
   log('Transition #' + id, 'to', path);
-  log('Transition #' + id, 'routes:', _.pluck(routes, 'name'));
+  log('Transition #' + id, 'routes:', routes.map(function (r) {
+    return r.name;
+  }));
   log('Transition #' + id, 'params:', params);
   log('Transition #' + id, 'query:', query);
 
   // create the transition promise
-  var resolve, reject;
+  var resolve = undefined,
+      reject = undefined;
   var promise = new Promise(function (res, rej) {
     resolve = res;
     reject = rej;
@@ -50,17 +66,17 @@ module.exports = function transition(options, Promise) {
   var transition = {
     id: id,
     prev: {
-      routes: router.state.routes || [],
+      routes: (0, _dash.clone)(router.state.routes) || [],
       path: router.state.path || '',
       pathname: router.state.pathname || '',
-      params: router.state.params || {},
-      query: router.state.query || {}
+      params: (0, _dash.clone)(router.state.params) || {},
+      query: (0, _dash.clone)(router.state.query) || {}
     },
-    routes: routes,
+    routes: (0, _dash.clone)(routes),
     path: path,
-    pathname: Path.withoutQuery(path),
-    params: params,
-    query: query,
+    pathname: _path2['default'].withoutQuery(path),
+    params: (0, _dash.clone)(params),
+    query: (0, _dash.clone)(query),
     redirectTo: function redirectTo() {
       return router.transitionTo.apply(router, arguments);
     },
@@ -108,7 +124,7 @@ module.exports = function transition(options, Promise) {
 
   // here we handle calls to all of the middlewares
   function callNext(i, prevResult) {
-    var middlewareName;
+    var middlewareName = undefined;
     // if transition has been cancelled - nothing left to do
     if (cancelled) {
       return;
@@ -120,7 +136,7 @@ module.exports = function transition(options, Promise) {
       var middlewarePromise = undefined;
       try {
         middlewarePromise = router.middleware[i](transition, prevResult);
-        invariant(transition !== middlewarePromise, 'Middleware %s returned a transition which resulted in a deadlock', middlewareName);
+        (0, _invariant2['default'])(transition !== middlewarePromise, 'Middleware %s returned a transition which resulted in a deadlock', middlewareName);
       } catch (err) {
         router.state.activeTransition = null;
         return reject(err);
@@ -135,9 +151,9 @@ module.exports = function transition(options, Promise) {
     } else {
       router.state = {
         activeTransition: null,
-        routes: transition.routes,
+        routes: routes,
         path: path,
-        pathname: Path.withoutQuery(path),
+        pathname: _path2['default'].withoutQuery(path),
         params: params,
         query: query
       };
@@ -158,4 +174,6 @@ module.exports = function transition(options, Promise) {
   }
 
   return transition;
-};
+}
+
+module.exports = exports['default'];

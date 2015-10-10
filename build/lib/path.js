@@ -1,10 +1,18 @@
 'use strict';
 
-var _ = require('./dash');
-var invariant = require('./invariant');
-var merge = require('qs/lib/utils').merge;
-var qs = require('qs');
-var pathToRegexp = require('path-to-regexp');
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _invariant = require('./invariant');
+
+var _invariant2 = _interopRequireDefault(_invariant);
+
+var _pathToRegexp = require('path-to-regexp');
+
+var _pathToRegexp2 = _interopRequireDefault(_pathToRegexp);
 
 var paramInjectMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$?]*[?+*]?)/g;
 var specialParamChars = /[+*?]$/g;
@@ -15,11 +23,13 @@ var _compiledPatterns = {};
 function compilePattern(pattern) {
   if (!(pattern in _compiledPatterns)) {
     var paramNames = [];
-    var re = pathToRegexp(pattern, paramNames);
+    var re = (0, _pathToRegexp2['default'])(pattern, paramNames);
 
     _compiledPatterns[pattern] = {
       matcher: re,
-      paramNames: _.pluck(paramNames, 'name')
+      paramNames: paramNames.map(function (p) {
+        return p.name;
+      })
     };
   }
 
@@ -27,7 +37,6 @@ function compilePattern(pattern) {
 }
 
 var Path = {
-
   /**
    * Returns true if the given path is absolute.
    */
@@ -89,7 +98,7 @@ var Path = {
           return '';
         }
       } else {
-        invariant(params[paramName] != null, "Missing '%s' parameter for path '%s'", paramName, pattern);
+        (0, _invariant2['default'])(params[paramName] != null, "Missing '%s' parameter for path '%s'", paramName, pattern);
       }
 
       return params[paramName];
@@ -100,29 +109,16 @@ var Path = {
    * Returns an object that is the result of parsing any query string contained
    * in the given path, null if the path contains no query string.
    */
-  extractQuery: function extractQuery(path) {
+  extractQuery: function extractQuery(qs, path) {
     var match = path.match(queryMatcher);
     return match && qs.parse(match[1]);
-  },
-
-  /**
-   * Returns a version of the given path without the query string.
-   */
-  withoutQuery: function withoutQuery(path) {
-    return path.replace(queryMatcher, '');
   },
 
   /**
    * Returns a version of the given path with the parameters in the given
    * query merged into the query string.
    */
-  withQuery: function withQuery(path, query) {
-    var existingQuery = Path.extractQuery(path);
-
-    if (existingQuery) {
-      query = query ? merge(existingQuery, query) : existingQuery;
-    }
-
+  withQuery: function withQuery(qs, path, query) {
     var queryString = qs.stringify(query, { indices: false });
 
     if (queryString) {
@@ -130,8 +126,15 @@ var Path = {
     }
 
     return path;
-  }
+  },
 
+  /**
+   * Returns a version of the given path without the query string.
+   */
+  withoutQuery: function withoutQuery(path) {
+    return path.replace(queryMatcher, '');
+  }
 };
 
-module.exports = Path;
+exports['default'] = Path;
+module.exports = exports['default'];

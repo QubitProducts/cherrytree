@@ -1,16 +1,23 @@
 'use strict';
 
-var _ = require('../dash');
-var LocationBar = require('location-bar');
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-/**
- * Constructor
- */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var HistoryLocation = function HistoryLocation(options) {
-  this.path = '';
+var _dash = require('../dash');
 
-  this.options = _.extend({
+var _locationBar = require('location-bar');
+
+var _locationBar2 = _interopRequireDefault(_locationBar);
+
+exports['default'] = HistoryLocation;
+
+function HistoryLocation(options) {
+  this.path = options.path || '';
+
+  this.options = (0, _dash.extend)({
     pushState: false,
     root: '/'
   }, options);
@@ -18,13 +25,13 @@ var HistoryLocation = function HistoryLocation(options) {
   // we're using the location-bar module for actual
   // URL management
   var self = this;
-  this.locationBar = new LocationBar();
+  this.locationBar = new _locationBar2['default']();
   this.locationBar.onChange(function (path) {
     self.handleURL('/' + (path || ''));
   });
 
-  this.locationBar.start(_.extend({}, options));
-};
+  this.locationBar.start((0, _dash.extend)({}, options));
+}
 
 /**
  * Check if we're actually using pushState. For browsers
@@ -53,7 +60,7 @@ HistoryLocation.prototype.getURL = function () {
 HistoryLocation.prototype.setURL = function (path, options) {
   if (this.path !== path) {
     this.path = path;
-    this.locationBar.update(path, _.extend({ trigger: true }, options));
+    this.locationBar.update(path, (0, _dash.extend)({ trigger: true }, options));
   }
 };
 
@@ -65,7 +72,7 @@ HistoryLocation.prototype.setURL = function (path, options) {
 HistoryLocation.prototype.replaceURL = function (path, options) {
   if (this.path !== path) {
     this.path = path;
-    this.locationBar.update(path, _.extend({ trigger: true, replace: true }, options));
+    this.locationBar.update(path, (0, _dash.extend)({ trigger: true, replace: true }, options));
   }
 };
 
@@ -84,11 +91,9 @@ HistoryLocation.prototype.onChange = function (callback) {
 HistoryLocation.prototype.formatURL = function (path) {
   if (this.locationBar.hasPushState()) {
     var rootURL = this.options.root;
-
     if (path !== '') {
       rootURL = rootURL.replace(/\/$/, '');
     }
-
     return rootURL + path;
   } else {
     if (path[0] === '/') {
@@ -103,7 +108,6 @@ HistoryLocation.prototype.formatURL = function (path) {
  * we need to take care of removingRoot at certain points.
  * Specifically
  * - history.update() can be called with the full URL by router
- * - history.navigate() can be called with the full URL by a link handler
  * - LocationBar expects all .update() calls to be called without root
  * - this method is public so that we could dispatch URLs without root in router
  */
@@ -123,17 +127,6 @@ HistoryLocation.prototype.destroy = function () {
 };
 
 /**
- * Update the browser's location bar with a new URL.
- * Trigger an event so that we would inform the router
- * of the new URL.
- * @private
- */
-
-HistoryLocation.prototype.navigate = function (url) {
-  this.locationBar.update(url, { trigger: true });
-};
-
-/**
   initially, the changeCallback won't be defined yet, but that's good
   because we dont' want to kick off routing right away, the router
   does that later by manually calling this handleURL method with the
@@ -148,5 +141,4 @@ HistoryLocation.prototype.handleURL = function (url) {
     this.changeCallback(url);
   }
 };
-
-module.exports = HistoryLocation;
+module.exports = exports['default'];

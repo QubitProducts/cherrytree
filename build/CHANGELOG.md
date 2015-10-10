@@ -1,3 +1,36 @@
+### v2.0.0-rc1
+
+Breaking changes:
+
+* Every route is now routable. Previously it was only possible to generate links and transition to leaf routes. This simplifies the typical usage of the router and opens up new use cases as well. For example, if you want to redirect from '/' to '/some/:id', it's now easier to implement this kind of redirect behaviour without needing to create many reduntant '.index' routes.
+* The special `.index` treatment has been removed. Previously, if the route name ended with `.index`, the path was automatically set to ''. Now, such path will default to 'index' as with all other routes. Set `path: ''` on your index routes when upgrading.
+* An exception is now thrown when multiple routes have the same URL pattern.
+* Given all the above changes - a new route option `abstract: true` was introduced for making non leaf routes non routable. This also solves the problem where using `path: ''` would result in multiple routes with the same path.
+* The `paramNames` array (e.g. ['id', 'filter']) was replaced with `params` object (e.g. {id: 1, filter: 'foo'}) in the route descriptor on the transition object.
+* The `ancestors` attribute was removed from the route descriptor.
+* Switching between using `history` and `memory` locations has been simplified. Previously, you'd need to pass `new MemoryLocation(path)` when calling `listen`. Now, specify the location to use with `location: 'memory'` when creating the router and pass the path when calling `listen`.
+* The `qs` module was removed from dependencies and was replaced with a tiny, simple query string parser. This can be sufficient for a lot of applications and saves a couple of kilobytes. If you want to use `qs` or any other query parsing module, pass it as `qs: require('qs')` option to the router.
+* params, query and route array are now immutable between transitions, i.e. modifying those directly on the transition only affects that transition
+* Drop out-of-the-box support for ES3 environments (IE8). To use Cherrytree in older environments - es5 polyfills for native `map`, `reduce` and `forEach` need to be used now.
+* An undocumented, noop function `reset` was removed from the router.
+
+New features:
+
+* Support for custom [click intercept handlers](docs/api.md#intercepting-links)
+
+Under the hood improvements:
+
+* Update all dependencies to the latest versions
+* Tests are being run in more browsers now
+* Replaced `co` with `babel-creed-async` in tests
+* Removed the dependency on `lodash`
+
+Documentation:
+
+* Moved docs back to a separate [`docs/api.md`](docs/api.md) file
+* Documented [router.matchers](docs/api.md#routermatchers)
+* Documented [404 handling](docs/api.md#handling-404)
+
 ### v2.0.0-alpha.12
 
 * BYOP - Cherrytree now requires a global Promise implementation to be available or a Promise constructor passed in as an option

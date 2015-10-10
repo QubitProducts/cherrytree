@@ -1,50 +1,55 @@
 'use strict';
 
-var _ = require('../dash');
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-module.exports = function (path) {
-  return {
-    path: path || '',
+var _dash = require('../dash');
 
-    getURL: function getURL() {
-      return this.path;
-    },
+exports['default'] = MemoryLocation;
 
-    setURL: function setURL(path, options) {
-      if (this.path !== path) {
-        this.path = path;
-        this.handleURL(this.getURL(), options);
-      }
-    },
+function MemoryLocation(options) {
+  this.path = options.path || '';
+}
 
-    replaceURL: function replaceURL(path, options) {
-      if (this.path !== path) {
-        this.setURL(path, options);
-      }
-    },
-
-    onChange: function onChange(callback) {
-      this.changeCallback = callback;
-    },
-
-    handleURL: function handleURL(url, options) {
-      this.path = url;
-      options = _.extend({ trigger: true }, options);
-      if (this.changeCallback && options.trigger) {
-        this.changeCallback(url);
-      }
-    },
-
-    usesPushState: function usesPushState() {
-      return false;
-    },
-
-    removeRoot: function removeRoot(url) {
-      return url;
-    },
-
-    formatURL: function formatURL(url) {
-      return url;
-    }
-  };
+MemoryLocation.prototype.getURL = function () {
+  return this.path;
 };
+
+MemoryLocation.prototype.setURL = function (path, options) {
+  if (this.path !== path) {
+    this.path = path;
+    this.handleURL(this.getURL(), options);
+  }
+};
+
+MemoryLocation.prototype.replaceURL = function (path, options) {
+  if (this.path !== path) {
+    this.setURL(path, options);
+  }
+};
+
+MemoryLocation.prototype.onChange = function (callback) {
+  this.changeCallback = callback;
+};
+
+MemoryLocation.prototype.handleURL = function (url, options) {
+  this.path = url;
+  options = (0, _dash.extend)({ trigger: true }, options);
+  if (this.changeCallback && options.trigger) {
+    this.changeCallback(url);
+  }
+};
+
+MemoryLocation.prototype.usesPushState = function () {
+  return false;
+};
+
+MemoryLocation.prototype.removeRoot = function (url) {
+  return url;
+};
+
+MemoryLocation.prototype.formatURL = function (url) {
+  return url;
+};
+module.exports = exports['default'];

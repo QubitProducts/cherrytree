@@ -1,8 +1,42 @@
 'use strict';
 
-var events = require('./events');
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.intercept = intercept;
 
-var link = function link(element) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _events = require('./events');
+
+var _events2 = _interopRequireDefault(_events);
+
+/**
+ * Handle link delegation on `el` or the document,
+ * and invoke `fn(e)` when clickable.
+ *
+ * @param {Element|Function} el or fn
+ * @param {Function} [fn]
+ * @api public
+ */
+
+function intercept(el, fn) {
+  // default to document
+  if (typeof el === 'function') {
+    fn = el;
+    el = document;
+  }
+
+  var cb = delegate(el, 'click', function (e, el) {
+    if (clickable(e, el)) fn(e, el);
+  });
+
+  return function dispose() {
+    undelegate(el, 'click', cb);
+  };
+}
+
+function link(element) {
   element = { parentNode: element };
 
   var root = document;
@@ -20,7 +54,7 @@ var link = function link(element) {
       return;
     }
   }
-};
+}
 
 /**
  * Delegate event `type` to links
@@ -36,15 +70,15 @@ var link = function link(element) {
  * @api public
  */
 
-var delegate = function delegate(el, type, fn) {
-  return events.bind(el, type, function (e) {
+function delegate(el, type, fn) {
+  return _events2['default'].bind(el, type, function (e) {
     var target = e.target || e.srcElement;
     var el = link(target);
     if (el) {
       fn(e, el);
     }
   });
-};
+}
 
 /**
  * Unbind event `type`'s callback `fn`.
@@ -56,9 +90,9 @@ var delegate = function delegate(el, type, fn) {
  * @api public
  */
 
-var undelegate = function undelegate(el, type, fn) {
-  events.unbind(el, type, fn);
-};
+function undelegate(el, type, fn) {
+  _events2['default'].unbind(el, type, fn);
+}
 
 /**
  * Check if `e` is clickable.
@@ -98,28 +132,3 @@ function which(e) {
   e = e || window.event;
   return e.which === null ? e.button : e.which;
 }
-
-/**
- * Handle link delegation on `el` or the document,
- * and invoke `fn(e)` when clickable.
- *
- * @param {Element|Function} el or fn
- * @param {Function} [fn]
- * @api public
- */
-
-module.exports.intercept = function intercept(el, fn) {
-  // default to document
-  if (typeof el === 'function') {
-    fn = el;
-    el = document;
-  }
-
-  var cb = delegate(el, 'click', function (e, el) {
-    if (clickable(e, el)) fn(e, el);
-  });
-
-  return function dispose() {
-    undelegate(el, 'click', cb);
-  };
-};
