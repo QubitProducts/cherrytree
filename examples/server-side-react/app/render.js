@@ -28,7 +28,7 @@ let React = require('react')
 module.exports = function (routes, options) {
   return function render (req, res, next) {
     let url = req.url
-    let router = cherrytree(options)
+    let router = cherrytree(Object.assign({location: 'memory'}, options))
       .map(routes())
       // just an example of how redirects work,
       // you can setup various redirect strategies
@@ -46,10 +46,8 @@ module.exports = function (routes, options) {
         }
       })
 
-    let location = new cherrytree.MemoryLocation(url)
-
     // kick off routing
-    let transition = router.listen(location)
+    let transition = router.listen(url)
 
     // after transitioning completes - render or redirect
     transition
