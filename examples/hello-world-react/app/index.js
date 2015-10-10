@@ -21,12 +21,12 @@ router.map(function (route) {
   // the relevant components to each route.
   // Path is the only special option that is used to construct and
   // match URLs as well as extract URL parameters.
-  route('application', {path: '/', component: Application}, function () {
+  route('application', {path: '/', component: Application, abstract: true}, function () {
     route('home', {path: '', component: Home})
     route('messages', {component: Messages})
     route('status', {path: ':user/status/:id'})
-    route('profile', {path: ':user', component: Profile}, function () {
-      route('profile.index', {component: ProfileIndex})
+    route('profile', {path: ':user', component: Profile, abstract: true}, function () {
+      route('profile.index', {component: ProfileIndex, path: ''})
       route('profile.lists')
       route('profile.edit')
     })

@@ -11,12 +11,12 @@ var router = window.router = cherrytree({
 
 // define the route map
 router.map(function (route) {
-  route('application', {path: '/'}, function () {
-    route('home', {path: '/'})
+  route('application', {path: '/', abstract: true}, function () {
+    route('home', {path: ''})
     route('about')
     route('faq')
-    route('posts', function () {
-      route('posts.index')
+    route('posts', {abstract: true}, function () {
+      route('posts.index', {path: ''})
       route('posts.popular')
       route('posts.search', { path: 'search/:query' })
       route('posts.show', { path: ':id' })

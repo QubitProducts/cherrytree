@@ -10,8 +10,8 @@ let router = window.router = cherrytree({
 })
 
 router.map(function (route) {
-  route('application', {path: '/'}, function () {
-    route('index', {path: '/'})
+  route('application', {path: '/', abstract: true}, function () {
+    route('index', {path: ''})
     route('organisation', {path: ':org'})
     route('repo', {path: ':org/:repo'}, function () {
       route('repo.code', {path: 'code/:path*'})
