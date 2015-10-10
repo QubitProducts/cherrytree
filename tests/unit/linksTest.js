@@ -13,6 +13,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   $container.empty().remove()
+  $(document).off('click')
 })
 
 test('intercepts link clicks', () => {

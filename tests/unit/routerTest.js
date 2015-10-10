@@ -3,6 +3,7 @@ import HistoryLocation from '../../lib/locations/history'
 import { extend } from '../../lib/dash'
 import cherrytree from '../..'
 
+let mouse = window.effroi.mouse
 let {suite, test, beforeEach, afterEach} = window
 
 let delay = (t) => new Promise((resolve) => setTimeout(resolve, t))
@@ -384,3 +385,23 @@ test('modifying params or query in middleware does not affect the router state',
   assert.equals(router.state.query, {q: 'abc'})
   assert.equals(router.state.routes.length, 2)
 })
+
+if (window.history && window.history.pushState) {
+  test('custom link intercept click handler', async function () {
+    let interceptCalledWith = false
+    router.options.pushState = true
+    router.options.interceptLinks = function (event, link) {
+      event.preventDefault()
+      interceptCalledWith = link.getAttribute('href')
+    }
+    router.map(routes)
+    await router.listen('foobar')
+    let a = document.createElement('a')
+    a.href = '/hello/world'
+    a.innerHTML = 'hello'
+    document.body.appendChild(a)
+    mouse.click(a)
+    assert.equals(interceptCalledWith, '/hello/world')
+    document.body.removeChild(a)
+  })
+}
