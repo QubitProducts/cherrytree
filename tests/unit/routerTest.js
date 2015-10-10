@@ -1,4 +1,3 @@
-import co from 'co'
 import { assert } from 'referee'
 import { extend } from '../../lib/dash'
 import cherrytree from '../..'
@@ -367,19 +366,19 @@ test('routes with duplicate names throw a useful error', () => {
   assert(false, 'Should not reach this')
 })
 
-test('modifying params or query in middleware does not affect the router state', co.wrap(function *() {
+test('modifying params or query in middleware does not affect the router state', async function () {
   router.map(routes)
-  yield router.listen()
+  await router.listen()
   router.use(transition => {
     transition.params.foo = 1
     transition.query.bar = 2
     transition.routes.push({})
     transition.routes[0].foobar = 123
   })
-  yield router.transitionTo('status', {user: 'me', id: 42}, {q: 'abc'})
+  await router.transitionTo('status', {user: 'me', id: 42}, {q: 'abc'})
   // none of the modifications to params, query or routes
   // array are persisted to the router state
   assert.equals(router.state.params, {user: 'me', id: '42'})
   assert.equals(router.state.query, {q: 'abc'})
   assert.equals(router.state.routes.length, 2)
-}))
+})

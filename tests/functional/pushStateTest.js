@@ -1,5 +1,4 @@
 let $ = require('jquery')
-let co = require('co')
 let {assert} = require('referee')
 let fakeHistory = require('../lib/fakeHistory')
 let {suite, test, beforeEach, afterEach} = window
@@ -37,13 +36,13 @@ if (window.history && window.history.pushState) {
     history.setURL('/app/about')
   })
 
-  test('programmatic transition via url and route names', co.wrap(function * () {
-    yield router.transitionTo('about')
+  test('programmatic transition via url and route names', async function () {
+    await router.transitionTo('about')
     assert.equals(history.getURL(), '/app/about')
-    yield router.transitionTo('/faq?sortBy=date')
+    await router.transitionTo('/faq?sortBy=date')
     assert.equals(history.getURL(), '/app/faq?sortBy=date')
     assert.equals($('.application .outlet').html(), 'FAQ. Sorted By: date')
-    yield router.transitionTo('faq', {}, { sortBy: 'user' })
+    await router.transitionTo('faq', {}, { sortBy: 'user' })
     assert.equals($('.application .outlet').html(), 'FAQ. Sorted By: user')
-  }))
+  })
 }
