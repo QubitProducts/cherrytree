@@ -229,6 +229,25 @@ router.map(function (route) {
 })
 ```
 
+Abstract routes are especially useful when creating `index` subroutes as demonstrated above. The above route map results in the following URLs:
+
+```
+/ - ['application']
+/dashboard/:accountId - ['application', 'dashboard', 'defaultDashboard']
+/dashboard/:accountId/realtime - ['application', 'dashboard', 'realtimeDashboard']
+```
+
+It's also common to redirect from non leaf routes. In this example we might want to redirect from `application` to the `defaultDashboard` route. If each of your routes are backed by some route handler object, you can achieve the redirect with the following middleware:
+
+```js
+router.use(function redirect (transition) {
+  var lastRoute = transition.routes[transition.routes.length - 1]
+  if (lastRoute.handler.redirect) {
+    lastRoute.handler.redirect(transition.params, transition.query)
+  }
+})
+```
+
 ### router.use(fn)
 
 Add a transition middleware. Every time a transition takes place this middleware will be called with a transition as the argument. You can call `use` multiple times to add more middlewares. The middleware function can return a promise and the next middleware will not be called until the promise of the previous middleware is resolved. The result of the promise is passed in as a second argument to the next middleware. E.g.
