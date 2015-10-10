@@ -305,6 +305,20 @@ It generates a URL with # if router is in hashChange mode and with no # if route
 
 The state of the route is always available on the `router.state` object. It contains `activeTransition`, `routes`, `path`, `pathname`, `params` and `query`.
 
+### router.matchers
+
+Use this to inspect all the routes and their URL patterns that exist in your application. It's an array of:
+
+```js
+{
+  name,
+  path,
+  routes
+}
+```
+
+listed in the order that they will be matched against the URL.
+
 ## Query params
 
 Cherrytree will extract and parse the query params using a very simple query string parser that only supports key values. For example, `?a=1&b=2` will be parsed to `{a: 1, b:2}`. If you want to use a more sophisticated query parser, pass in an object with `parse` and `stringify` functions - an interface compatible with the popular [qs](https://github.com/hapijs/qs) module e.g.:
@@ -379,6 +393,7 @@ The clicks that **are never** intercepted:
   * `javascript:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
+
 
 ## FAQ
 
