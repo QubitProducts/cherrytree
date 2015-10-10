@@ -156,6 +156,7 @@ To use `cherrytree` with React, check out [`cherrytree-for-react`](https://githu
 * **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
 * **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
+* **options.qs** - default is a simple built in query string parser. Pass in an object with `parse` and `stringify` functions to customize how query strings get treated.
 * **options.Promise** - default is window.Promise or global.Promise. Promise implementation to be used when constructing transitions.
 
 ### router.map(fn)
@@ -303,6 +304,17 @@ It generates a URL with # if router is in hashChange mode and with no # if route
 ### router.state
 
 The state of the route is always available on the `router.state` object. It contains `activeTransition`, `routes`, `path`, `pathname`, `params` and `query`.
+
+## Query params
+
+Cherrytree will extract and parse the query params using a very simple query string parser that only supports key values. For example, `?a=1&b=2` will be parsed to `{a: 1, b:2}`. If you want to use a more sophisticated query parser, pass in an object with `parse` and `stringify` functions - an interface compatible with the popular [qs](https://github.com/hapijs/qs) module e.g.:
+
+```js
+cherrytree({
+  qs: require('qs')
+})
+```
+
 
 ## Errors
 
