@@ -272,6 +272,8 @@ During every transition, you can inspect `transition.routes` and `transition.pre
 
 After the router has been configured with a route map and middleware - start listening to URL changes and transition to the appropriate route based on the current URL.
 
+When using `location: 'memory'`, the current URL is not read from the browser's location bar and instead can be  passed in via listen: `listen(path)`.
+
 ### router.transitionTo(name, params, query)
 
 Transition to a route, e.g.
@@ -321,33 +323,13 @@ Cherrytree can be configured to use differet implementations of libraries that m
 Configure HistoryLocation by passing options directly to the router.
 
 ```js
-  var cherrytree = require('cherrytree')
-  var router = cherrytree({
-    pushState: true
-  })
-  router.listen()
+var router = cherrytree({
+  pushState: true
+})
 ```
-
-You can also pass the location in explicitly. This is how you could provide your own custom location implementation.
-
-```js
-  var cherrytree = require('cherrytree')
-  var HistoryLocation = require('cherrytree/lib/locations/history')
-  var router = cherrytree()
-  router.listen(new HistoryLocation({
-    pushState: true
-  }))
-```
-
-### var location = new HistoryLocation(options)
-
-Create an instance of history location. Note that only one instance of HistoryLocation should be created per page since it's managing the browser's URL.
-
-**Note** these options can be passed in as router options, since HistoryLocation is the default location.
 
 * options.pushState - default is false, which means using hashchange events. Set to true to use pushState.
 * options.root - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
-
 
 # MemoryLocation
 
@@ -356,12 +338,20 @@ MemoryLocation can be used if you don't want router to touch the address bar at 
 e.g.
 
 ```js
-var cherrytree = require('cherrytree')
-var MemoryLocation = require('cherrytree/lib/locations/memory')
-var router = cherrytree()
-routerlisten(new MemoryLocation())
+var router = cherrytree({
+  location: 'memory'
+})
 ```
 
+# CustomLocation
+
+You can also pass a custom location in explicitly. This is an advanced use case, but might turn out to be useful in non browser environments. For this you'll need to investigate how HistoryLocation is implemented.
+
+```js
+var router = cherrytree({
+  location: myCustomLocation()
+})
+```
 
 ## Intercepting Links
 

@@ -1,5 +1,6 @@
 import co from 'co'
 import { assert } from 'referee'
+import HistoryLocation from '../../lib/locations/history'
 import { extend } from '../../lib/dash'
 import cherrytree from '../..'
 
@@ -144,18 +145,19 @@ if (window.history && window.history.pushState) {
 if (window.history && !window.history.pushState) {
   test('#generate when pushState: true and root != "/" in old browsers', () => {
     let browserRedirectedTo
-
-    router.options.pushState = true
-    router.options.root = '/foo/bar'
-    router.options.location = {
-      href: '/different/#location',
-      pathname: '/different',
-      hash: '#location',
-      search: '',
-      replace: function (path) {
-        browserRedirectedTo = path
+    router.options.location = new HistoryLocation({
+      pushState: true,
+      root: '/foo/bar',
+      location: {
+        href: '/different/#location',
+        pathname: '/different',
+        hash: '#location',
+        search: '',
+        replace: function (path) {
+          browserRedirectedTo = path
+        }
       }
-    }
+    })
 
     router.map(routes).listen()
     var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
