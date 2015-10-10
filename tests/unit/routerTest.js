@@ -14,7 +14,6 @@ let router
 
 let routes = (route) => {
   route('application', () => {
-    route('home', {path: ''})
     route('notifications')
     route('messages')
     route('status', {path: ':user/status/:id'})
@@ -52,13 +51,6 @@ test('#use middleware gets passed a transition object', (done) => {
           params: {},
           options: {
             path: 'application'
-          }
-        }, {
-          name: 'home',
-          path: '',
-          params: {},
-          options: {
-            path: ''
           }
         }],
         path: '/application',
@@ -99,10 +91,10 @@ test('#use middleware gets passed a transition object', (done) => {
     done()
   }
 
-  // first navigate to 'home'
+  // first navigate to 'application'
   router.map(routes)
   router.listen()
-    .then(() => router.transitionTo('home'))
+    .then(() => router.transitionTo('application'))
     .then(() => {
       // then install the middleware and navigate to status page
       // this is so that we have a richer transition object
@@ -123,7 +115,7 @@ test('#map registers the routes', () => {
   ])
   // check that the internal routes object is created
   assert.equals(router.routes[0].name, 'application')
-  assert.equals(router.routes[0].routes[3].options.path, ':user/status/:id')
+  assert.equals(router.routes[0].routes[2].options.path, ':user/status/:id')
 })
 
 test('#generate generates urls given route name and params as object', () => {
@@ -308,25 +300,9 @@ afterEach(() => {
   router.destroy()
 })
 
-test('routes with name "index" or that end int ".index" default to an empty path', () => {
-  router.map((route) => {
-    route('index')
-    route('foo')
-    route('bar', () => {
-      route('bar.index')
-    })
-  })
-  assert.equals(router.matchers.map(m => m.path), [
-    '/',
-    '/foo',
-    '/bar'
-  ])
-})
-
 test('a complex route map', () => {
   router.map((route) => {
     route('application', () => {
-      route('home', {path: ''})
       route('notifications')
       route('messages', () => {
         route('unread', () => {
@@ -347,10 +323,47 @@ test('a complex route map', () => {
   assert.equals(router.matchers.map(m => m.path), [
     '/application',
     '/application/notifications',
+    '/application/messages',
+    '/application/messages/unread',
+    '/application/messages/unread/priority',
+    '/application/messages/read',
+    '/application/messages/draft',
+    '/application/messages/draft/recent',
+    '/application/:user/status/:id',
+    '/anotherTopLevel',
+    '/anotherTopLevel/withChildren'
+  ])
+})
+
+test('a parent route can be excluded from the route map by setting abstract to true', () => {
+  router.map((route) => {
+    route('application', { abstract: true }, () => {
+      route('notifications')
+      route('messages', () => {
+        route('unread', () => {
+          route('priority')
+        })
+        route('read')
+        route('draft', { abstract: true }, () => {
+          route('recent')
+        })
+      })
+      route('status', {path: ':user/status/:id'})
+    })
+    route('anotherTopLevel', () => {
+      route('withChildren')
+    })
+  })
+
+  assert.equals(router.matchers.map(m => m.path), [
+    '/application/notifications',
+    '/application/messages',
+    '/application/messages/unread',
     '/application/messages/unread/priority',
     '/application/messages/read',
     '/application/messages/draft/recent',
     '/application/:user/status/:id',
+    '/anotherTopLevel',
     '/anotherTopLevel/withChildren'
   ])
 })

@@ -97,12 +97,12 @@ let profileIndex = {
 //  * you could get the route handlers of some map somewhere by name
 //  * you can have a dynamic require that pulls in the route from a file by name
 router.map((route) => {
-  route('application', {path: '/', handler: application}, () => {
+  route('application', {path: '/', handler: application, abstract: true}, () => {
     route('home', {path: '', handler: home})
     route('messages', {handler: messages})
     route('status', {path: ':user/status/:id'})
-    route('profile', {path: ':user', handler: profile}, () => {
-      route('profile.index', {handler: profileIndex})
+    route('profile', {path: ':user', handler: profile, abstract: true}, () => {
+      route('profile.index', {path: '', handler: profileIndex})
       route('profile.lists')
       route('profile.edit')
     })

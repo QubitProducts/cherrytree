@@ -9,12 +9,12 @@ let React = require('react')
 
 module.exports = function routes () {
   return (route) => {
-    route('application', {path: '/', component: application}, () => {
+    route('application', {path: '/', component: application, abstract: true}, () => {
       route('home', {path: '', component: home})
       route('messages', {component: messages})
       route('status', {path: ':user/status/:id'})
-      route('profile', {path: ':user', component: profile}, () => {
-        route('profile.index', {component: profileIndex})
+      route('profile', {path: ':user', component: profile, abstract: true}, () => {
+        route('profile.index', {path: '', component: profileIndex})
         route('profile.lists')
         route('profile.edit')
       })

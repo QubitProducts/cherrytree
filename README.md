@@ -49,7 +49,6 @@ router.map(function (route) {
     route('messages')
     route('status', {path: ':user/status/:id'})
     route('profile', {path: ':user'}, function () {
-      route('profile.index')
       route('profile.lists')
       route('profile.edit')
     })
@@ -166,7 +165,6 @@ Configure the router with a route map. E.g.
 ```js
 router.map(function (route) {
   route('app', {path: '/'}, function () {
-    route('index')
     route('about')
     route('post', {path: ':postId'}, function () {
       route('show')
@@ -214,6 +212,40 @@ route('foo', {path: '/hello/:myParam/:myOtherParam'}) // two named params, match
 route('foo', {path: '/hello/:myParam?'}) // single optional named param, matches /hello and /hello/1
 route('foo', {path: '/hello/:splat*'}) // match 0 or more segments, matches /hello and /hello/1 and /hello/1/2/3
 route('foo', {path: '/hello/:splat+'}) // match 1 or more segments, matches /hello/1 and /hello/1/2/3
+```
+
+#### Abstract routes
+
+By default, both leaf and non leaf routes can be navigated to. Sometimes you might not want it to be possible to navigate to certain routes at all, e.g. if the route is only used for data fetching and doesn't render anything by itself. In that case, you can set `abstract: true` in the route options. Abstract routes can still form a part of the URL.
+
+```js
+router.map(function (route) {
+  route('application', {path: '/'}, function () {
+    route('dashboard', {path: 'dashboard/:accountId', abstract: true}, function () {
+      route('defaultDashboard', {path: ''})
+      route('realtimeDashboard', {path: 'realtime'})
+    });
+  })
+})
+```
+
+Abstract routes are especially useful when creating `index` subroutes as demonstrated above. The above route map results in the following URLs:
+
+```
+/ - ['application']
+/dashboard/:accountId - ['application', 'dashboard', 'defaultDashboard']
+/dashboard/:accountId/realtime - ['application', 'dashboard', 'realtimeDashboard']
+```
+
+It's also common to redirect from non leaf routes. In this example we might want to redirect from `application` to the `defaultDashboard` route. If each of your routes are backed by some route handler object, you can achieve the redirect with the following middleware:
+
+```js
+router.use(function redirect (transition) {
+  var lastRoute = transition.routes[transition.routes.length - 1]
+  if (lastRoute.handler.redirect) {
+    lastRoute.handler.redirect(transition.params, transition.query)
+  }
+})
 ```
 
 ### router.use(fn)
