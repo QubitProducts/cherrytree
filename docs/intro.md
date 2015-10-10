@@ -11,11 +11,12 @@ var router = cherrytree({
 });
 ```
 
-Then use the `map` method to define the route map.
+Then use the `map` method to declare the route map.
 
 ```js
-router.map(function(route) {
-  route('application', { path: '/', handler: App }, function () {
+router.map(function (route) {
+  route('application', { path: '/', abstract: true, handler: App }, function () {
+    route('index', { path: '', handler: Index })
     route('about', { handler: About })
     route('favorites', { path: 'favs', handler: Favorites })
     route('message', { path: 'message/:id', handler: Message })
@@ -23,7 +24,7 @@ router.map(function(route) {
 });
 ```
 
-Next, define some middleware.
+Next, install middleware.
 
 ```js
 router.use(function activate (transition) {
@@ -54,7 +55,7 @@ To generate links to the different routes use `generate` and pass the name of th
 ```js
 router.generate('favorites')
 // => /favs
-router.generate('application');
+router.generate('index');
 // => /
 router.generate('messages', {id: 24});
 ```
@@ -63,7 +64,7 @@ If you configure the HistoryLocation to use hashchange event (by setting `pushSt
 
 ### Route params
 
-Routes can have dynamic urls by specifying that in the `path` configuration. For example
+Routes can have dynamic urls by specifying patterns in the `path` option. For example:
 
 ```js
 router.map(function(route) {
@@ -79,16 +80,16 @@ router.use(function (transition) {
 router.transitionTo('/post/5')
 ```
 
-See what other types of dynamic routes is supported in the [api docs](api.md#intercepting-links).
+See what other types of dynamic routes is supported in the [api docs](api.md#dynamic-paths).
 
 ### Route Nesting
 
-Route nesting is one of the core features of cherrytree. It's useful to nest routes, because you can configure each route to do a different part of the work - e.g. the root `application` route can do some initial data loading/initialization, but you can avoid redoing that work on subsequent transitions by checking if the route is already active. The child route can then load data specific for that page. Nesting routes is also very useful for rendering nested UIs, e.g. if you're building an email application, you might have the following route map
+Route nesting is one of the core features of cherrytree. It's useful to nest routes when you want to configure each route to perform a different role in rendering the page - e.g. the root `application` route can do some initial data loading/initialization, but you can avoid redoing that work on subsequent transitions by checking if the route is already in the middleware. The nested routes can then load data specific for a given page. Nesting routes is also very useful for rendering nested UIs, e.g. if you're building an email application, you might have the following route map
 
 ```js
 router.map(function(route) {
   route('gmail', {path: '/'}, function () {
-    route('inbox', function() {
+    route('inbox', function () {
       route('mail', {path: 'm/:mailId'}, function () {
         route('mail.raw')
       })
@@ -133,4 +134,4 @@ This router creates the following routes:
 
 ## Examples
 
-I hope you found this brief guide useful, check out some example apps next in the [examples](examples) dir.
+I hope you found this brief guide useful, check out some example apps next in the [examples](../examples) dir.
