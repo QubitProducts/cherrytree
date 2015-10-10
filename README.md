@@ -357,7 +357,7 @@ var router = cherrytree({
 * options.pushState - default is false, which means using hashchange events. Set to true to use pushState.
 * options.root - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 
-# MemoryLocation
+## MemoryLocation
 
 MemoryLocation can be used if you don't want router to touch the address bar at all. Navigating around the application will only be possible programatically by calling `router.transitionTo` and similar methods.
 
@@ -369,7 +369,7 @@ var router = cherrytree({
 })
 ```
 
-# CustomLocation
+## CustomLocation
 
 You can also pass a custom location in explicitly. This is an advanced use case, but might turn out to be useful in non browser environments. For this you'll need to investigate how HistoryLocation is implemented.
 
@@ -378,6 +378,7 @@ var router = cherrytree({
   location: myCustomLocation()
 })
 ```
+
 
 ## Intercepting Links
 
@@ -393,6 +394,26 @@ The clicks that **are never** intercepted:
   * `javascript:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
+
+
+## Handling 404
+
+There are a couple of ways to handle URLs that don't match any routes.
+
+You can create a middleware to detects when `transition.routes.length` is 0 and render a 404 page.
+
+Alternatively, you can also declare a catch all path in your route map:
+
+```js
+router.map(function (route) {
+  route('application', {path: '/'}, function () {
+    route('blog')
+    route('missing', {path: ':path*'})
+  })
+})
+```
+
+In this case, when nothing else matches, a transition to the `missing` route will be initiated with `transition.routes` as ['application', 'missing']. This gives you a chance to activate and render the `application` route before rendering a 404 page.
 
 
 ## FAQ
