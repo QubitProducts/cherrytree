@@ -155,7 +155,7 @@ To use `cherrytree` with React, check out [`cherrytree-for-react`](https://githu
 * **options.logError** - default is true. A function that is called when transitions error (except for the special `TransitionRedirected` and `TransitionCancelled` errors). Pass in `true`/`false` or a custom error handling function.
 * **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
 * **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
-* **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. Read more on [intercepting links below](#intercepting-links).
+* **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. You can also set this option to a custom function that will get called whenever a link is clicked if you want to customize the behaviour. Read more on [intercepting links below](#intercepting-links).
 * **options.qs** - default is a simple built in query string parser. Pass in an object with `parse` and `stringify` functions to customize how query strings get treated.
 * **options.Promise** - default is window.Promise or global.Promise. Promise implementation to be used when constructing transitions.
 
@@ -381,6 +381,8 @@ var router = cherrytree({
 
 ## Intercepting Links
 
+Cherrytree intercepts all link clicks when using pushState, because without this functionality - the browser would just do a full page refresh on every click of a link.
+
 The clicks **are** intercepted only if:
 
   * router is passed a `interceptLinks: true` (default)
@@ -393,6 +395,17 @@ The clicks that **are never** intercepted:
   * `javascript:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
+
+The default implementation of the intercept click handler is:
+
+```js
+function defaultClickHandler (event, link, router) {
+  event.preventDefault()
+  router.transitionTo(router.location.removeRoot(link.getAttribute('href')))
+}
+```
+
+You can pass in a custom function as the `interceptLinks` router option to customize this behaviour. E.g. to use `replaceWith` instead of `transitionTo`.
 
 
 ## FAQ

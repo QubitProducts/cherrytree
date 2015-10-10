@@ -43,7 +43,7 @@ var customLaunchers = platforms.reduce(function (memo, platform, i) {
 }, {})
 
 module.exports = function (c) {
-  c.set(Object.assign(config, {
+  c.set(Object.assign(config(c), {
     sauceLabs: {
       testName: 'Cherrytree',
       build: process.env.CI_BUILD_NUMBER,
