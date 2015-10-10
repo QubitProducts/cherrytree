@@ -214,6 +214,21 @@ route('foo', {path: '/hello/:splat*'}) // match 0 or more segments, matches /hel
 route('foo', {path: '/hello/:splat+'}) // match 1 or more segments, matches /hello/1 and /hello/1/2/3
 ```
 
+#### Abstract routes
+
+By default, both leaf and non leaf routes can be navigated to. Sometimes you might not want it to be possible to navigate to certain routes at all, e.g. if the route is only used for data fetching and doesn't render anything by itself. In that case, you can set `abstract: true` in the route options. Abstract routes can still form a part of the URL.
+
+```js
+router.map(function (route) {
+  route('application', {path: '/'}, function () {
+    route('dashboard', {path: 'dashboard/:accountId', abstract: true}, function () {
+      route('defaultDashboard', {path: ''})
+      route('realtimeDashboard', {path: 'realtime'})
+    });
+  })
+})
+```
+
 ### router.use(fn)
 
 Add a transition middleware. Every time a transition takes place this middleware will be called with a transition as the argument. You can call `use` multiple times to add more middlewares. The middleware function can return a promise and the next middleware will not be called until the promise of the previous middleware is resolved. The result of the promise is passed in as a second argument to the next middleware. E.g.
