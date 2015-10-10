@@ -1,4 +1,5 @@
 import { assert } from 'referee'
+import qs from '../../lib/qs'
 import Path from '../../lib/path'
 
 let {suite, test} = window
@@ -91,10 +92,9 @@ test('Path.injectParams', () => {
 })
 
 test('Path.extractQuery', () => {
-  assert.equals(Path.extractQuery('/?id=def&show=true'), { id: 'def', show: 'true' })
-  assert.equals(Path.extractQuery('/?id%5B%5D=a&id%5B%5D=b'), { id: [ 'a', 'b' ] })
-  assert.equals(Path.extractQuery('/?id=a%26b'), { id: 'a&b' })
-  assert.equals(Path.extractQuery('/a/b/c'), null)
+  assert.equals(Path.extractQuery(qs, '/?id=def&show=true'), { id: 'def', show: 'true' })
+  assert.equals(Path.extractQuery(qs, '/?id=a%26b'), { id: 'a&b' })
+  assert.equals(Path.extractQuery(qs, '/a/b/c'), null)
 })
 
 test('Path.withoutQuery', () => {
@@ -102,7 +102,6 @@ test('Path.withoutQuery', () => {
 })
 
 test('Path.withQuery', () => {
-  assert.equals(Path.withQuery('/a/b/c', { id: 'def' }), '/a/b/c?id=def')
-  assert.equals(Path.withQuery('/path?a=b', { c: [ 'd', 'e' ] }), '/path?a=b&c=d&c=e')
-  assert.equals(Path.withQuery('/path?a=b', { c: [ 'd#e', 'f&a=i#j+k' ] }), '/path?a=b&c=d%23e&c=f%26a%3Di%23j%2Bk')
+  assert.equals(Path.withQuery(qs, '/a/b/c', { id: 'def' }), '/a/b/c?id=def')
+  assert.equals(Path.withQuery(qs, '/path?a=b', { c: 'f&a=i#j+k' }), '/path?c=f%26a%3Di%23j%2Bk')
 })
