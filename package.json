@@ -33,7 +33,7 @@
   ],
   "devDependencies": {
     "babel": "^5.8.21",
-    "babel-core": "^5.8.22",
+    "babel-core": "^5.8.25",
     "babel-loader": "^5.3.2",
     "babel-runtime": "^5.8.20",
     "bro-size": "^1.0.0",
