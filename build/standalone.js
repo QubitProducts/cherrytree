@@ -2208,8 +2208,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  stringify: function stringify(params) {
 	    return Object.keys(params).reduce(function (acc, key) {
-	      return acc + key + '=' + encodeURIComponent(params[key]);
-	    }, '');
+	      if (params[key] !== undefined) {
+	        acc.push(key + '=' + encodeURIComponent(params[key]));
+	      }
+	      return acc;
+	    }, []).join('&');
 	  }
 	};
 	module.exports = exports['default'];
