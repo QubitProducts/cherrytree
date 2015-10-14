@@ -103,5 +103,6 @@ test('Path.withoutQuery', () => {
 
 test('Path.withQuery', () => {
   assert.equals(Path.withQuery(qs, '/a/b/c', { id: 'def' }), '/a/b/c?id=def')
+  assert.equals(Path.withQuery(qs, '/a/b/c', { id: 'def', foo: 'bar', baz: undefined }), '/a/b/c?id=def&foo=bar')
   assert.equals(Path.withQuery(qs, '/path?a=b', { c: 'f&a=i#j+k' }), '/path?c=f%26a%3Di%23j%2Bk')
 })
