@@ -1,3 +1,7 @@
+### v2.0.0-rc2
+
+* Fix: query params were stringified incorrectly when more than 2 params and when some of params were undefined. `router.generate('/a/b/c', {}, { id: 'def', foo: 'bar', baz: undefined })` results in `/a/b/c?id=def&foo=bar` now as in the older versions of cherrytree.
+
 ### v2.0.0-rc1
 
 Breaking changes:
