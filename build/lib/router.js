@@ -21,9 +21,9 @@ var _invariant = require('./invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
 
-var _locationsHistory = require('./locations/history');
+var _locationsBrowser = require('./locations/browser');
 
-var _locationsHistory2 = _interopRequireDefault(_locationsHistory);
+var _locationsBrowser2 = _interopRequireDefault(_locationsBrowser);
 
 var _locationsMemory = require('./locations/memory');
 
@@ -56,7 +56,7 @@ Cherrytree.prototype.initialize = function (options) {
   this.state = {};
   this.middleware = [];
   this.options = (0, _dash.extend)({
-    location: 'history',
+    location: 'browser',
     interceptLinks: true,
     logError: true,
     Promise: Promise,
@@ -402,12 +402,12 @@ Cherrytree.prototype.createLocation = function (path) {
   if (!(0, _dash.isString)(location)) {
     return location;
   }
-  if (location === 'history') {
-    return new _locationsHistory2['default']((0, _dash.pick)(this.options, ['pushState', 'root']));
+  if (location === 'browser') {
+    return new _locationsBrowser2['default']((0, _dash.pick)(this.options, ['pushState', 'root']));
   } else if (location === 'memory') {
     return new _locationsMemory2['default']({ path: path });
   } else {
-    throw new Error('Location can be `history`, `memory` or a custom implementation');
+    throw new Error('Location can be `browser`, `memory` or a custom implementation');
   }
 };
 

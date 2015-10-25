@@ -85,9 +85,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _locationsHistory = __webpack_require__(8);
+	var _locationsBrowser = __webpack_require__(8);
 
-	var _locationsHistory2 = _interopRequireDefault(_locationsHistory);
+	var _locationsBrowser2 = _interopRequireDefault(_locationsBrowser);
 
 	var _locationsMemory = __webpack_require__(11);
 
@@ -120,7 +120,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.state = {};
 	  this.middleware = [];
 	  this.options = (0, _dash.extend)({
-	    location: 'history',
+	    location: 'browser',
 	    interceptLinks: true,
 	    logError: true,
 	    Promise: Promise,
@@ -466,12 +466,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (!(0, _dash.isString)(location)) {
 	    return location;
 	  }
-	  if (location === 'history') {
-	    return new _locationsHistory2['default']((0, _dash.pick)(this.options, ['pushState', 'root']));
+	  if (location === 'browser') {
+	    return new _locationsBrowser2['default']((0, _dash.pick)(this.options, ['pushState', 'root']));
 	  } else if (location === 'memory') {
 	    return new _locationsMemory2['default']({ path: path });
 	  } else {
-	    throw new Error('Location can be `history`, `memory` or a custom implementation');
+	    throw new Error('Location can be `browser`, `memory` or a custom implementation');
 	  }
 	};
 
@@ -1234,9 +1234,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _locationBar2 = _interopRequireDefault(_locationBar);
 
-	exports['default'] = HistoryLocation;
+	exports['default'] = BrowserLocation;
 
-	function HistoryLocation(options) {
+	function BrowserLocation(options) {
 	  this.path = options.path || '';
 
 	  this.options = (0, _dash.extend)({
@@ -1262,7 +1262,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @return {Bool}
 	 */
 
-	HistoryLocation.prototype.usesPushState = function () {
+	BrowserLocation.prototype.usesPushState = function () {
 	  return this.options.pushState && this.locationBar.hasPushState();
 	};
 
@@ -1270,7 +1270,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Get the current URL
 	 */
 
-	HistoryLocation.prototype.getURL = function () {
+	BrowserLocation.prototype.getURL = function () {
 	  return this.path;
 	};
 
@@ -1279,7 +1279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * back to the router. Add a new entry in browser's history.
 	 */
 
-	HistoryLocation.prototype.setURL = function (path, options) {
+	BrowserLocation.prototype.setURL = function (path, options) {
 	  if (this.path !== path) {
 	    this.path = path;
 	    this.locationBar.update(path, (0, _dash.extend)({ trigger: true }, options));
@@ -1291,7 +1291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * back to the router. Replace the latest entry in broser's history.
 	 */
 
-	HistoryLocation.prototype.replaceURL = function (path, options) {
+	BrowserLocation.prototype.replaceURL = function (path, options) {
 	  if (this.path !== path) {
 	    this.path = path;
 	    this.locationBar.update(path, (0, _dash.extend)({ trigger: true, replace: true }, options));
@@ -1302,7 +1302,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Setup a URL change handler
 	 * @param  {Function} callback
 	 */
-	HistoryLocation.prototype.onChange = function (callback) {
+	BrowserLocation.prototype.onChange = function (callback) {
 	  this.changeCallback = callback;
 	};
 
@@ -1310,7 +1310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Given a path, generate a URL appending root
 	 * if pushState is used and # if hash state is used
 	 */
-	HistoryLocation.prototype.formatURL = function (path) {
+	BrowserLocation.prototype.formatURL = function (path) {
 	  if (this.locationBar.hasPushState()) {
 	    var rootURL = this.options.root;
 	    if (path !== '') {
@@ -1329,11 +1329,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * When we use pushState with a custom root option,
 	 * we need to take care of removingRoot at certain points.
 	 * Specifically
-	 * - history.update() can be called with the full URL by router
+	 * - browserLocation.update() can be called with the full URL by router
 	 * - LocationBar expects all .update() calls to be called without root
 	 * - this method is public so that we could dispatch URLs without root in router
 	 */
-	HistoryLocation.prototype.removeRoot = function (url) {
+	BrowserLocation.prototype.removeRoot = function (url) {
 	  if (this.options.pushState && this.options.root && this.options.root !== '/') {
 	    return url.replace(this.options.root, '');
 	  } else {
@@ -1344,7 +1344,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Stop listening to URL changes and link clicks
 	 */
-	HistoryLocation.prototype.destroy = function () {
+	BrowserLocation.prototype.destroy = function () {
 	  this.locationBar.stop();
 	};
 
@@ -1357,7 +1357,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  @private
 	 */
-	HistoryLocation.prototype.handleURL = function (url) {
+	BrowserLocation.prototype.handleURL = function (url) {
 	  this.path = url;
 	  if (this.changeCallback) {
 	    this.changeCallback(url);
