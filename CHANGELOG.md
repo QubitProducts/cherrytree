@@ -1,3 +1,9 @@
+### v2.0.0-rc3
+
+Breaking changes:
+
+* `HistoryLocation` has been renamed to `BrowserLocation`. Location in cherrytree is the place that stores the current location of the app. Location is updated with the new path when cherytree transitions. Location also triggers updates when someone changes the location externally (e.g. by navigating with back/forward buttons or updating the URL). `BrowserLocation` is a more apt name since this location implementation represents browser's location bar and is configurable to use pushState or hashchange. This way, the other location that ships with cherrytree, `MemoryLocation`- also makes more sense, in this case we're saying the URL is simply stored in this in memory object and not really connected to the browser (which is what makes it useful on the server, for example).
+
 ### v2.0.0-rc2
 
 * Fix: query params were stringified incorrectly when more than 2 params and when some of params were undefined. `router.generate('/a/b/c', {}, { id: 'def', foo: 'bar', baz: undefined })` results in `/a/b/c?id=def&foo=bar` now as in the older versions of cherrytree.

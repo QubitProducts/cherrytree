@@ -226,11 +226,11 @@ In case of cancelling (someone calling transition.cancel()) the error object wil
 
 If you have some error handling middleware - you most likely want to check for these two special errors, because they're normal to the functioning of the router, it's common to perform redirects.
 
-## HistoryLocation
+## BrowserLocation
 
-Cherrytree can be configured to use differet implementations of libraries that manage browser's URL/history. By default, Cherrytree will use a very versatile implementation - `cherrytree/lib/locations/history` which supports `pushState` and `hashChange` based URL management with graceful fallback of `pushState` -> `hashChange` -> `polling` depending on browser's capabilities.
+Cherrytree can be configured to use differet implementations of libraries that manage browser's URL/history. By default, Cherrytree will use a very versatile implementation - `cherrytree/lib/locations/browser` which supports `pushState` and `hashChange` based URL management with graceful fallback of `pushState` -> `hashChange` -> `polling` depending on browser's capabilities.
 
-Configure HistoryLocation by passing options directly to the router.
+Configure BrowserLocation by passing options directly to the router.
 
 ```js
 var router = cherrytree({
@@ -255,7 +255,7 @@ var router = cherrytree({
 
 ## CustomLocation
 
-You can also pass a custom location in explicitly. This is an advanced use case, but might turn out to be useful in non browser environments. For this you'll need to investigate how HistoryLocation is implemented.
+You can also pass a custom location in explicitly. This is an advanced use case, but might turn out to be useful in non browser environments. For this you'll need to investigate how BrowserLocation is implemented.
 
 ```js
 var router = cherrytree({
