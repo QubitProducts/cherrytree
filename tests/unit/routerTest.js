@@ -1,5 +1,5 @@
 import { assert } from 'referee'
-import HistoryLocation from '../../lib/locations/history'
+import BrowserLocation from '../../lib/locations/browser'
 import { extend } from '../../lib/dash'
 import cherrytree from '../..'
 
@@ -137,7 +137,7 @@ if (window.history && window.history.pushState) {
 if (window.history && !window.history.pushState) {
   test('#generate when pushState: true and root != "/" in old browsers', () => {
     let browserRedirectedTo
-    router.options.location = new HistoryLocation({
+    router.options.location = new BrowserLocation({
       pushState: true,
       root: '/foo/bar',
       location: {

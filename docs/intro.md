@@ -60,7 +60,7 @@ router.generate('index');
 router.generate('messages', {id: 24});
 ```
 
-If you configure the HistoryLocation to use hashchange event (by setting `pushState: false`), the generated links will start with `#`.
+If you disable pushState (`pushState: false`), the generated links will start with `#`.
 
 ### Route params
 
