@@ -1,4 +1,4 @@
-# <img src="https://cloud.githubusercontent.com/assets/324440/11302168/b8d56ce6-8f93-11e5-84ec-4a8a7e951ec2.png" width="320" />
+# <img src="https://cloud.githubusercontent.com/assets/324440/11302251/2c573b4a-8f94-11e5-9df6-889b19c2ad48.png" width="320" />
 
 Cherrytree is a flexible hierarchical router that translates every URL change to a transition object and calls your middleware functions that put the application into a desired state.
 
@@ -18,11 +18,6 @@ In a CJS environment, simply require it as usual, the dependencies will be loade
 In an AMD environment, require the standalone UMD build - this version has all of the dependencies bundled
 
     require('cherrytree/standalone')
-
-## CI
-
-[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
-[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
 
 
 ## Docs
@@ -125,6 +120,12 @@ A more complex example in it's own repo:
 * **Backbone router** is nice and simple and can often be enough. In fact cherrytree uses some bits from Backbone router under the hood. Cherrytree adds nested routing, support for asynchronous transitions, more flexible dynamic params, url generation, automatic click handling for pushState.
 * **Ember router / router.js** is the inspiration for cherrytree. It's where cherrytree inherits the idea of declaring hierarchical nested route maps. The scope of cherrytree is slightly different than that of router.js, for example cherrytree doesn't have the concept of handler objects or model hooks. On the other hand, unlike router.js - cherrytree handles browser url changes and intercepts link clicks with pushState out of the box. The handler concept and model hooks can be implemented based on the specific application needs using the middleware mechanism. Overall, cherrytree is less prescriptive, more flexible and easier to use out of the box.
 * **react-router** is also inspired by router.js. React-router is trying to solve a lot of routing related aspects out of the box in the most React idiomatic way whereas with `cherrytree` you'll have to write the glue code for integrating into React yourself (see [`cherrytree-for-react` plugin](https://github.com/KidkArolis/cherrytree-for-react)). However, what you get instead is a smaller, simpler and hopefully more flexible library which should be more adaptable to your specific needs. This also means that you can use a `react-router` like approach with other `React` inspired libraries such as `mercury`, `riot`, `om`, `cycle`, `deku` and so on.
+
+
+## CI
+
+[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
+[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
 
 
 ## Browser Support
