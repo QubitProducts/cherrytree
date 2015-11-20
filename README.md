@@ -1,4 +1,4 @@
-<img src="https://cloud.githubusercontent.com/assets/324440/11301663/cd5a7f88-8f90-11e5-995b-47c5065d4739.png" width="100">
+# <img src="https://cloud.githubusercontent.com/assets/324440/11301989/86b2a46e-8f92-11e5-9503-d7944faf6bc6.png" width="360" />
 
 # Cherrytree
 
