@@ -1,9 +1,4 @@
-# <img src="https://cloud.githubusercontent.com/assets/324440/11301989/86b2a46e-8f92-11e5-9503-d7944faf6bc6.png" width="360" />
-
-# Cherrytree
-
-[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
-[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
+# <img src="https://cloud.githubusercontent.com/assets/324440/11302168/b8d56ce6-8f93-11e5-84ec-4a8a7e951ec2.png" width="320" />
 
 Cherrytree is a flexible hierarchical router that translates every URL change to a transition object and calls your middleware functions that put the application into a desired state.
 
@@ -23,6 +18,11 @@ In a CJS environment, simply require it as usual, the dependencies will be loade
 In an AMD environment, require the standalone UMD build - this version has all of the dependencies bundled
 
     require('cherrytree/standalone')
+
+## CI
+
+[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
+[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
 
 
 ## Docs
