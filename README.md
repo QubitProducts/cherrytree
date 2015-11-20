@@ -1,3 +1,5 @@
+<img src="https://cloud.githubusercontent.com/assets/324440/11301663/cd5a7f88-8f90-11e5-995b-47c5065d4739.png" width="100">
+
 # Cherrytree
 
 [![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
@@ -134,6 +136,9 @@ Cherrytree works in all modern browsers. It requires es5 environment and es6 pro
 * https://github.com/es-shims/es5-shim
 * https://github.com/jakearchibald/es6-promise
 
+## Acknowledgement
+
+Thanks to Marko Stupić for giving Cherrytree a logo from his http://icon-a-day.com/ project!
 
 ## FAQ
 
