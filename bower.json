@@ -1,7 +1,7 @@
 {
   "name": "cherrytree",
   "description": "Cherrytree - a flexible hierarchical client side router",
-  "main": "standalone.js",
+  "main": "build/standalone.js",
   "authors": [
     "Karolis Narkevicius <karolis.n@gmail.com>"
   ],
