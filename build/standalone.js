@@ -498,6 +498,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return new Cherrytree(options);
 	}
 
+	cherrytree.BrowserLocation = _locationsBrowser2['default'];
+	cherrytree.MemoryLocation = _locationsMemory2['default'];
 	module.exports = exports['default'];
 
 /***/ },

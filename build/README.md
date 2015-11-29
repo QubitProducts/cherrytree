@@ -1,7 +1,4 @@
-# Cherrytree
-
-[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
-[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
+# <img src="https://cloud.githubusercontent.com/assets/324440/11302251/2c573b4a-8f94-11e5-9df6-889b19c2ad48.png" width="320" />
 
 Cherrytree is a flexible hierarchical router that translates every URL change to a transition object and calls your middleware functions that put the application into a desired state.
 
@@ -125,6 +122,12 @@ A more complex example in it's own repo:
 * **react-router** is also inspired by router.js. React-router is trying to solve a lot of routing related aspects out of the box in the most React idiomatic way whereas with `cherrytree` you'll have to write the glue code for integrating into React yourself (see [`cherrytree-for-react` plugin](https://github.com/KidkArolis/cherrytree-for-react)). However, what you get instead is a smaller, simpler and hopefully more flexible library which should be more adaptable to your specific needs. This also means that you can use a `react-router` like approach with other `React` inspired libraries such as `mercury`, `riot`, `om`, `cycle`, `deku` and so on.
 
 
+## CI
+
+[![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
+[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
+
+
 ## Browser Support
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/cherrytree.svg)](https://saucelabs.com/u/cherrytree)
@@ -134,6 +137,9 @@ Cherrytree works in all modern browsers. It requires es5 environment and es6 pro
 * https://github.com/es-shims/es5-shim
 * https://github.com/jakearchibald/es6-promise
 
+## Acknowledgement
+
+Thanks to Marko Stupić for giving Cherrytree a logo from his http://icon-a-day.com/ project!
 
 ## FAQ
 
