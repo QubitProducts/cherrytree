@@ -1,0 +1,33 @@
+{
+  "name": "cherrytree",
+  "description": "Cherrytree - a flexible hierarchical client side router",
+  "main": "standalone.js",
+  "authors": [
+    "Karolis Narkevicius <karolis.n@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "router",
+    "history",
+    "browser",
+    "pushState",
+    "hierarchical",
+    "nested"
+  ],
+  "homepage": "https://github.com/QubitProducts/cherrytree",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "coverage",
+    "tasks",
+    "tests",
+    "karma.*.js",
+    "webpack.config.js"
+  ]
+}
