@@ -1,5 +1,6 @@
 import { assert } from 'referee'
 import BrowserLocation from '../../lib/locations/browser'
+import MemoryLocation from '../../lib/locations/memory'
 import { extend } from '../../lib/dash'
 import cherrytree from '../..'
 
@@ -418,3 +419,8 @@ if (window.history && window.history.pushState) {
     document.body.removeChild(a)
   })
 }
+
+test('Browser and Memory locations are exported in the main router file', function () {
+  assert.equals(cherrytree.BrowserLocation, BrowserLocation)
+  assert.equals(cherrytree.MemoryLocation, MemoryLocation)
+})
