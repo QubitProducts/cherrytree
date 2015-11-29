@@ -1,3 +1,7 @@
+### v2.0.0
+
+Nothing changed from v2.0.0-rc4.
+
 ### v2.0.0-rc4
 
 * BrowserLocation and HistoryLocation can now be accessed at cherrytree.BrowserLocation and cherrytree.MemoryLocation again. This is to make it easier to use those modules for UMD users (#116).
