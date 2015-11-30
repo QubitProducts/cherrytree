@@ -1,17 +1,15 @@
 # <img src="https://cloud.githubusercontent.com/assets/324440/11302251/2c573b4a-8f94-11e5-9df6-889b19c2ad48.png" width="320" />
 
-Cherrytree is a flexible hierarchical router that translates every URL change to a transition object and calls your middleware functions that put the application into a desired state.
+Cherrytree is a flexible hierarchical router that translates every URL change into a transition descriptor object and calls your middleware functions that put the application into a desired state.
 
 
 ## Installation
 
-The size excluding all deps is ~4.79kB gzipped and the standalone build with all deps is ~7.2kB gzipped.
+The size excluding all deps is ~4.83kB gzipped and the standalone build with all deps is ~7.24kB gzipped.
 
-**IMPORTANT!** - to get the latest (alpha) version, atm you need to use the `@latest` tag. There are a couple of small API tweaks I want to make before the 2.0.0 stable is released.
+    $ npm install --save cherrytree
 
-    $ npm install --save cherrytree@latest
-
-In a CJS environment, simply require it as usual, the dependencies will be loaded from npm
+In a CJS environment
 
     require('cherrytree')
 
