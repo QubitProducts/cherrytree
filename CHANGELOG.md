@@ -1,3 +1,7 @@
+### v2.1.0
+
+* Parse query params when transitioning even when no route matches
+
 ### v2.0.0
 
 Nothing changed from v2.0.0-rc4.
