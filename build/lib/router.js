@@ -303,7 +303,6 @@ Cherrytree.prototype.match = function (path) {
   path = (path || '').replace(/\/$/, '') || '/';
   var found = false;
   var params = undefined;
-  var query = undefined;
   var routes = [];
   var pathWithoutQuery = _path2['default'].withoutQuery(path);
   var qs = this.options.qs;
@@ -313,14 +312,13 @@ Cherrytree.prototype.match = function (path) {
       if (params) {
         found = true;
         routes = matcher.routes;
-        query = _path2['default'].extractQuery(qs, path) || {};
       }
     }
   });
   return {
     routes: routes.map(descriptor),
     params: params || {},
-    query: query || {}
+    query: _path2['default'].extractQuery(qs, path) || {}
   };
 
   // clone the data (only a shallow clone of options)
