@@ -265,6 +265,12 @@ test('#match returns an empty route array if nothing matches', () => {
   assert.equals(match, {routes: [], params: {}, query: {}})
 })
 
+test('#match always parses query parameters even if a route does not match', () => {
+  router.map(routes)
+  let match = router.match('/foo/bar?hello=world')
+  assert.equals(match, {routes: [], params: {}, query: { hello: 'world' }})
+})
+
 test('#transitionTo called multiple times reuses the active transition', (done) => {
   router.map(routes)
   router.listen().then(() => {
