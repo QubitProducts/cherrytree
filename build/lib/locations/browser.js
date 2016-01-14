@@ -93,6 +93,7 @@ BrowserLocation.prototype.formatURL = function (path) {
     var rootURL = this.options.root;
     if (path !== '') {
       rootURL = rootURL.replace(/\/$/, '');
+      path = path.replace(/\/+$/, '');
     }
     return rootURL + path;
   } else {
