@@ -1,1 +1,1 @@
-module.exports = require('./lib/router')
+module.exports = require('./build/lib/router')
