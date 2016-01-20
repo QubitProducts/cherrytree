@@ -82,7 +82,7 @@ test('Path.injectParams', () => {
 
   assert.equals(Path.injectParams('/a/:foo*/d', { foo: 'b/c' }), '/a/b/c/d')
   assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b', bar: 'd' }), '/a/b/c/d')
-  assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }), '/a/b/c/')
+  assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }), '/a/b/c')
 
   assert.equals(Path.injectParams('/a/:foo+/d', { foo: 'b/c' }), '/a/b/c/d')
   assert.equals(Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b', bar: 'd' }), '/a/b/c/d')
