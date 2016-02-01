@@ -297,25 +297,18 @@ test('#transitionTo called on the same route, returns a completed transition', (
   }).catch(done)
 })
 
-test('#isActive returns true if arguments match current state and false if not', (done) => {
+test('#isActive returns true if arguments match current state and false if not', async () => {
   router.map(routes)
-  router.listen().then(() => {
-    return router.transitionTo('notifications')
-  }).then(() => {
-    assert.equals(router.isActive('notifications'), true)
-    assert.equals(router.isActive('messages'), false)
-  }).then(() => {
-    return router.transitionTo('status', {user: 'me', id: 1})
-  }).then(() => {
-    assert.equals(router.isActive('status', {user: 'me'}), true)
-    assert.equals(router.isActive('status', {user: 'notme'}), false)
-  }).then(() => {
-    return router.transitionTo('messages', null, {foo: 'bar'})
-  }).then(() => {
-    assert.equals(router.isActive('messages', null, {foo: 'bar'}), true)
-    assert.equals(router.isActive('messages', null, {foo: 'baz'}), false)
-    done()
-  }).catch(done)
+  await router.listen()
+  await router.transitionTo('notifications')
+  assert.equals(router.isActive('notifications'), true)
+  assert.equals(router.isActive('messages'), false)
+  await router.transitionTo('status', {user: 'me', id: 1})
+  assert.equals(router.isActive('status', {user: 'me'}), true)
+  assert.equals(router.isActive('status', {user: 'notme'}), false)
+  await router.transitionTo('messages', null, {foo: 'bar'})
+  assert.equals(router.isActive('messages', null, {foo: 'bar'}), true)
+  assert.equals(router.isActive('messages', null, {foo: 'baz'}), false)
 })
 
 suite('route maps')
