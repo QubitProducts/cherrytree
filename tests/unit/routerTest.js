@@ -297,6 +297,27 @@ test('#transitionTo called on the same route, returns a completed transition', (
   }).catch(done)
 })
 
+test('#isActive returns true if arguments match current state and false if not', (done) => {
+  router.map(routes)
+  router.listen().then(() => {
+    return router.transitionTo('notifications')
+  }).then(() => {
+    assert.equals(router.isActive('notifications'), true)
+    assert.equals(router.isActive('messages'), false)
+  }).then(() => {
+    return router.transitionTo('status', {user: 'me', id: 1})
+  }).then(() => {
+    assert.equals(router.isActive('status', {user: 'me'}), true)
+    assert.equals(router.isActive('status', {user: 'notme'}), false)
+  }).then(() => {
+    return router.transitionTo('messages', null, {foo: 'bar'})
+  }).then(() => {
+    assert.equals(router.isActive('messages', null, {foo: 'bar'}), true)
+    assert.equals(router.isActive('messages', null, {foo: 'baz'}), false)
+    done()
+  }).catch(done)
+})
+
 suite('route maps')
 
 beforeEach(() => {
