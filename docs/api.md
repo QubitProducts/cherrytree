@@ -185,6 +185,17 @@ router.generate('posts.show', {postId: 2}, {commentId: 2})
 
 It generates a URL with # if router is in hashChange mode and with no # if router is in pushState mode.
 
+### router.isActive(name, params, query)
+
+Check if a given route, params and query is active.
+
+```js
+router.isActive('status')
+router.isActive('status', {user: 'me'})
+router.isActive('status', {user: 'me'}, {commentId: 2})
+router.isActive('status', null, {commentId: 2})
+```
+
 ### router.state
 
 The state of the route is always available on the `router.state` object. It contains `activeTransition`, `routes`, `path`, `pathname`, `params` and `query`.
