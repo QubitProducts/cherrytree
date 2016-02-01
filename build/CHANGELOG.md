@@ -1,3 +1,7 @@
+### v2.2.0
+
+* Add router.isActive method for testing if a given route is currently active. See [docs](docs/api.md#routerisactivename-params-query)
+
 ### v2.1.0
 
 * Parse query params when transitioning even when no route matches

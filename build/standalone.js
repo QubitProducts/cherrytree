@@ -324,6 +324,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	/**
+	 * Check if the given route/params/query combo is active
+	 * @param  {String} name   target route name
+	 * @param  {Object} params
+	 * @param  {Object} query
+	 * @return {Boolean}
+	 *
+	 * @api public
+	 */
+	Cherrytree.prototype.isActive = function (name, params, query) {
+	  params = params || {};
+	  query = query || {};
+
+	  var activeRoutes = this.state.routes || [];
+	  var activeParams = this.state.params || {};
+	  var activeQuery = this.state.query || [];
+
+	  var isNameActive = !!activeRoutes.find(function (route) {
+	    return route.name === name;
+	  });
+	  var areParamsActive = !!Object.keys(params).every(function (key) {
+	    return activeParams[key] === params[key];
+	  });
+	  var isQueryActive = !!Object.keys(query).every(function (key) {
+	    return activeQuery[key] === query[key];
+	  });
+
+	  return isNameActive && areParamsActive && isQueryActive;
+	};
+
+	/**
 	 * @api private
 	 */
 	Cherrytree.prototype.doTransition = function (method, params) {
