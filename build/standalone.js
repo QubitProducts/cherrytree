@@ -340,7 +340,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var activeParams = this.state.params || {};
 	  var activeQuery = this.state.query || [];
 
-	  var isNameActive = !!activeRoutes.find(function (route) {
+	  var isNameActive = !!(0, _dash.find)(activeRoutes, function (route) {
 	    return route.name === name;
 	  });
 	  var areParamsActive = !!Object.keys(params).every(function (key) {
@@ -583,6 +583,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	exports.extend = extend;
+	var find = function find(list, pred) {
+	  var _iteratorNormalCompletion = true;
+	  var _didIteratorError = false;
+	  var _iteratorError = undefined;
+
+	  try {
+	    for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	      var x = _step.value;
+	      if (pred(x)) return x;
+	    }
+	  } catch (err) {
+	    _didIteratorError = true;
+	    _iteratorError = err;
+	  } finally {
+	    try {
+	      if (!_iteratorNormalCompletion && _iterator['return']) {
+	        _iterator['return']();
+	      }
+	    } finally {
+	      if (_didIteratorError) {
+	        throw _iteratorError;
+	      }
+	    }
+	  }
+	};
+
+	exports.find = find;
 	var isString = function isString(obj) {
 	  return Object.prototype.toString.call(obj) === '[object String]';
 	};

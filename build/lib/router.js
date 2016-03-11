@@ -276,7 +276,7 @@ Cherrytree.prototype.isActive = function (name, params, query) {
   var activeParams = this.state.params || {};
   var activeQuery = this.state.query || [];
 
-  var isNameActive = !!activeRoutes.find(function (route) {
+  var isNameActive = !!(0, _dash.find)(activeRoutes, function (route) {
     return route.name === name;
   });
   var areParamsActive = !!Object.keys(params).every(function (key) {

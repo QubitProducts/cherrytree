@@ -1,12 +1,13 @@
 {
   "name": "cherrytree",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Cherrytree - a flexible hierarchical client side router",
   "main": "index",
   "scripts": {
     "build": "./tasks/build.sh",
     "release": "release --build",
     "test": "standard | snazzy && karma start --single-run",
+    "test-no-coverage": "standard | snazzy && karma start --single-run --no-coverage",
     "watch": "DEBUG=1 webpack -w index.js build/standalone.js"
   },
   "repository": {
