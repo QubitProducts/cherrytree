@@ -116,6 +116,8 @@ function clickable(e, el) {
   if (href[0] === '#') return;
   // external/absolute links
   if (href.indexOf('http://') === 0 || href.indexOf('https://') === 0) return;
+  // email links
+  if (href.indexOf('mailto:') === 0) return;
   // don't intercept javascript links
   /* eslint-disable no-script-url */
   if (href.indexOf('javascript:') === 0) return;

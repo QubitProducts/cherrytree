@@ -289,6 +289,7 @@ The clicks that **are never** intercepted:
 
   * external links
   * `javascript:` links
+  * `mailto:` links
   * links with a `data-bypass` attribute
   * links starting with `#`
 

@@ -1,3 +1,11 @@
+### v2.3.1
+
+* Don't intercept clicks on `mailto:` links
+
+### v2.2.1
+
+* Fix: stop using Array.prototype.find which is not available in older browsers
+
 ### v2.2.0
 
 * Add router.isActive method for testing if a given route is currently active. See [docs](docs/api.md#routerisactivename-params-query)
