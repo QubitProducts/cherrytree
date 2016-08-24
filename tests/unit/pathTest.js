@@ -19,6 +19,7 @@ test('Path.extractParams', () => {
   assert.equals(Path.extractParams('comments/:id.:ext/edit', 'comments/abc.js/edit'), { id: 'abc', ext: 'js' })
 
   assert.equals(Path.extractParams('comments/:id?/edit', 'comments/123/edit'), { id: '123' })
+  assert.equals(Path.extractParams('comments/:id?/edit', 'comments/the%2Fid/edit'), { id: 'the/id' })
   assert.equals(Path.extractParams('comments/:id?/edit', 'comments//edit'), null)
   assert.equals(Path.extractParams('comments/:id?/edit', 'users/123'), null)
 
@@ -30,7 +31,7 @@ test('Path.extractParams', () => {
 
   assert.equals(Path.extractParams('/files/:path*', '/files/my/photo.jpg'), { path: 'my/photo.jpg' })
   assert.equals(Path.extractParams('/files/:path*', '/files/my/photo.jpg.zip'), { path: 'my/photo.jpg.zip' })
-  assert.equals(Path.extractParams('/files/:path*.jpg', '/files/my/photo.jpg'), { path: 'my/photo' })
+  assert.equals(Path.extractParams('/files/:path*.jpg', '/files/my%2Fphoto.jpg'), { path: 'my/photo' })
   assert.equals(Path.extractParams('/files/:path*', '/files'), { path: undefined })
   assert.equals(Path.extractParams('/files/:path*', '/files/'), { path: undefined })
   assert.equals(Path.extractParams('/files/:path*.jpg', '/files/my/photo.png'), null)
@@ -76,8 +77,8 @@ test('Path.injectParams', () => {
   assert.equals(Path.injectParams('comments/:id?/edit', {}), 'comments//edit')
   assert.equals(Path.injectParams('comments/:id?/edit', { id: 'abc' }), 'comments/abc/edit')
   assert.equals(Path.injectParams('comments/:id?/edit', { id: 0 }), 'comments/0/edit')
-  assert.equals(Path.injectParams('comments/:id?/edit', { id: 'one, two' }), 'comments/one, two/edit')
-  assert.equals(Path.injectParams('comments/:id?/edit', { id: 'the/id' }), 'comments/the/id/edit')
+  assert.equals(Path.injectParams('comments/:id?/edit', { id: 'one, two' }), 'comments/one%2C%20two/edit')
+  assert.equals(Path.injectParams('comments/:id?/edit', { id: 'the/id' }), 'comments/the%2Fid/edit')
   assert.equals(Path.injectParams('comments/:id?/edit', { id: 'alt.black.helicopter' }), 'comments/alt.black.helicopter/edit')
 
   assert.equals(Path.injectParams('/a/:foo*/d', { foo: 'b/c' }), '/a/b/c/d')
@@ -85,7 +86,7 @@ test('Path.injectParams', () => {
   assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }), '/a/b/c/')
 
   assert.equals(Path.injectParams('/a/:foo+/d', { foo: 'b/c' }), '/a/b/c/d')
-  assert.equals(Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b', bar: 'd' }), '/a/b/c/d')
+  assert.equals(Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b?', bar: 'd ' }), '/a/b%3F/c/d%20')
   assert.exception(() => Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b' }))
 
   assert.equals(Path.injectParams('/foo.bar.baz'), '/foo.bar.baz')
