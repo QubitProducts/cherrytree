@@ -76,7 +76,7 @@ var Path = {
     var params = {};
 
     paramNames.forEach(function (paramName, index) {
-      params[paramName] = match[index + 1];
+      params[paramName] = match[index + 1] && decodeURIComponent(match[index + 1]);
     });
 
     return params;
@@ -91,9 +91,10 @@ var Path = {
 
     return pattern.replace(paramInjectMatcher, function (match, param) {
       var paramName = param.replace(specialParamChars, '');
+      var lastChar = param.slice(-1);
 
       // If param is optional don't check for existence
-      if (param.slice(-1) === '?' || param.slice(-1) === '*') {
+      if (lastChar === '?' || lastChar === '*') {
         if (params[paramName] == null) {
           return '';
         }
@@ -101,7 +102,12 @@ var Path = {
         (0, _invariant2['default'])(params[paramName] != null, "Missing '%s' parameter for path '%s'", paramName, pattern);
       }
 
-      return params[paramName];
+      var paramValue = encodeURIComponent(params[paramName]);
+      if (lastChar === '*' || lastChar === '+') {
+        // restore / for splats
+        paramValue = paramValue.replace('%2F', '/');
+      }
+      return paramValue;
     });
   },
 

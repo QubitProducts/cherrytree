@@ -1,3 +1,7 @@
+### v2.3.2
+
+* URL encode slashes in route params
+
 ### v2.3.1
 
 * Don't intercept clicks on `mailto:` links
