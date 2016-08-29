@@ -1,14 +1,21 @@
 let React = require('react')
+let connect = require('react-redux').connect
 
-module.exports = React.createClass({
+function mapStateToProps (state) {
+  return state.router.params
+}
+
+let ProfileIndex = React.createClass({
   propTypes: {
-    params: React.PropTypes.object
+    user: React.PropTypes.string
   },
   render: function () {
     return (
       <div className='ProfileIndex'>
-        <h2>{this.props.params.user} profile</h2>
+        <h2>{this.props.user} profile</h2>
       </div>
     )
   }
 })
+
+module.exports = connect(mapStateToProps)(ProfileIndex)

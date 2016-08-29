@@ -33,7 +33,8 @@ test('transition occurs when location.hash changes', (done) => {
 
 test('programmatic transition via url and route names', async function () {
   await router.transitionTo('about')
-  await router.transitionTo('/faq?sortBy=date')
+  router.transitionTo('/faq?sortBy=date')
+  await router.transitioned()
   assert.equals($('.application .outlet').html(), 'FAQ. Sorted By: date')
   await router.transitionTo('faq', {}, { sortBy: 'user' })
   assert.equals($('.application .outlet').html(), 'FAQ. Sorted By: user')

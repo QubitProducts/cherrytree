@@ -1,7 +1,9 @@
 # Docs
 
-### var router = cherrytree(options)
+### var router = cherrytree(routes, middleware, options)
 
+* **routes** - a route map function
+* **middleware** - a route
 * **options.log** - a function that is called with logging info, default is noop. Pass in `true`/`false` or a custom logging function.
 * **options.logError** - default is true. A function that is called when transitions error (except for the special `TransitionRedirected` and `TransitionCancelled` errors). Pass in `true`/`false` or a custom error handling function.
 * **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
@@ -157,7 +159,7 @@ During every transition, you can inspect `transition.routes` and `transition.pre
 
 After the router has been configured with a route map and middleware - start listening to URL changes and transition to the appropriate route based on the current URL.
 
-When using `location: 'memory'`, the current URL is not read from the browser's location bar and instead can be  passed in via listen: `listen(path)`.
+When using `location: 'memory'`, the current URL is not read from the browser's location bar and instead can be passed in via listen: `listen(path)`.
 
 ### router.transitionTo(name, params, query)
 

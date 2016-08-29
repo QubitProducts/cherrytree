@@ -2,36 +2,34 @@
 
 When your application starts, the router is responsible for loading data, rendering views and otherwise setting up application state. It does so by translating every URL change to a transition object and a list of matching routes. You then need to apply a middleware function to translate the transition data into the desired state of your application.
 
-First create an instance of the router.
+Create an instance of the router passing in the route map and middleware.
 
 ```js
 var cherrytree = require("cherrytree");
-var router = cherrytree({
-  pushState: true
-});
+var router = cherrytree(routes, activate);
 ```
 
-Then use the `map` method to declare the route map.
+Here's an example `routes` map.
 
 ```js
-router.map(function (route) {
+function routes (route) {
   route('application', { path: '/', abstract: true, handler: App }, function () {
     route('index', { path: '', handler: Index })
     route('about', { handler: About })
     route('favorites', { path: 'favs', handler: Favorites })
     route('message', { path: 'message/:id', handler: Message })
   })
-});
+}
 ```
 
-Next, install middleware.
+Here's an example `middleware` that simply calls `activate` function on each of the route handlers.
 
 ```js
-router.use(function activate (transition) {
+function activate (transition, router) {
   transition.routes.forEach(function (route) {
-    route.options.handler.activate(transition.params, transition.query)
+    router.getRouteOptions(route.name).handler.activate(transition.params, transition.query)
   })
-})
+}
 ```
 
 Now, when the user enters `/about` page, Cherrytree will call the middleware with the transition object and `transition.routes` will be the route descriptors of `application` and `about` routes.

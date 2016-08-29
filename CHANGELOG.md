@@ -1,3 +1,18 @@
+### v3.0.0
+
+* neon-router
+* less promises
+* clearer middleware api, hooks for handling next/done/error
+* more functionally pure APIs, arguments are data and functions
+* transitions 
+* transitionTo and replaceWith have been renamed to push/replace
+* route map is a plain ol object now, easier to generate, easier to understand, easier to remember, easier to layout the code differently, easier to abstract with your own dsl (e.g. jsx)
+* new router creation signature, no more .map, .use
+
+TODO
+* handle noop transitions
+* consider returning a promise from start() and push/replace() (aka from dispatch), or find another way of doing this in user land, for tests, etc.
+
 ### v2.3.2
 
 * URL encode slashes in route params

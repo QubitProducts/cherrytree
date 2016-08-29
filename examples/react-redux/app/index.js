@@ -39,6 +39,7 @@ let router = cherrytree(routes, { log: true }, dispatchTransition(store))
 let rootEl = document.querySelector('#app')
 ReactDOM.render(
   <Provider store={store}>
+    <Shelly router={router} />
     <App router={router} />
   </Provider>,
   rootEl
