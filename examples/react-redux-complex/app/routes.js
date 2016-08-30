@@ -41,6 +41,6 @@ function delay (resolve) {
   return function (component) {
     setTimeout(function () {
       resolve(component)
-    }, 3000)
+    }, 2000)
   }
 }

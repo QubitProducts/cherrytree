@@ -1,6 +1,6 @@
 const dispatchTransition = store => router => ({
   name: 'dispatchTransition',
-  next: next => transition => {
+  next: transition => {
     store.dispatch({
       type: '@@neon-router/TRANSITION',
       payload: {
@@ -13,7 +13,6 @@ const dispatchTransition = store => router => ({
         query: transition.query
       }
     })
-    next(null, transition)
   }
 })
 

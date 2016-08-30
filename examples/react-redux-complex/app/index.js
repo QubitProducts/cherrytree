@@ -32,15 +32,12 @@ let store = Redux.createStore(reducers, window.devToolsExtension && window.devTo
 
 // we'll be fetching some routes asynchronously
 let fetchAsyncRoutes = router => ({
-  next: transition => {
-    return Promise.all(transition.routes.map(route => {
-      let routeOptions = router.getRouteOptions(route.name)
-      return routeOptions.async && routeOptions.async().then(component =>
-        routeOptions.component = component
-      )
-    })
-  },
-  done: transition => {}
+  next: transition => Promise.all(transition.routes.map(route => {
+    let routeOptions = router.getRouteOptions(route.name)
+    return routeOptions.async && routeOptions.async().then(component =>
+      routeOptions.component = component
+    )
+  }))
 })
 
 let cancelMessages = router => (transition, redirect, cancel) => {
@@ -59,7 +56,7 @@ let redirectMessages = router => (transition, redirect, cancel) => {
 }
 
 let errorsToWarnings = router => ({
-  error: next => err => {
+  error: err => {
     console.warn('ERRORED', err.stack)
     throw err
   }
