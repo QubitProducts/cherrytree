@@ -1,5 +1,5 @@
 /**
- * Run karma start --no-coverage to get non instrumented code to show up in the dev tools
+ * Run karma start --coverage to get non instrumented code to show up in the dev tools
  */
 
 var webpackConfig = require('./webpack.config')
@@ -53,8 +53,15 @@ function config (c) {
       }
     },
 
-    browsers: [process.env.TRAVIS ? 'Firefox' : 'Chrome'],
+    browsers: [process.env.TRAVIS ? 'Firefox' : 'ChromeBackground'],
     browserNoActivityTimeout: 30000,
+
+    customLaunchers: {
+      ChromeBackground: {
+        base: 'Chrome',
+        flags: [ '--disable-background-timer-throttling' ]
+      }
+    },
 
     coverageReporter: c.coverage ? {
       reporters: [
@@ -66,7 +73,6 @@ function config (c) {
 }
 
 module.exports = function (c) {
-  c.coverage = c.coverage !== false
   c.set(config(c))
 }
 

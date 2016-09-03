@@ -1,15 +1,10 @@
-import { assert } from 'assert'
-import BrowserLocation from '../../lib/locations/browser'
-import MemoryLocation from '../../lib/locations/memory'
-import { extend } from '../../lib/dash'
+/* global suite, test, beforeEach, afterEach, assert, effroi */
+
 import cherrytree, { route } from '../..'
 
-let mouse = window.effroi.mouse
-let {suite, test, beforeEach, afterEach} = window
+let delay = t => new Promise(resolve => setTimeout(resolve, t))
 
-let delay = (t) => new Promise((resolve) => setTimeout(resolve, t))
-
-suite.only('Cherrytree')
+suite('Cherrytree')
 
 let router
 
@@ -23,7 +18,7 @@ let routes = [
 
 beforeEach(() => {
   window.location.hash = ''
-  router = cherrytree()
+  router = cherrytree({ pushState: false, routes })
 })
 
 afterEach(() => {
@@ -33,82 +28,46 @@ afterEach(() => {
 // @api public
 
 test('#use registers middleware', () => {
-  let m = () => {}
-  router.use(m)
+  let middleware = router => ({ name: 'test' })
+  router.use(middleware)
   assert(router.middleware.length === 1)
-  assert(router.middleware[0] === m)
+  assert(router.middleware[0].name === 'test')
 })
 
-test.only('#use middleware gets passed a transition object', (done) => {
-  let m = router => ({
-    next: transition> => {
-      let t = extend({}, transition)
-      ;['catch', 'then', 'redirectTo', 'cancel', 'retry', 'followRedirects'].forEach(attr => delete t[attr])
-      let et = {
-        id: 3,
-        prev: {
-          routes: [{
-            name: 'application',
-            path: 'application',
-            params: {},
-            options: {
-              path: 'application'
-            }
-          }],
-          path: '/application',
-          pathname: '/application',
-          params: {},
-          query: {}
-        },
-        routes: [{
-          name: 'application',
-          path: 'application',
-          params: {},
-          options: {
-            path: 'application'
-          }
-        }, {
-          name: 'status',
-          path: ':user/status/:id',
-          params: {
-            user: '1',
-            id: '2'
-          },
-          options: {
-            path: ':user/status/:id'
-          }
-        }],
-        path: '/application/1/status/2?withReplies=true',
-        pathname: '/application/1/status/2',
-        params: {
-          user: '1',
-          id: '2'
-        },
-        query: {
-          withReplies: 'true'
-        }
+test('#use middleware gets passed a transition object', async () => {
+  let next = transition => {
+    assert.equals(transition, {
+      id: 3,
+      routes: [
+        { name: 'application', path: 'application' },
+        { name: 'status', path: ':user/status/:id' }
+      ],
+      path: '/application/1/status/2?withReplies=true',
+      pathname: '/application/1/status/2',
+      params: { user: '1', id: '2' },
+      query: { withReplies: 'true' },
+      state: 'transitioning',
+      prev: {
+        id: 2,
+        routes: [{ name: 'application', path: 'application' }],
+        path: '/application',
+        pathname: '/application',
+        params: {},
+        query: {},
+        state: 'completed'
       }
     })
-    assert.equals(t, et)
-
-    done()
   }
+  let middleware = router => ({ next })
 
-  // first navigate to 'application'
-  router.map(routes)
-  router.start()
-    .then(() => router.transitionTo('application'))
-    .then(() => {
-      // then install the middleware and navigate to status page
-      // this is so that we have a richer transition object
-      // to assert
-      router.use(m)
-      return router.transitionTo('status', {user: 1, id: 2}, {withReplies: true})
-    }).catch(done)
+  router = cherrytree({ pushState: false, routes })
+  await router.start()
+  await router.transitionTo({ route: 'application' })
+  router.use(middleware)
+  await router.transitionTo({ route: 'status', params: { user: 1, id: 2 }, query: { withReplies: true } })
 })
 
 test('#map registers the routes', () => {
-  router.map(routes)
   // check that the internal matchers object is created
   assert.equals(router.matchers.map(m => m.path), [
     '/application',
@@ -118,29 +77,27 @@ test('#map registers the routes', () => {
   ])
   // check that the internal routes object is created
   assert.equals(router.routes[0].name, 'application')
-  assert.equals(router.routes[0].routes[2].options.path, ':user/status/:id')
+  assert.equals(router.routes[0].children[2].path, ':user/status/:id')
 })
 
-test('#generate generates urls given route name and params as object', () => {
-  router.map(routes).start()
-  var url = router.generate('status', {user: 'foo', id: 1}, {withReplies: true})
+test('#href generates urls given route name and params as object', () => {
+  router.map(routes)
+  var url = router.href({ route: 'status', params: {user: 'foo', id: 1}, query: {withReplies: true} })
   assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
 
 if (window.history && window.history.pushState) {
-  test('#generate when pushState: true and root != "/" in modern browsers', () => {
-    router.options.pushState = true
-    router.options.root = '/foo/bar'
-    router.map(routes).start()
-    var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
+  test('#href when pushState: true and root != "/" in modern browsers', () => {
+    router = cherrytree({ pushState: true, root: '/foo/bar', routes })
+    var url = router.href({ route: 'status', params: {user: 'usr', id: 1}, query: {withReplies: true} })
     assert.equals(url, '/foo/bar/application/usr/status/1?withReplies=true')
   })
 }
 
 if (window.history && !window.history.pushState) {
-  test('#generate when pushState: true and root != "/" in old browsers', () => {
+  test('#href when pushState: true and root != "/" in old browsers', async () => {
     let browserRedirectedTo
-    router.options.location = new BrowserLocation({
+    let location = new cherrytree.BrowserLocation({
       pushState: true,
       root: '/foo/bar',
       location: {
@@ -154,65 +111,43 @@ if (window.history && !window.history.pushState) {
       }
     })
 
-    router.map(routes).start()
-    var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
+    router = cherrytree({ routes, location })
+    await router.start()
+
+    var url = router.href({ route: 'status', params: {user: 'usr', id: 1}, query: {withReplies: true} })
     assert.equals(browserRedirectedTo, '/foo/bar/#different')
     assert.equals(url, '#application/usr/status/1?withReplies=true')
   })
 }
 
-test('#generate throws a useful error when listen has not been called', () => {
-  router.map(routes)
-  try {
-    router.generate('messages')
-  } catch (err) {
-    assert.equals(err.message, 'Invariant Violation: call .start() before using .generate()')
-  }
-})
-
-test('#use middleware can not modify routers internal state by changing transition.routes', (done) => {
+test('middleware can not modify routers internal state by changing transition.routes', async () => {
   window.location.hash = '/application/messages'
-  router.map(routes)
-  router.use((transition) => {
+  router.use(router => transition => {
     assert.equals(transition.routes[0].name, 'application')
+    transition.routes[0].name = 'modified'
     transition.routes[0].foo = 1
-    transition.routes[0].options.bar = 2
+    transition.routes[0].bar = 2
   })
-  router.use((transition) => {
-    assert.equals(transition.routes[0].name, 'application')
+  router.use(router => transition => {
+    assert.equals(transition.routes[0].name, 'modified')
     assert.equals(transition.routes[0].foo, 1)
-    assert.equals(transition.routes[0].options.bar, 2)
+    assert.equals(transition.routes[0].bar, 2)
 
     assert.equals(router.routes[0].name, 'application')
     assert.equals(router.routes[0].foo, undefined)
-    assert.equals(router.routes[0].options.foo, undefined)
-    done()
-  })
-  router.start()
-})
+    assert.equals(router.routes[0].foo, undefined)
 
-test('#use transition fails if a middleware returns a transition', (done) => {
-  window.location.hash = '/application/messages'
-  router.map(routes)
-  router.logError = function () {}
-  router.use((transition) => {
-    transition.catch((err) => {
-      assert.equals(err.message, 'Invariant Violation: Middleware anonymous returned a transition which resulted in a deadlock')
-    }).then(done).catch(done)
+    assert.equals(router.routes[0].descriptor.foo, 1)
+    assert.equals(router.routes[0].descriptor.bar, 2)
   })
-  router.use((transition) => transition)
-  router.start()
+  await router.start()
 })
 
 // @api private
 
 test('#match matches a path against the routes', () => {
-  router.map(routes)
   let match = router.match('/application/KidkArolis/status/42')
-  assert.equals(match.params, {
-    user: 'KidkArolis',
-    id: '42'
-  })
+  assert.equals(match.params, { user: 'KidkArolis', id: '42' })
   assert.equals(match.routes.map(r => r.name), ['application', 'status'])
 })
 
@@ -273,136 +208,42 @@ test('#match always parses query parameters even if a route does not match', () 
   assert.equals(match, {routes: [], params: {}, query: { hello: 'world' }})
 })
 
-test('#transitionTo called multiple times reuses the active transition', (done) => {
-  router.map(routes)
-  router.start().then(() => {
-    router.use(() => delay(500))
-    assert.equals(router.transitionTo('status', {user: 'me', id: 1}).id, 2)
-    assert.equals(router.transitionTo('status', {user: 'me', id: 1}).id, 2)
-    done()
-  }).catch(done)
+test('#transitionTo called multiple times reuses the active transition', async () => {
+  await router.start()
+  router.use(() => () => delay(50))
+
+  router.transitionTo({ route: 'status', params: { user: 'me', id: 1 } })
+  assert.equals(router.state.currTransition.descriptor.id, 2)
+  assert.equals(router.state.nextTransition, null)
+
+  router.transitionTo({ route: 'status', params: { user: 'me', id: 1 } })
+  assert.equals(router.state.currTransition.descriptor.id, 2)
+  assert.equals(router.state.nextTransition, null)
 })
 
-test('#transitionTo called on the same route, returns a completed transition', (done) => {
+test('#transitionTo called on the same route without running any middleware', async () => {
   let called = false
-  router.map(routes)
-  router.start().then(() => {
-    return router.transitionTo('status', {user: 'me', id: 1})
-  }).then(() => {
-    router.use(() => { called = true })
-    let t = router.transitionTo('status', {user: 'me', id: 1})
-    assert.equals(t.noop, true)
-    return t
-  }).then(() => {
-    assert.equals(called, false)
-    done()
-  }).catch(done)
+  await router.start()
+  await router.transitionTo({ route: 'status', params: { user: 'me', id: 1 }, query: { r: 1 } })
+  router.use(() => () => { called = true })
+  let completed = router.transitionTo({ route: 'status', params: { user: 'me', id: 1 }, query: { r: 1 } })
+  assert(typeof completed.then === 'function')
+  await completed
+  assert.equals(called, false)
 })
 
 test('#isActive returns true if arguments match current state and false if not', async () => {
   router.map(routes)
   await router.start()
-  await router.transitionTo('notifications')
-  assert.equals(router.isActive('notifications'), true)
-  assert.equals(router.isActive('messages'), false)
-  await router.transitionTo('status', {user: 'me', id: 1})
-  assert.equals(router.isActive('status', {user: 'me'}), true)
-  assert.equals(router.isActive('status', {user: 'notme'}), false)
-  await router.transitionTo('messages', null, {foo: 'bar'})
-  assert.equals(router.isActive('messages', null, {foo: 'bar'}), true)
-  assert.equals(router.isActive('messages', null, {foo: 'baz'}), false)
-})
-
-suite('route maps')
-
-beforeEach(() => {
-  router = cherrytree()
-})
-
-afterEach(() => {
-  router.stop()
-})
-
-test('a complex route map', () => {
-  router.map((route) => {
-    route('application', () => {
-      route('notifications')
-      route('messages', () => {
-        route('unread', () => {
-          route('priority')
-        })
-        route('read')
-        route('draft', () => {
-          route('recent')
-        })
-      })
-      route('status', {path: ':user/status/:id'})
-    })
-    route('anotherTopLevel', () => {
-      route('withChildren')
-    })
-  })
-  // check that the internal matchers object is created
-  assert.equals(router.matchers.map(m => m.path), [
-    '/application',
-    '/application/notifications',
-    '/application/messages',
-    '/application/messages/unread',
-    '/application/messages/unread/priority',
-    '/application/messages/read',
-    '/application/messages/draft',
-    '/application/messages/draft/recent',
-    '/application/:user/status/:id',
-    '/anotherTopLevel',
-    '/anotherTopLevel/withChildren'
-  ])
-})
-
-test('a parent route can be excluded from the route map by setting abstract to true', () => {
-  router.map((route) => {
-    route('application', { abstract: true }, () => {
-      route('notifications')
-      route('messages', () => {
-        route('unread', () => {
-          route('priority')
-        })
-        route('read')
-        route('draft', { abstract: true }, () => {
-          route('recent')
-        })
-      })
-      route('status', {path: ':user/status/:id'})
-    })
-    route('anotherTopLevel', () => {
-      route('withChildren')
-    })
-  })
-
-  assert.equals(router.matchers.map(m => m.path), [
-    '/application/notifications',
-    '/application/messages',
-    '/application/messages/unread',
-    '/application/messages/unread/priority',
-    '/application/messages/read',
-    '/application/messages/draft/recent',
-    '/application/:user/status/:id',
-    '/anotherTopLevel',
-    '/anotherTopLevel/withChildren'
-  ])
-})
-
-test('routes with duplicate names throw a useful error', () => {
-  try {
-    router.map((route) => {
-      route('foo', () => {
-        route('foo')
-      })
-    })
-  } catch (e) {
-    assert.equals(e.message, 'Invariant Violation: Route names must be unique, but route "foo" is declared multiple times')
-    return
-  }
-  assert(false, 'Should not reach this')
+  await router.transitionTo({ route: 'notifications' })
+  assert.equals(router.isActive({ route: 'notifications' }), true)
+  assert.equals(router.isActive({ route: 'messages' }), false)
+  await router.transitionTo({ route: 'status', params: {user: 'me', id: 1} })
+  assert.equals(router.isActive({ route: 'status', params: {user: 'me'} }), true)
+  assert.equals(router.isActive({ route: 'status', params: {user: 'notme'} }), false)
+  await router.transitionTo({ route: 'messages', query: {foo: 'bar'} })
+  assert.equals(router.isActive({ route: 'messages', query: {foo: 'bar'} }), true)
+  assert.equals(router.isActive({ route: 'messages', query: {foo: 'baz'} }), false)
 })
 
 test('modifying params or query in middleware does not affect the router state', async function () {
@@ -436,13 +277,8 @@ if (window.history && window.history.pushState) {
     a.href = '/hello/world'
     a.innerHTML = 'hello'
     document.body.appendChild(a)
-    mouse.click(a)
+    effroi.mouse.click(a)
     assert.equals(interceptCalledWith, '/hello/world')
     document.body.removeChild(a)
   })
 }
-
-test('Browser and Memory locations are exported in the main router file', function () {
-  assert.equals(cherrytree.BrowserLocation, BrowserLocation)
-  assert.equals(cherrytree.MemoryLocation, MemoryLocation)
-})
