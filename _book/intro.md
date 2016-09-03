@@ -1,0 +1,135 @@
+# Cherrytree guide
+
+When your application starts, the router is responsible for loading data, rendering views and otherwise setting up application state. It does so by translating every URL change to a transition object and a list of matching routes. You then need to apply a middleware function to translate the transition data into the desired state of your application.
+
+Create an instance of the router passing in the route map and middleware.
+
+```js
+var cherrytree = require("cherrytree");
+var router = cherrytree(routes, activate);
+```
+
+Here's an example `routes` map.
+
+```js
+function routes (route) {
+  route('application', { path: '/', abstract: true, handler: App }, function () {
+    route('index', { path: '', handler: Index })
+    route('about', { handler: About })
+    route('favorites', { path: 'favs', handler: Favorites })
+    route('message', { path: 'message/:id', handler: Message })
+  })
+}
+```
+
+Here's an example `middleware` that simply calls `activate` function on each of the route handlers.
+
+```js
+function activate (transition, router) {
+  transition.routes.forEach(function (route) {
+    router.getRouteOptions(route.name).handler.activate(transition.params, transition.query)
+  })
+}
+```
+
+Now, when the user enters `/about` page, Cherrytree will call the middleware with the transition object and `transition.routes` will be the route descriptors of `application` and `about` routes.
+
+Note that you can leave off the path if you want to use the route name as the path. For example, these are equivalent
+
+```js
+router.map(function(route) {
+  route('about');
+});
+
+// or
+
+router.map(function(route) {
+  route('about', {path: 'about'});
+});
+```
+
+To generate links to the different routes use `generate` and pass the name of the route:
+
+```js
+router.generate('favorites')
+// => /favs
+router.generate('index');
+// => /
+router.generate('messages', {id: 24});
+```
+
+If you disable pushState (`pushState: false`), the generated links will start with `#`.
+
+### Route params
+
+Routes can have dynamic urls by specifying patterns in the `path` option. For example:
+
+```js
+router.map(function(route) {
+  route('posts');
+  route('post', { path: '/post/:postId' });
+});
+
+router.use(function (transition) {
+  console.log(transition.params)
+  // => {postId: 5}
+});
+
+router.transitionTo('/post/5')
+```
+
+See what other types of dynamic routes is supported in the [api docs](api.md#dynamic-paths).
+
+### Route Nesting
+
+Route nesting is one of the core features of cherrytree. It's useful to nest routes when you want to configure each route to perform a different role in rendering the page - e.g. the root `application` route can do some initial data loading/initialization, but you can avoid redoing that work on subsequent transitions by checking if the route is already in the middleware. The nested routes can then load data specific for a given page. Nesting routes is also very useful for rendering nested UIs, e.g. if you're building an email application, you might have the following route map
+
+```js
+router.map(function(route) {
+  route('gmail', {path: '/'}, function () {
+    route('inbox', function () {
+      route('mail', {path: 'm/:mailId'}, function () {
+        route('mail.raw')
+      })
+    })
+  })
+})
+```
+
+This router creates the following routes:
+
+<div style="overflow: auto">
+  <table>
+    <thead>
+    <tr>
+      <th>URL</th>
+      <th>Route Name</th>
+      <th>Reason</th>
+    </tr>
+    </thead>
+    <tr>
+      <td><code>/</code></td>
+      <td><code>gmail</code></td>
+      <td>Redirect to inbox</td>
+    </tr>
+    <tr>
+      <td>N/A</td>
+      <td><code>inbox</code></td>
+      <td>Load 1 page of emails and render it</td>
+    </tr>
+    <tr>
+      <td>N/A</td>
+      <td><code>mail</code></td>
+      <td>Load the email contents of email with id `transition.params.mailId` and expand it in the list of emails while keeping the email list rendered</td>
+    </tr>
+    <tr>
+      <td><code>/inbox/m/:mailId/raw</code></td>
+      <td><code>mail.raw</code></td>
+      <td>Render the raw textual version of the email in the expanded pane</td>
+    </tr>
+  </table>
+</div>
+
+## Examples
+
+I hope you found this brief guide useful, check out some example apps next in the [examples](../examples) dir.

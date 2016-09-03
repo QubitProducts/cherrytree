@@ -1,44 +1,31 @@
 # Docs
 
-## API
+### var router = cherrytree(routes, middleware, options)
 
-* **createRouter** - create the router
-* **router.start**
-* [`router.start`](#start)
-* **router.stop**
-* **router.transitionTo**
-* **router.href**
-* **router.back**
-* **router.forward**
-* **router.use**
-* **router.getState**
-* **router.matchers**
-
-### var router = neon(options)
-
-* **routes** - a route map, see below for more details
-* **middleware** - a set of middleware that will get applied to each transition
+* **routes** - a route map function
+* **middleware** - a route
 * **options.log** - a function that is called with logging info, default is noop. Pass in `true`/`false` or a custom logging function.
-* **options.pushState** - default is true. Set to `false` to use hashchange instead.
-* **options.base** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the base url /.
+* **options.logError** - default is true. A function that is called when transitions error (except for the special `TransitionRedirected` and `TransitionCancelled` errors). Pass in `true`/`false` or a custom error handling function.
+* **options.pushState** - default is false, which means using hashchange events. Set to `true` to use pushState.
+* **options.root** - default is `/`. Use in combination with `pushState: true` if your application is not being served from the root url /.
 * **options.interceptLinks** - default is true. When pushState is used - intercepts all link clicks when appropriate, prevents the default behaviour and instead uses pushState to update the URL and handle the transition via the router. You can also set this option to a custom function that will get called whenever a link is clicked if you want to customize the behaviour. Read more on [intercepting links below](#intercepting-links).
 * **options.qs** - default is a simple built in query string parser. Pass in an object with `parse` and `stringify` functions to customize how query strings get treated.
 * **options.Promise** - default is window.Promise or global.Promise. Promise implementation to be used when constructing transitions.
 
-#### routes
+### router.map(fn)
 
-This is an example route map:
+Configure the router with a route map. E.g.
 
 ```js
-let routes = [
-  { name: 'app', path: '/', children: [
-    { name: 'about' }
-    { name: 'post', path: ':postId', children: [
-      { name: 'show' }
-      { name: 'edit' }
-    ]}
-  ]}
-]
+router.map(function (route) {
+  route('app', {path: '/'}, function () {
+    route('about')
+    route('post', {path: ':postId'}, function () {
+      route('show')
+      route('edit')
+    })
+  })
+})
 ```
 
 #### Nested paths
@@ -74,11 +61,11 @@ The above map results in 1 URL `/foo/bar/baz` mapping to ['foo', 'bar', 'baz'] r
 Paths can contain dynamic segments as described in the docs of [path-to-regexp](https://github.com/pillarjs/path-to-regexp). For example:
 
 ```js
-{ name: 'foo', path: '/hello/:myParam' } // single named param, matches /hello/1
-{ name: 'foo', path: '/hello/:myParam/:myOtherParam' } // two named params, matches /hello/1/2
-{ name: 'foo', path: '/hello/:myParam?' } // single optional named param, matches /hello and /hello/1
-{ name: 'foo', path: '/hello/:splat*' } // match 0 or more segments, matches /hello and /hello/1 and /hello/1/2/3
-{ name: 'foo', path: '/hello/:splat+' } // match 1 or more segments, matches /hello/1 and /hello/1/2/3
+route('foo', {path: '/hello/:myParam'}) // single named param, matches /hello/1
+route('foo', {path: '/hello/:myParam/:myOtherParam'}) // two named params, matches /hello/1/2
+route('foo', {path: '/hello/:myParam?'}) // single optional named param, matches /hello and /hello/1
+route('foo', {path: '/hello/:splat*'}) // match 0 or more segments, matches /hello and /hello/1 and /hello/1/2/3
+route('foo', {path: '/hello/:splat+'}) // match 1 or more segments, matches /hello/1 and /hello/1/2/3
 ```
 
 #### Abstract routes
@@ -117,72 +104,47 @@ router.use(function redirect (transition) {
 
 ### router.use(fn)
 
-Middleware has the following shape `router => { next: (transition) }`, e.g.:
-
-```js
-function middleware (router) {
-  return {
-    name: 'name-of-the-middleware',
-    next: function (transition, redirect, cancel) {},
-    done: function (transition) {},
-    error: function (err, transition) {}
-  }
-}
-```
-
-or in ES6
-
-```js
-const middleware = router => ({
-  name: 'name-of-the-middleware',
-  next: (transition, redirect, cancel) => {},
-  done: (transition) => {},
-  error: (err, transition) => {}
-})
-```
-
-You can implement all or only some of the lifecycle hooks. E.g. typically you'll only need the `next` hook.
-
 Add a transition middleware. Every time a transition takes place this middleware will be called with a transition as the argument. You can call `use` multiple times to add more middlewares. The middleware function can return a promise and the next middleware will not be called until the promise of the previous middleware is resolved. The result of the promise is passed in as a second argument to the next middleware. E.g.
 
 ```js
-router.use(router => ({
-  next: (transition, redirect, cancel) =>
-    Promise.all(transition.routes.map(route =>
-      route.options.handler.fetchData()
-    })).then(data => {
-      router.data = data
-    })
-  }
-}))
+router.use(function (transition) {
+  return Promise.all(transition.routes.map(function (route) {
+    return route.options.handler.fetchData()
+  }))
+})
 
-router.use(router => ({
-  next: transition =>
-    transition.routes.forEach((route, i) =>
-      route.options.handler.activate(datas[i]))
+router.use(function (transition, datas) {
+  transition.routes.forEach(function (route, i) {
+    route.options.handler.activate(datas[i])
   })
 })
 ```
 
 #### transition
 
-Transition contains the following attributes
+The transition object is itself a promise. It also contains the following attributes
 
 * `id`
 * `routes`
 * `path`
 * `pathname`
 * `params`
-* `query``
-* `state`
+* `query`
 * `prev`
-  * `id`
   * `routes`
   * `path`
   * `pathname`
   * `params`
   * `query`
-  * `state`
+
+And the following methods
+
+* `then`
+* `catch`
+* `cancel`
+* `retry`
+* `followRedirects`
+* `redirectTo`
 
 #### route
 
@@ -190,58 +152,55 @@ During every transition, you can inspect `transition.routes` and `transition.pre
 
 * `name` - e.g. `'message'`
 * `path` - the path segment, e.g. `'message/:id'`
-* `state` - an object that can be used to store route state
+* `params` - a list of params specifically for this route, e.g `{id: 1}`
+* `options` - the options object that was passed to the `route` function in the `map`
 
-This will also contain any other extra attributes that were set on the route. E.g. you might want to attach `component`, `view`, `layout` and similar attributes that will then get passed through to the middleware.
-
-### <a id='start'></a>[`router.start()`](#start)
+### router.listen()
 
 After the router has been configured with a route map and middleware - start listening to URL changes and transition to the appropriate route based on the current URL.
 
 When using `location: 'memory'`, the current URL is not read from the browser's location bar and instead can be passed in via listen: `listen(path)`.
 
-### router.stop()
-
-Stop listening to URL changes
-
-### router.transitionTo({ route, params, query, replace })
+### router.transitionTo(name, params, query)
 
 Transition to a route, e.g.
 
 ```js
-router.transitionTo({ route: 'about' })
-router.transitionTo({ route: 'about', replace: true })
-router.transitionTo({ route: 'posts.show', params: { postId: 1 } })
-router.transitionTo({ route: 'posts.show', params: { postId: 2 }, query: {commentId: 2 } })
+router.transitionTo('about')
+router.transitionTo('posts.show', {postId: 1})
+router.transitionTo('posts.show', {postId: 2}, {commentId: 2})
 ```
 
-Passing `replace: true` doesn't add an entry in browser's history, instead replaces the current entry. Useful if you don't want this transition to be accessible via browser's Back button, e.g. if you're redirecting, or if you're navigating upon clicking tabs in the UI, etc.
+### router.replaceWith(name, params, query)
 
-### router.href({ route, params, query })
+Same as transitionTo, but doesn't add an entry in browser's history, instead replaces the current entry. Useful if you don't want this transition to be accessible via browser's Back button, e.g. if you're redirecting, or if you're navigating upon clicking tabs in the UI, etc.
+
+### router.generate(name, params, query)
 
 Generate a URL for a route, e.g.
 
 ```js
-router.href({ route: 'about'} )
-router.href({ route: 'posts.show', params: { postId: 1 } })
-router.href({ route: 'posts.show', params: { postId: 2 }, query: { commentId: 2 } })
+router.generate('about')
+router.generate('posts.show', {postId: 1})
+router.generate('posts.show', {postId: 2}, {commentId: 2})
 ```
 
 It generates a URL with # if router is in hashChange mode and with no # if router is in pushState mode.
 
-### router.isActive({ route, params, query })
+### router.isActive(name, params, query)
 
-Check if a given route, params and query is currently active.
+Check if a given route, params and query is active.
 
 ```js
-router.isActive({ route: 'status' })
-router.isActive({ route: 'status', params: { user: 'me' } })
-router.isActive({ route: 'status', params: { user: 'me' }, query: { commentId: 2 } })
+router.isActive('status')
+router.isActive('status', {user: 'me'})
+router.isActive('status', {user: 'me'}, {commentId: 2})
+router.isActive('status', null, {commentId: 2})
 ```
 
-### router.getState()
+### router.state
 
-Get current router state.
+The state of the route is always available on the `router.state` object. It contains `activeTransition`, `routes`, `path`, `pathname`, `params` and `query`.
 
 ### router.matchers
 
@@ -262,7 +221,7 @@ listed in the order that they will be matched against the URL.
 Cherrytree will extract and parse the query params using a very simple query string parser that only supports key values. For example, `?a=1&b=2` will be parsed to `{a: 1, b:2}`. If you want to use a more sophisticated query parser, pass in an object with `parse` and `stringify` functions - an interface compatible with the popular [qs](https://github.com/hapijs/qs) module e.g.:
 
 ```js
-neon({
+cherrytree({
   qs: require('qs')
 })
 ```
@@ -287,7 +246,7 @@ Cherrytree can be configured to use differet implementations of libraries that m
 Configure BrowserLocation by passing options directly to the router.
 
 ```js
-var router = neon({
+var router = cherrytree({
   pushState: true
 })
 ```
@@ -302,7 +261,7 @@ MemoryLocation can be used if you don't want router to touch the address bar at 
 e.g.
 
 ```js
-var router = neon({
+var router = cherrytree({
   location: 'memory'
 })
 ```
@@ -312,7 +271,7 @@ var router = neon({
 You can also pass a custom location in explicitly. This is an advanced use case, but might turn out to be useful in non browser environments. For this you'll need to investigate how BrowserLocation is implemented.
 
 ```js
-var router = neon({
+var router = cherrytree({
   location: myCustomLocation()
 })
 ```
@@ -345,7 +304,7 @@ function defaultClickHandler (event, link, router) {
 }
 ```
 
-You can pass in a custom function as the `interceptLinks` router option to customize this behaviour. E.g. to use `replace` option in `transitionTo`.
+You can pass in a custom function as the `interceptLinks` router option to customize this behaviour. E.g. to use `replaceWith` instead of `transitionTo`.
 
 
 ## Handling 404

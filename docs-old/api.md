@@ -2,9 +2,8 @@
 
 ## API
 
-* **createRouter** - create the router
+* **neon()** - create the router
 * **router.start**
-* [`router.start`](#start)
 * **router.stop**
 * **router.transitionTo**
 * **router.href**
@@ -194,7 +193,7 @@ During every transition, you can inspect `transition.routes` and `transition.pre
 
 This will also contain any other extra attributes that were set on the route. E.g. you might want to attach `component`, `view`, `layout` and similar attributes that will then get passed through to the middleware.
 
-### <a id='start'></a>[`router.start()`](#start)
+### router.start()
 
 After the router has been configured with a route map and middleware - start listening to URL changes and transition to the appropriate route based on the current URL.
 
