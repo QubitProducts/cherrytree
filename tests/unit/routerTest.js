@@ -1,25 +1,25 @@
-import { assert } from 'referee'
+import { assert } from 'assert'
 import BrowserLocation from '../../lib/locations/browser'
 import MemoryLocation from '../../lib/locations/memory'
 import { extend } from '../../lib/dash'
-import cherrytree from '../..'
+import cherrytree, { route } from '../..'
 
 let mouse = window.effroi.mouse
 let {suite, test, beforeEach, afterEach} = window
 
 let delay = (t) => new Promise((resolve) => setTimeout(resolve, t))
 
-suite('Cherrytree')
+suite.only('Cherrytree')
 
 let router
 
-let routes = (route) => {
-  route('application', () => {
-    route('notifications')
-    route('messages')
-    route('status', {path: ':user/status/:id'})
-  })
-}
+let routes = [
+  route({ name: 'application' }, [
+    route({ name: 'notifications' }),
+    route({ name: 'messages' }),
+    route({ name: 'status', path: ':user/status/:id' })
+  ])
+]
 
 beforeEach(() => {
   window.location.hash = ''
@@ -27,7 +27,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  router.destroy()
+  router.stop()
 })
 
 // @api public
@@ -39,13 +39,27 @@ test('#use registers middleware', () => {
   assert(router.middleware[0] === m)
 })
 
-test('#use middleware gets passed a transition object', (done) => {
-  let m = (transition) => {
-    let t = extend({}, transition)
-    ;['catch', 'then', 'redirectTo', 'cancel', 'retry', 'followRedirects'].forEach(attr => delete t[attr])
-    let et = {
-      id: 3,
-      prev: {
+test.only('#use middleware gets passed a transition object', (done) => {
+  let m = router => ({
+    next: transition> => {
+      let t = extend({}, transition)
+      ;['catch', 'then', 'redirectTo', 'cancel', 'retry', 'followRedirects'].forEach(attr => delete t[attr])
+      let et = {
+        id: 3,
+        prev: {
+          routes: [{
+            name: 'application',
+            path: 'application',
+            params: {},
+            options: {
+              path: 'application'
+            }
+          }],
+          path: '/application',
+          pathname: '/application',
+          params: {},
+          query: {}
+        },
         routes: [{
           name: 'application',
           path: 'application',
@@ -53,40 +67,28 @@ test('#use middleware gets passed a transition object', (done) => {
           options: {
             path: 'application'
           }
+        }, {
+          name: 'status',
+          path: ':user/status/:id',
+          params: {
+            user: '1',
+            id: '2'
+          },
+          options: {
+            path: ':user/status/:id'
+          }
         }],
-        path: '/application',
-        pathname: '/application',
-        params: {},
-        query: {}
-      },
-      routes: [{
-        name: 'application',
-        path: 'application',
-        params: {},
-        options: {
-          path: 'application'
-        }
-      }, {
-        name: 'status',
-        path: ':user/status/:id',
+        path: '/application/1/status/2?withReplies=true',
+        pathname: '/application/1/status/2',
         params: {
           user: '1',
           id: '2'
         },
-        options: {
-          path: ':user/status/:id'
+        query: {
+          withReplies: 'true'
         }
-      }],
-      path: '/application/1/status/2?withReplies=true',
-      pathname: '/application/1/status/2',
-      params: {
-        user: '1',
-        id: '2'
-      },
-      query: {
-        withReplies: 'true'
       }
-    }
+    })
     assert.equals(t, et)
 
     done()
@@ -94,7 +96,7 @@ test('#use middleware gets passed a transition object', (done) => {
 
   // first navigate to 'application'
   router.map(routes)
-  router.listen()
+  router.start()
     .then(() => router.transitionTo('application'))
     .then(() => {
       // then install the middleware and navigate to status page
@@ -120,7 +122,7 @@ test('#map registers the routes', () => {
 })
 
 test('#generate generates urls given route name and params as object', () => {
-  router.map(routes).listen()
+  router.map(routes).start()
   var url = router.generate('status', {user: 'foo', id: 1}, {withReplies: true})
   assert.equals(url, '#application/foo/status/1?withReplies=true')
 })
@@ -129,7 +131,7 @@ if (window.history && window.history.pushState) {
   test('#generate when pushState: true and root != "/" in modern browsers', () => {
     router.options.pushState = true
     router.options.root = '/foo/bar'
-    router.map(routes).listen()
+    router.map(routes).start()
     var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
     assert.equals(url, '/foo/bar/application/usr/status/1?withReplies=true')
   })
@@ -152,7 +154,7 @@ if (window.history && !window.history.pushState) {
       }
     })
 
-    router.map(routes).listen()
+    router.map(routes).start()
     var url = router.generate('status', {user: 'usr', id: 1}, {withReplies: true})
     assert.equals(browserRedirectedTo, '/foo/bar/#different')
     assert.equals(url, '#application/usr/status/1?withReplies=true')
@@ -164,7 +166,7 @@ test('#generate throws a useful error when listen has not been called', () => {
   try {
     router.generate('messages')
   } catch (err) {
-    assert.equals(err.message, 'Invariant Violation: call .listen() before using .generate()')
+    assert.equals(err.message, 'Invariant Violation: call .start() before using .generate()')
   }
 })
 
@@ -186,7 +188,7 @@ test('#use middleware can not modify routers internal state by changing transiti
     assert.equals(router.routes[0].options.foo, undefined)
     done()
   })
-  router.listen()
+  router.start()
 })
 
 test('#use transition fails if a middleware returns a transition', (done) => {
@@ -199,7 +201,7 @@ test('#use transition fails if a middleware returns a transition', (done) => {
     }).then(done).catch(done)
   })
   router.use((transition) => transition)
-  router.listen()
+  router.start()
 })
 
 // @api private
@@ -273,7 +275,7 @@ test('#match always parses query parameters even if a route does not match', () 
 
 test('#transitionTo called multiple times reuses the active transition', (done) => {
   router.map(routes)
-  router.listen().then(() => {
+  router.start().then(() => {
     router.use(() => delay(500))
     assert.equals(router.transitionTo('status', {user: 'me', id: 1}).id, 2)
     assert.equals(router.transitionTo('status', {user: 'me', id: 1}).id, 2)
@@ -284,10 +286,10 @@ test('#transitionTo called multiple times reuses the active transition', (done) 
 test('#transitionTo called on the same route, returns a completed transition', (done) => {
   let called = false
   router.map(routes)
-  router.listen().then(() => {
+  router.start().then(() => {
     return router.transitionTo('status', {user: 'me', id: 1})
   }).then(() => {
-    router.use(() => called = true)
+    router.use(() => { called = true })
     let t = router.transitionTo('status', {user: 'me', id: 1})
     assert.equals(t.noop, true)
     return t
@@ -299,7 +301,7 @@ test('#transitionTo called on the same route, returns a completed transition', (
 
 test('#isActive returns true if arguments match current state and false if not', async () => {
   router.map(routes)
-  await router.listen()
+  await router.start()
   await router.transitionTo('notifications')
   assert.equals(router.isActive('notifications'), true)
   assert.equals(router.isActive('messages'), false)
@@ -318,7 +320,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  router.destroy()
+  router.stop()
 })
 
 test('a complex route map', () => {
@@ -405,7 +407,7 @@ test('routes with duplicate names throw a useful error', () => {
 
 test('modifying params or query in middleware does not affect the router state', async function () {
   router.map(routes)
-  await router.listen()
+  await router.start()
   router.use(transition => {
     transition.params.foo = 1
     transition.query.bar = 2

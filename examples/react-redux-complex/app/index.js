@@ -22,7 +22,7 @@ let React = require('react')
 let ReactDOM = require('react-dom')
 let Redux = require('redux')
 let Provider = require('react-redux').Provider
-let cherrytree = require('cherrytree')
+let createRouter = require('cherrytree').default
 let { Application, Router, routerReducer, dispatchTransition } = require('./neon-react-redux')
 let routes = require('./routes')
 
@@ -33,44 +33,52 @@ let store = Redux.createStore(reducers, window.devToolsExtension && window.devTo
 // we'll be fetching some routes asynchronously
 let fetchAsyncRoutes = router => ({
   next: transition => Promise.all(transition.routes.map(route => {
-    let routeOptions = router.getRouteOptions(route.name)
-    return routeOptions.async && routeOptions.async().then(component =>
-      routeOptions.component = component
-    )
+    router.components = router.components || {}
+    if (route.component) {
+      router.components[route.name] = route.component
+    }
+    if (route.async) {
+      return route.async().then(component => {
+        router.components[route.name] = component
+      })
+    }
   }))
 })
 
-let cancelMessages = router => (transition, redirect, cancel) => {
-  if (transition.path === '/messages') {
-    console.log('CANCELLING')
-    cancel()
-  } else {
-    next(null, transition)
-  }
-}
-
-let redirectMessages = router => (transition, redirect, cancel) => {
-  if (transition.path === '/messages') {
-    redirect('/messages?abc=123')
-  }
-}
-
-let errorsToWarnings = router => ({
-  error: err => {
-    console.warn('ERRORED', err.stack)
-    throw err
+let cancelMessages = router => ({
+  next: (transition, redirect, cancel) => {
+    if (transition.path === '/messages') {
+      cancel()
+    }
   }
 })
 
-let fail = router => transition => {
-  if (transition.path.indexOf('123') > -1) {
-    throw new Error('Access Denied!')
+let redirectMessages = router => ({
+  next: (transition, redirect, cancel) => {
+    if (transition.path === '/messages') {
+      redirect({ route: '/messages?abc=123' })
+    }
   }
-}
+})
+
+let errorsToWarnings = router => ({
+  error: err => {
+    console.warn('ERRORED')
+    // throw err
+  }
+})
+
+let fail = router => ({
+  next: transition => {
+    if (transition.query.abc === '123') {
+      throw new Error('Access Denied!')
+    }
+  }
+})
 
 // create a router
 let middleware = [ errorsToWarnings, redirectMessages, fetchAsyncRoutes, fail, dispatchTransition(store) ]
-let router = cherrytree(routes, middleware, { log: true, pushState: false })
+let router = createRouter({ routes, middleware, log: true, pushState: false })
 
 router.start()
 

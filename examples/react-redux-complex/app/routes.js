@@ -6,7 +6,21 @@ let Messages = asyncRoute(resolve => require(['./views/messages'], delay(resolve
 let Profile = require('./views/profile')
 let ProfileIndex = require('./views/profile_index')
 
-// module.exports = function routes (route) {
+let route = (options, children) => Object.assign({ children }, options)
+module.exports = [
+  route({ name: 'application', path: '/', component: Application, abstract: true }, [
+    route({ name: 'home', path: '', component: Home }),
+    route({ name: 'messages', async: Messages }),
+    route({ name: 'status', path: ':user/status/:id' }),
+    route({ name: 'profile', path: ':user', component: Profile, abstract: true }, [
+      route({ name: 'profile.index', component: ProfileIndex, path: '' }),
+      route({ name: 'profile.lists' }),
+      route({ name: 'profile.edit' })
+    ])
+  ])
+]
+
+// module.exports = function routes () {
 //   // We can pass arbitrary options in the second argument of the route
 //   // function call. Because in this case we're using React, let's attach
 //   // the relevant components to each route.
@@ -24,23 +38,24 @@ let ProfileIndex = require('./views/profile_index')
 //   })
 // }
 
-module.exports = [
-  { name: 'application', path: '/', component: Application, abstract: true, children: [
-    { name: 'home', path: '', component: Home },
-    { name: 'messages', async: Messages },
-    { name: 'status', path: ':user/status/:id' },
-    { name: 'profile', path: ':user', component: Profile, abstract: true, children: [
-      { name: 'profile.index', path: '', component: ProfileIndex },
-      { name: 'profile.lists' },
-      { name: 'profile.edit' }
-    ]}
-  ]}
-]
+// /* eslint-disable object-property-newline */
+// module.exports = [
+//   { name: 'application', path: '/', component: Application, abstract: true, children: [
+//     { name: 'home', path: '', component: Home },
+//     { name: 'messages', async: Messages },
+//     { name: 'status', path: ':user/status/:id' },
+//     { name: 'profile', path: ':user', component: Profile, abstract: true, children: [
+//       { name: 'profile.index', path: '', component: ProfileIndex },
+//       { name: 'profile.lists' },
+//       { name: 'profile.edit' }
+//     ]}
+//   ]}
+// ]
 
 function delay (resolve) {
   return function (component) {
     setTimeout(function () {
       resolve(component)
-    }, 2000)
+    }, 500)
   }
 }
