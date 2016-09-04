@@ -6,7 +6,6 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'cherrytree': __dirname,
       'expect': 'referee/lib/expect'
     }
   },
