@@ -1,6 +1,6 @@
 import { assert } from 'referee'
-import qs from '../../lib/qs'
-import Path from '../../lib/path'
+import qs from '../lib/qs'
+import Path from '../lib/path'
 
 let {suite, test} = window
 

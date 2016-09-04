@@ -1,6 +1,6 @@
 import $ from 'jquery'
 import { assert } from 'referee'
-import { intercept } from '../../lib/links'
+import { intercept } from '../lib/links'
 
 let {suite, test, beforeEach, afterEach} = window
 let mouse = window.effroi.mouse

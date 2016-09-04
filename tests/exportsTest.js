@@ -1,8 +1,8 @@
 /* global suite, test, assert */
 
-import BrowserLocationDirect from '../../lib/locations/browser'
-import MemoryLocationDirect from '../../lib/locations/memory'
-import createRouter, { MemoryLocation, BrowserLocation, route } from '../../'
+import BrowserLocationDirect from '../lib/locations/browser'
+import MemoryLocationDirect from '../lib/locations/memory'
+import createRouter, { MemoryLocation, BrowserLocation, route } from '../'
 
 suite('Exports')
 

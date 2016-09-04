@@ -10,7 +10,7 @@ function invariant(condition, format, a, b, c, d, e, f) {
     (function () {
       var args = [a, b, c, d, e, f];
       var argIndex = 0;
-      var error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
+      var error = new Error('Cherrytree: ' + format.replace(/%s/g, function () {
         return args[argIndex++];
       }));
       error.framesToPop = 1; // we don't care about invariant's own frame

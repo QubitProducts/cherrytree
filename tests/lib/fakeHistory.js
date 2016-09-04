@@ -7,7 +7,8 @@ export default function fakeHistory (location) {
   }
 
   return {
-    getURL: function getURL () {
+    url: function url (path) {
+      if (path) return this.setURL(path)
       return history[history.length - 1]
     },
 

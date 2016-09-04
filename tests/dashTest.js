@@ -1,5 +1,5 @@
 import { assert, refute } from 'referee'
-import { clone, pick, isEqual, extend } from '../../lib/dash'
+import { clone, pick, isEqual, extend } from '../lib/dash'
 
 let {suite, test} = window
 

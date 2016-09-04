@@ -1,6 +1,6 @@
 /* global suite, test, beforeEach, afterEach, assert */
 
-import cherrytree, { route } from '../..'
+import cherrytree, { route } from '..'
 
 suite('Routes')
 

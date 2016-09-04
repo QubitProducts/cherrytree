@@ -67,471 +67,552 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-	exports['default'] = cherrytree;
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _dash = __webpack_require__(2);
+	var _router = __webpack_require__(2);
 
-	var _dsl = __webpack_require__(3);
+	var _router2 = _interopRequireDefault(_router);
 
-	var _dsl2 = _interopRequireDefault(_dsl);
+	var _route = __webpack_require__(17);
+
+	var _route2 = _interopRequireDefault(_route);
+
+	var _locationsBrowser = __webpack_require__(13);
+
+	var _locationsBrowser2 = _interopRequireDefault(_locationsBrowser);
+
+	var _locationsMemory = __webpack_require__(16);
+
+	var _locationsMemory2 = _interopRequireDefault(_locationsMemory);
+
+	var createRouter = function createRouter(options) {
+	  return new _router2['default'](options);
+	};
+
+	// old school exports
+	createRouter.route = _route2['default'];
+	createRouter.BrowserLocation = _locationsBrowser2['default'];
+	createRouter.MemoryLocation = _locationsMemory2['default'];
+
+	// es2015 exports
+	exports['default'] = createRouter;
+	exports.BrowserLocation = _locationsBrowser2['default'];
+	exports.MemoryLocation = _locationsMemory2['default'];
+	exports.route = _route2['default'];
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var _dash = __webpack_require__(3);
+
+	var _qs = __webpack_require__(4);
+
+	var _qs2 = _interopRequireDefault(_qs);
 
 	var _path = __webpack_require__(5);
 
 	var _path2 = _interopRequireDefault(_path);
 
-	var _invariant = __webpack_require__(4);
+	var _invariant = __webpack_require__(6);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _locationsBrowser = __webpack_require__(8);
-
-	var _locationsBrowser2 = _interopRequireDefault(_locationsBrowser);
-
-	var _locationsMemory = __webpack_require__(11);
-
-	var _locationsMemory2 = _interopRequireDefault(_locationsMemory);
-
-	var _transition = __webpack_require__(12);
+	var _transition = __webpack_require__(9);
 
 	var _transition2 = _interopRequireDefault(_transition);
 
-	var _links = __webpack_require__(13);
+	var _links = __webpack_require__(10);
 
-	var _logger = __webpack_require__(15);
+	var _logger = __webpack_require__(12);
 
 	var _logger2 = _interopRequireDefault(_logger);
 
-	var _qs = __webpack_require__(16);
+	var _locationsBrowser = __webpack_require__(13);
 
-	var _qs2 = _interopRequireDefault(_qs);
+	var _locationsBrowser2 = _interopRequireDefault(_locationsBrowser);
 
-	function Cherrytree() {
-	  this.initialize.apply(this, arguments);
-	}
+	var _locationsMemory = __webpack_require__(16);
 
-	/**
-	 * The actual constructor
-	 * @param {Object} options
-	 */
-	Cherrytree.prototype.initialize = function (options) {
-	  this.nextId = 1;
-	  this.state = {};
-	  this.middleware = [];
-	  this.options = (0, _dash.extend)({
-	    location: 'browser',
-	    interceptLinks: true,
-	    logError: true,
-	    Promise: Promise,
-	    qs: _qs2['default']
-	  }, options);
-	  this.log = (0, _logger2['default'])(this.options.log);
-	  this.logError = (0, _logger2['default'])(this.options.logError, { error: true });
+	var _locationsMemory2 = _interopRequireDefault(_locationsMemory);
 
-	  (0, _invariant2['default'])(typeof this.options.Promise === 'function', 'Cherrytree requires an ES6 Promise implementation, ' + 'either as an explicit option or a global Promise');
-	};
+	var Cherrytree = (function () {
+	  function Cherrytree(options) {
+	    var _this = this;
 
-	/**
-	 * Add a middleware
-	 * @param  {Function} middleware
-	 * @return {Object}   router
-	 * @api public
-	 */
-	Cherrytree.prototype.use = function (middleware) {
-	  this.middleware.push(middleware);
-	  return this;
-	};
+	    _classCallCheck(this, Cherrytree);
 
-	/**
-	 * Add the route map
-	 * @param  {Function} routes
-	 * @return {Object}   router
-	 * @api public
-	 */
-	Cherrytree.prototype.map = function (routes) {
-	  // create the route tree
-	  this.routes = (0, _dsl2['default'])(routes);
+	    this.options = (0, _dash.extend)({
+	      location: 'browser',
+	      interceptLinks: true,
+	      pushState: true,
+	      Promise: Promise,
+	      qs: _qs2['default']
+	    }, options);
 
-	  // create the matcher list, which is like a flattened
-	  // list of routes = a list of all branches of the route tree
-	  var matchers = this.matchers = [];
-	  // keep track of whether duplicate paths have been created,
-	  // in which case we'll warn the dev
-	  var dupes = {};
+	    var _options = this.options;
+	    var routes = _options.routes;
+	    var middleware = _options.middleware;
+	    var log = _options.log;
+	    var location = _options.location;
 
-	  eachBranch({ routes: this.routes }, [], function (routes) {
-	    // concatenate the paths of the list of routes
-	    var path = routes.reduce(function (memo, r) {
-	      // reset if there's a leading slash, otherwise concat
-	      // and keep resetting the trailing slash
-	      return (r.path[0] === '/' ? r.path : memo + '/' + r.path).replace(/\/$/, '');
-	    }, '');
-	    // ensure we have a leading slash
-	    if (path === '') {
-	      path = '/';
-	    }
-	    // register routes
-	    matchers.push({
-	      routes: routes,
-	      name: routes[routes.length - 1].name,
-	      path: path
-	    });
+	    (0, _invariant2['default'])(typeof this.options.Promise === 'function', 'ES6 Promise implementation is required as an explicit option or a global Promise');
 
-	    // dupe detection
-	    var lastRoute = routes[routes.length - 1];
-	    if (dupes[path]) {
-	      throw new Error('Routes ' + dupes[path] + ' and ' + lastRoute.name + ' have the same url path \'' + path + '\'');
-	    }
-	    dupes[path] = lastRoute.name;
-	  });
-
-	  function eachBranch(node, memo, fn) {
-	    node.routes.forEach(function (route) {
-	      if (!abstract(route)) {
-	        fn(memo.concat(route));
-	      }
-	      if (route.routes && route.routes.length > 0) {
-	        eachBranch(route, memo.concat(route), fn);
-	      }
-	    });
-	  }
-
-	  function abstract(route) {
-	    return route.options && route.options.abstract;
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Starts listening to the location changes.
-	 * @param  {Object}  location (optional)
-	 * @return {Promise} initial transition
-	 *
-	 * @api public
-	 */
-	Cherrytree.prototype.listen = function (path) {
-	  var _this = this;
-
-	  var location = this.location = this.createLocation(path || '');
-	  // setup the location onChange handler
-	  location.onChange(function (url) {
-	    return _this.dispatch(url);
-	  });
-	  // start intercepting links
-	  if (this.options.interceptLinks && location.usesPushState()) {
-	    this.interceptLinks();
-	  }
-	  // and also kick off the initial transition
-	  return this.dispatch(location.getURL());
-	};
-
-	/**
-	 * Transition to a different route. Passe in url or a route name followed by params and query
-	 * @param  {String} url     url or route name
-	 * @param  {Object} params  Optional
-	 * @param  {Object} query   Optional
-	 * @return {Object}         transition
-	 *
-	 * @api public
-	 */
-	Cherrytree.prototype.transitionTo = function () {
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
-
-	  if (this.state.activeTransition) {
-	    return this.replaceWith.apply(this, args);
-	  }
-	  return this.doTransition('setURL', args);
-	};
-
-	/**
-	 * Like transitionTo, but doesn't leave an entry in the browser's history,
-	 * so clicking back will skip this route
-	 * @param  {String} url     url or route name followed by params and query
-	 * @param  {Object} params  Optional
-	 * @param  {Object} query   Optional
-	 * @return {Object}         transition
-	 *
-	 * @api public
-	 */
-	Cherrytree.prototype.replaceWith = function () {
-	  for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	    args[_key2] = arguments[_key2];
-	  }
-
-	  return this.doTransition('replaceURL', args);
-	};
-
-	/**
-	 * Create an href
-	 * @param  {String} name   target route name
-	 * @param  {Object} params
-	 * @param  {Object} query
-	 * @return {String}        href
-	 *
-	 * @api public
-	 */
-	Cherrytree.prototype.generate = function (name, params, query) {
-	  (0, _invariant2['default'])(this.location, 'call .listen() before using .generate()');
-	  var matcher = undefined;
-
-	  params = params || {};
-	  query = query || {};
-
-	  this.matchers.forEach(function (m) {
-	    if (m.name === name) {
-	      matcher = m;
-	    }
-	  });
-
-	  if (!matcher) {
-	    throw new Error('No route is named ' + name);
-	  }
-
-	  // this might be a dangerous feature, although it's useful in practise
-	  // if some params are not passed into the generate call, they're populated
-	  // based on the current state or on the currently active transition.
-	  // Consider removing this.. since the users can opt into this behaviour, by
-	  // reaching out to the router.state if that's what they want.
-	  var currentParams = (0, _dash.clone)(this.state.params || {});
-	  if (this.state.activeTransition) {
-	    currentParams = (0, _dash.clone)(this.state.activeTransition.params || {});
-	  }
-	  params = (0, _dash.extend)(currentParams, params);
-
-	  var url = _path2['default'].withQuery(this.options.qs, _path2['default'].injectParams(matcher.path, params), query);
-	  return this.location.formatURL(url);
-	};
-
-	/**
-	 * Stop listening to URL changes
-	 * @api public
-	 */
-	Cherrytree.prototype.destroy = function () {
-	  if (this.location && this.location.destroy && this.location.destroy) {
-	    this.location.destroy();
-	  }
-	  if (this.disposeIntercept) {
-	    this.disposeIntercept();
-	  }
-	  if (this.state.activeTransition) {
-	    this.state.activeTransition.cancel();
-	  }
-	  this.state = {};
-	};
-
-	/**
-	 * Check if the given route/params/query combo is active
-	 * @param  {String} name   target route name
-	 * @param  {Object} params
-	 * @param  {Object} query
-	 * @return {Boolean}
-	 *
-	 * @api public
-	 */
-	Cherrytree.prototype.isActive = function (name, params, query) {
-	  params = params || {};
-	  query = query || {};
-
-	  var activeRoutes = this.state.routes || [];
-	  var activeParams = this.state.params || {};
-	  var activeQuery = this.state.query || [];
-
-	  var isNameActive = !!(0, _dash.find)(activeRoutes, function (route) {
-	    return route.name === name;
-	  });
-	  var areParamsActive = !!Object.keys(params).every(function (key) {
-	    return activeParams[key] === params[key];
-	  });
-	  var isQueryActive = !!Object.keys(query).every(function (key) {
-	    return activeQuery[key] === query[key];
-	  });
-
-	  return isNameActive && areParamsActive && isQueryActive;
-	};
-
-	/**
-	 * @api private
-	 */
-	Cherrytree.prototype.doTransition = function (method, params) {
-	  var _this2 = this;
-
-	  var previousUrl = this.location.getURL();
-
-	  var url = params[0];
-	  if (url[0] !== '/') {
-	    url = this.generate.apply(this, params);
-	    url = url.replace(/^#/, '/');
-	  }
-
-	  if (this.options.pushState) {
-	    url = this.location.removeRoot(url);
-	  }
-
-	  var transition = this.dispatch(url);
-
-	  transition['catch'](function (err) {
-	    if (err && err.type === 'TransitionCancelled') {
-	      // reset the URL in case the transition has been cancelled
-	      _this2.location.replaceURL(previousUrl, { trigger: false });
-	    }
-	    return err;
-	  });
-
-	  this.location[method](url, { trigger: false });
-
-	  return transition;
-	};
-
-	/**
-	 * Match the path against the routes
-	 * @param  {String} path
-	 * @return {Object} the list of matching routes and params
-	 *
-	 * @api private
-	 */
-	Cherrytree.prototype.match = function (path) {
-	  path = (path || '').replace(/\/$/, '') || '/';
-	  var found = false;
-	  var params = undefined;
-	  var routes = [];
-	  var pathWithoutQuery = _path2['default'].withoutQuery(path);
-	  var qs = this.options.qs;
-	  this.matchers.forEach(function (matcher) {
-	    if (!found) {
-	      params = _path2['default'].extractParams(matcher.path, pathWithoutQuery);
-	      if (params) {
-	        found = true;
-	        routes = matcher.routes;
-	      }
-	    }
-	  });
-	  return {
-	    routes: routes.map(descriptor),
-	    params: params || {},
-	    query: _path2['default'].extractQuery(qs, path) || {}
-	  };
-
-	  // clone the data (only a shallow clone of options)
-	  // to make sure the internal route store is not mutated
-	  // by the middleware. The middleware can mutate data
-	  // before it gets passed into the next middleware, but
-	  // only within the same transition. New transitions
-	  // will get to use pristine data.
-	  function descriptor(route) {
-	    return {
-	      name: route.name,
-	      path: route.path,
-	      params: (0, _dash.pick)(params, _path2['default'].extractParamNames(route.path)),
-	      options: (0, _dash.clone)(route.options)
+	    this.state = {
+	      nextId: 1,
+	      lastTransition: null,
+	      currTransition: null,
+	      nextTransition: null
 	    };
-	  }
-	};
 
-	Cherrytree.prototype.dispatch = function (path) {
-	  var match = this.match(path);
-	  var query = match.query;
-	  var pathname = _path2['default'].withoutQuery(path);
-
-	  var activeTransition = this.state.activeTransition;
-
-	  // if we already have an active transition with all the same
-	  // params - return that and don't do anything else
-	  if (activeTransition && activeTransition.pathname === pathname && (0, _dash.isEqual)(activeTransition.query, query)) {
-	    return activeTransition;
-	  }
-
-	  // otherwise, cancel the active transition since we're
-	  // redirecting (or initiating a brand new transition)
-	  if (activeTransition) {
-	    var err = new Error('TransitionRedirected');
-	    err.type = 'TransitionRedirected';
-	    err.nextPath = path;
-	    activeTransition.cancel(err);
-	  }
-
-	  // if there is no active transition, check if
-	  // this is a noop transition, in which case, return
-	  // a transition to respect the function signature,
-	  // but don't actually run any of the middleware
-	  if (!activeTransition) {
-	    if (this.state.pathname === pathname && (0, _dash.isEqual)(this.state.query, query)) {
-	      return (0, _transition2['default'])({
-	        id: this.nextId++,
-	        path: path,
-	        match: match,
-	        noop: true,
-	        router: this
-	      }, this.options.Promise);
+	    if (routes) {
+	      this.map(routes);
 	    }
+
+	    this.middleware = [];
+	    if (middleware) {
+	      middleware = (0, _dash.isArray)(middleware) ? middleware : [middleware];
+	      middleware.map(function (m) {
+	        return _this.use(m);
+	      });
+	    }
+
+	    this.log = (0, _logger2['default'])(log);
+	    this.location = this.createLocation(location);
 	  }
 
-	  var t = (0, _transition2['default'])({
-	    id: this.nextId++,
-	    path: path,
-	    match: match,
-	    router: this
-	  }, this.options.Promise);
+	  /**
+	   * Add a middleware
+	   * @param  {Function}  middleware
+	   * @return {Object}    router
+	   * @api public
+	   */
 
-	  this.state.activeTransition = t;
+	  _createClass(Cherrytree, [{
+	    key: 'use',
+	    value: function use(createMiddleware) {
+	      var router = this;
+	      var middleware = createMiddleware(router);
+	      if (typeof middleware === 'function') {
+	        middleware = { next: middleware };
+	      }
+	      if (!middleware.name) {
+	        middleware.name = createMiddleware.name || middleware.next.name;
+	      }
+	      this.middleware.push(middleware);
+	      return this;
+	    }
 
-	  return t;
-	};
+	    /**
+	     * Add the route map
+	     * @param  {Function} routes
+	     * @return {Object}   router
+	     * @api public
+	     */
+	  }, {
+	    key: 'map',
+	    value: function map(routes) {
+	      // to keep track of unique names
+	      var names = {};
+	      // to keep track of unique paths
+	      var paths = {};
 
-	/**
-	 * Create the default location.
-	 * This is used when no custom location is passed to
-	 * the listen call.
-	 * @return {Object} location
-	 *
-	 * @api private
-	 */
-	Cherrytree.prototype.createLocation = function (path) {
-	  var location = this.options.location;
-	  if (!(0, _dash.isString)(location)) {
-	    return location;
-	  }
-	  if (location === 'browser') {
-	    return new _locationsBrowser2['default']((0, _dash.pick)(this.options, ['pushState', 'root']));
-	  } else if (location === 'memory') {
-	    return new _locationsMemory2['default']({ path: path });
-	  } else {
-	    throw new Error('Location can be `browser`, `memory` or a custom implementation');
-	  }
-	};
+	      this.routes = (0, _dash.mapNested)(routes, 'children', function (route) {
+	        var name = route.name;
+	        (0, _invariant2['default'])(name, 'Route name is required');
+	        (0, _invariant2['default'])(name.indexOf('/') === -1, 'Route names can not contain /');
+	        (0, _invariant2['default'])(!names[name], 'Route names must be unique, but route "%s" is declared multiple times', name);
 
-	/**
-	 * When using pushState, it's important to setup link interception
-	 * because all link clicks should be handled via the router instead of
-	 * browser reloading the page
-	 */
-	Cherrytree.prototype.interceptLinks = function () {
-	  var _this3 = this;
+	        // remember which names have already been used
+	        names[name] = true;
 
-	  var clickHandler = typeof this.options.interceptLinks === 'function' ? this.options.interceptLinks : defaultClickHandler;
-	  this.disposeIntercept = (0, _links.intercept)(function (event, link) {
-	    return clickHandler(event, link, _this3);
-	  });
+	        // never mutate input data
+	        route = (0, _dash.clone)(route);
 
-	  function defaultClickHandler(event, link, router) {
-	    event.preventDefault();
-	    router.transitionTo(router.location.removeRoot(link.getAttribute('href')));
-	  }
-	};
+	        // fill in optional paths
+	        if (typeof route.path !== 'string') route.path = route.name;
 
-	function cherrytree(options) {
-	  return new Cherrytree(options);
-	}
+	        // create a descriptor object that we will be passing to
+	        // transitions middleware
+	        route.descriptor = (0, _dash.clone)(route);
+	        delete route.descriptor.children;
 
-	cherrytree.BrowserLocation = _locationsBrowser2['default'];
-	cherrytree.MemoryLocation = _locationsMemory2['default'];
+	        return route;
+	      });
+
+	      // create the matcher list, which is like a flattened
+	      // list of routes = a list of all branches of the route tree
+	      var matchers = this.matchers = [];
+	      // keep track of whether duplicate paths have been created,
+	      // in which case we'll warn the dev
+
+	      eachBranch({ children: this.routes }, [], function (routes) {
+	        // concatenate the paths of the list of routes
+	        var path = routes.reduce(function (memo, r) {
+	          // reset if there's a leading slash, otherwise concat
+	          // and keep resetting the trailing slash
+	          return (r.path[0] === '/' ? r.path : memo + '/' + r.path).replace(/\/$/, '');
+	        }, '');
+
+	        // ensure we have a leading slash
+	        if (path === '') {
+	          path = '/';
+	        }
+	        // register routes
+	        matchers.push({
+	          routes: routes,
+	          name: routes[routes.length - 1].name,
+	          path: path
+	        });
+
+	        // duplicate path detection
+	        var lastRoute = routes[routes.length - 1];
+	        (0, _invariant2['default'])(!paths[path], 'Routes "%s" and "%s" have the same path %s', paths[path], lastRoute.name, path);
+	        paths[path] = lastRoute.name;
+	      });
+
+	      function eachBranch(root, memo, fn) {
+	        root.children.forEach(function (route) {
+	          if (!abstract(route)) {
+	            fn(memo.concat(route));
+	          }
+	          if (route.children) {
+	            eachBranch(route, memo.concat(route), fn);
+	          }
+	        });
+	      }
+
+	      function abstract(route) {
+	        return route && route.abstract;
+	      }
+
+	      return this;
+	    }
+
+	    /**
+	     * Starts listening to the location changes.
+	     * @param  {Object}  location (optional)
+	     * @return {Promise} initial transition
+	     *
+	     * @api public
+	     */
+	  }, {
+	    key: 'start',
+	    value: function start() {
+	      var _this2 = this;
+
+	      var location = this.location;
+
+	      // start listening to location events
+	      location.start();
+	      // setup the location onChange handler
+	      location.onChange(function (url) {
+	        return _this2.dispatch(url);
+	      });
+	      // start intercepting links
+	      if (this.options.interceptLinks && location.usesPushState()) {
+	        this.interceptLinks();
+	      }
+	      // and also kick off the initial transition
+	      return this.dispatch(location.url());
+	    }
+
+	    /**
+	     * Stop listening to URL changes
+	     * @api public
+	     */
+	  }, {
+	    key: 'stop',
+	    value: function stop() {
+	      var location = this.location;
+	      var state = this.state;
+
+	      location && location.destroy && location.destroy();
+	      this.disposeIntercept && this.disposeIntercept();
+
+	      if (state.currTransition) {
+	        state.currTransition.cancel();
+	        state.lastTransition = null;
+	        state.currTransition = null;
+	        state.nextTransition = null;
+	      }
+
+	      return this.options.Promise.resolve();
+	    }
+
+	    /**
+	     * Transition to a different route.
+	     * Passe in url or a route name followed by params and query
+	     *
+	     * @param  {String}  options.route    route name, url or parametrised url
+	     * @param  {Object}  options.params   Optional
+	     * @param  {Object}  options.query    Optional
+	     * @param  {Boolean} options.replace  Optional
+	     * @return {Promise}        promise that resolves upon transition completing
+	     *
+	     * @api public
+	     */
+	  }, {
+	    key: 'transitionTo',
+	    value: function transitionTo(options) {
+	      (0, _invariant2['default'])(options && options.route, '"route" option must be used when calling "transitionTo"');
+
+	      var url = this.href(options);
+	      url = this.location.removeRoot(url);
+
+	      var method = options.replace ? 'replace' : 'push';
+	      if (this.state.currTransition) {
+	        method = 'replace';
+	      }
+
+	      this.location[method](url, { trigger: false });
+	      return this.dispatch(url);
+	    }
+
+	    /**
+	     * Create an href
+	     *
+	     * @param  {String} options.route   route name, url or parametrised url
+	     * @param  {Object} options.params  optional
+	     * @param  {Object} options.query   optional
+	     * @return {String}        href
+	     *
+	     * @api public
+	     */
+	  }, {
+	    key: 'href',
+	    value: function href(_ref) {
+	      var route = _ref.route;
+	      var _ref$params = _ref.params;
+	      var params = _ref$params === undefined ? {} : _ref$params;
+	      var _ref$query = _ref.query;
+	      var query = _ref$query === undefined ? {} : _ref$query;
+
+	      var path = undefined;
+
+	      (0, _invariant2['default'])(route, '"route" option must be used when calling "href"');
+
+	      if (route.indexOf('/') > -1) {
+	        path = route;
+	      } else {
+	        var matcher = (0, _dash.find)(this.matchers, function (m) {
+	          return m.name === route;
+	        });
+	        (0, _invariant2['default'])(matcher, 'No route is named %s', route);
+	        path = matcher.path;
+	      }
+
+	      var url = _path2['default'].withQuery(this.options.qs, _path2['default'].injectParams(path, params), query);
+	      return this.location.format(url);
+	    }
+
+	    /**
+	     * Check if the given route/params/query combo is active
+	     * @param  {String} name   target route name
+	     * @param  {Object} params
+	     * @param  {Object} query
+	     * @return {Boolean}
+	     *
+	     * @api public
+	     */
+	  }, {
+	    key: 'isActive',
+	    value: function isActive(_ref2) {
+	      var route = _ref2.route;
+	      var _ref2$params = _ref2.params;
+	      var params = _ref2$params === undefined ? {} : _ref2$params;
+	      var _ref2$query = _ref2.query;
+	      var query = _ref2$query === undefined ? {} : _ref2$query;
+
+	      var lastTransition = this.state.lastTransition || {};
+	      var state = (0, _dash.extend)({ routes: [], params: {}, query: {} }, lastTransition.descriptor);
+
+	      var isNameActive = function isNameActive() {
+	        return !route || !!(0, _dash.find)(state.routes, function (r) {
+	          return r.name === route;
+	        });
+	      };
+	      var areParamsActive = function areParamsActive() {
+	        return Object.keys(params).every(function (key) {
+	          return state.params[key] === params[key];
+	        });
+	      };
+	      var isQueryActive = function isQueryActive() {
+	        return Object.keys(query).every(function (key) {
+	          return state.query[key] === query[key];
+	        });
+	      };
+
+	      return isNameActive() && areParamsActive() && isQueryActive();
+	    }
+
+	    /**
+	     * Match the path against the routes
+	     * @param  {String} path
+	     * @return {Object} the list of matching routes and params
+	     *
+	     * @api private
+	     */
+	  }, {
+	    key: 'match',
+	    value: function match(path) {
+	      path = (path || '').replace(/\/$/, '') || '/';
+
+	      var qs = this.options.qs;
+	      var pathWithoutQuery = _path2['default'].withoutQuery(path);
+	      var matcher = (0, _dash.find)(this.matchers, function (matcher) {
+	        return _path2['default'].extractParams(matcher.path, pathWithoutQuery);
+	      }) || {};
+	      var routes = matcher.routes || [];
+
+	      return {
+	        routes: routes.map(function (route) {
+	          return route.descriptor;
+	        }),
+	        params: matcher.path && _path2['default'].extractParams(matcher.path, pathWithoutQuery) || {},
+	        query: _path2['default'].extractQuery(qs, path) || {}
+	      };
+	    }
+
+	    /**
+	     * @api private
+	     */
+	  }, {
+	    key: 'dispatch',
+	    value: function dispatch(path) {
+	      var router = this;
+	      var match = this.match(path);
+	      var query = match.query;
+	      var pathname = _path2['default'].withoutQuery(path);
+
+	      var _state = this.state;
+	      var currTransition = _state.currTransition;
+	      var lastTransition = _state.lastTransition;
+
+	      if (lastTransition && lastTransition.descriptor.path === path) {
+	        return this.options.Promise.resolve();
+	      }
+
+	      // if we already have an active transition with all the same
+	      // params - return that and don't do anything else
+	      if (currTransition && currTransition.descriptor.pathname === pathname && (0, _dash.isEqual)(currTransition.descriptor.query, query)) {
+	        return currTransition.promise;
+	      }
+
+	      // otherwise, cancel the current transition
+	      // and queue up the next transition
+	      if (currTransition) {
+	        if (this.state.nextTransition) this.state.nextTransition.cancel('redirect');
+	        this.state.nextTransition = createTransition();
+	        currTransition.cancel('redirect');
+	        return this.state.nextTransition.promise;
+	      }
+
+	      this.state.currTransition = createTransition();
+	      this.state.currTransition.run(onTransitionDone);
+
+	      function createTransition() {
+	        return (0, _transition2['default'])({
+	          id: router.state.nextId++,
+	          path: path,
+	          match: match,
+	          router: router
+	        }, router.options.Promise);
+	      }
+
+	      function onTransitionDone() {
+	        var _router$state = router.state;
+	        var lastTransition = _router$state.lastTransition;
+	        var currTransition = _router$state.currTransition;
+	        var nextTransition = _router$state.nextTransition;
+
+	        if (currTransition.descriptor.state === 'cancelled' && lastTransition) {
+	          var previousUrl = lastTransition.descriptor.path;
+	          router.location.replace(previousUrl, { trigger: false });
+	        }
+	        router.state.lastTransition = currTransition;
+	        delete router.state.lastTransition.descriptor.prev;
+
+	        router.state.currTransition = null;
+	        if (nextTransition) {
+	          router.state.currTransition = nextTransition;
+	          router.state.nextTransition = null;
+	          nextTransition.run(onTransitionDone);
+	        }
+	      }
+
+	      return this.state.currTransition.promise;
+	    }
+
+	    /**
+	     * Create the default location.
+	     * This is used when no custom location is passed in options
+	     *
+	     * @return {Object} location
+	     *
+	     * @api private
+	     */
+	  }, {
+	    key: 'createLocation',
+	    value: function createLocation(location) {
+	      if (!(0, _dash.isString)(location)) {
+	        return location;
+	      } else if (location === 'browser') {
+	        return new _locationsBrowser2['default']((0, _dash.pick)(this.options, ['pushState', 'root']));
+	      } else if (location === 'memory') {
+	        return new _locationsMemory2['default']();
+	      } else {
+	        throw new Error('Location can be `browser`, `memory` or a custom implementation');
+	      }
+	    }
+
+	    /**
+	     * When using pushState, it's important to setup link interception
+	     * because all link clicks should be handled via the router instead of
+	     * browser reloading the page
+	     *
+	     * @api private
+	     */
+	  }, {
+	    key: 'interceptLinks',
+	    value: function interceptLinks() {
+	      var _this3 = this;
+
+	      var interceptLinks = this.options.interceptLinks;
+
+	      var clickHandler = typeof interceptLinks === 'function' ? interceptLinks : defaultClickHandler;
+	      this.disposeIntercept = (0, _links.intercept)(function (event, link) {
+	        return clickHandler(event, link, _this3);
+	      });
+
+	      function defaultClickHandler(event, link, router) {
+	        event.preventDefault();
+	        router.transitionTo({ route: router.location.removeRoot(link.getAttribute('href')) });
+	      }
+	    }
+	  }]);
+
+	  return Cherrytree;
+	})();
+
+	exports['default'] = Cherrytree;
 	module.exports = exports['default'];
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -544,10 +625,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var assoc = function assoc(obj, attr, val) {
 	  obj[attr] = val;return obj;
 	};
+
 	var isArray = function isArray(obj) {
 	  return toString.call(obj) === '[object Array]';
 	};
 
+	exports.isArray = isArray;
 	var clone = function clone(obj) {
 	  return obj ? isArray(obj) ? obj.slice(0) : extend({}, obj) : obj;
 	};
@@ -613,88 +696,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isString = function isString(obj) {
 	  return Object.prototype.toString.call(obj) === '[object String]';
 	};
+
 	exports.isString = isString;
+	var isObject = function isObject(obj) {
+	  return typeof obj === 'object';
+	};
 
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
+	exports.isObject = isObject;
+	var mapNested = function mapNested(root, childrenKey, fn) {
+	  return root.map(map);
 
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports['default'] = dsl;
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _dash = __webpack_require__(2);
-
-	var _invariant = __webpack_require__(4);
-
-	var _invariant2 = _interopRequireDefault(_invariant);
-
-	function dsl(callback) {
-	  var ancestors = [];
-	  var matches = {};
-	  var names = {};
-
-	  callback(function route(name, options, callback) {
-	    var routes = undefined;
-
-	    (0, _invariant2['default'])(!names[name], 'Route names must be unique, but route "%s" is declared multiple times', name);
-
-	    names[name] = true;
-
-	    if (arguments.length === 1) {
-	      options = {};
+	  function map(node) {
+	    node = clone(fn(node));
+	    if (node[childrenKey]) {
+	      node[childrenKey] = node[childrenKey].map(map);
 	    }
+	    return node;
+	  }
+	};
 
-	    if (arguments.length === 2 && typeof options === 'function') {
-	      callback = options;
-	      options = {};
-	    }
-
-	    if (typeof options.path !== 'string') {
-	      var parts = name.split('.');
-	      options.path = parts[parts.length - 1];
-	    }
-
-	    // go to the next level
-	    if (callback) {
-	      ancestors = ancestors.concat(name);
-	      callback();
-	      routes = pop();
-	      ancestors.splice(-1);
-	    }
-
-	    // add the node to the tree
-	    push({
-	      name: name,
-	      path: options.path,
-	      routes: routes || [],
-	      options: options,
-	      ancestors: (0, _dash.clone)(ancestors)
-	    });
+	exports.mapNested = mapNested;
+	var defer = function defer() {
+	  var deferred = {};
+	  deferred.promise = new Promise(function (resolve, reject) {
+	    deferred.resolve = resolve;
+	    deferred.reject = reject;
 	  });
-
-	  function pop() {
-	    return matches[currentLevel()] || [];
-	  }
-
-	  function push(route) {
-	    matches[currentLevel()] = matches[currentLevel()] || [];
-	    matches[currentLevel()].push(route);
-	  }
-
-	  function currentLevel() {
-	    return ancestors.join('.');
-	  }
-
-	  return pop();
-	}
-
-	module.exports = exports['default'];
+	  return deferred;
+	};
+	exports.defer = defer;
 
 /***/ },
 /* 4 */
@@ -705,22 +735,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-	exports['default'] = invariant;
+	exports['default'] = {
+	  parse: function parse(querystring) {
+	    return querystring.split('&').reduce(function (acc, pair) {
+	      var parts = pair.split('=');
+	      acc[parts[0]] = decodeURIComponent(parts[1]);
+	      return acc;
+	    }, {});
+	  },
 
-	function invariant(condition, format, a, b, c, d, e, f) {
-	  if (!condition) {
-	    (function () {
-	      var args = [a, b, c, d, e, f];
-	      var argIndex = 0;
-	      var error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
-	        return args[argIndex++];
-	      }));
-	      error.framesToPop = 1; // we don't care about invariant's own frame
-	      throw error;
-	    })();
+	  stringify: function stringify(params) {
+	    return Object.keys(params).reduce(function (acc, key) {
+	      if (params[key] !== undefined) {
+	        acc.push(key + '=' + encodeURIComponent(params[key]));
+	      }
+	      return acc;
+	    }, []).join('&');
 	  }
-	}
-
+	};
 	module.exports = exports['default'];
 
 /***/ },
@@ -735,11 +767,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _invariant = __webpack_require__(4);
+	var _invariant = __webpack_require__(6);
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _pathToRegexp = __webpack_require__(6);
+	var _pathToRegexp = __webpack_require__(7);
 
 	var _pathToRegexp2 = _interopRequireDefault(_pathToRegexp);
 
@@ -876,9 +908,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports['default'] = invariant;
+
+	function invariant(condition, format, a, b, c, d, e, f) {
+	  if (!condition) {
+	    (function () {
+	      var args = [a, b, c, d, e, f];
+	      var argIndex = 0;
+	      var error = new Error('Cherrytree: ' + format.replace(/%s/g, function () {
+	        return args[argIndex++];
+	      }));
+	      error.framesToPop = 1; // we don't care about invariant's own frame
+	      throw error;
+	    })();
+	  }
+	}
+
+	module.exports = exports['default'];
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isarray = __webpack_require__(7)
+	var isarray = __webpack_require__(8)
 
 	/**
 	 * Expose `pathToRegexp`.
@@ -1307,7 +1366,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
@@ -1316,7 +1375,447 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports['default'] = createTransition;
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _dash = __webpack_require__(3);
+
+	var _path = __webpack_require__(5);
+
+	var _path2 = _interopRequireDefault(_path);
+
+	function createTransition(options, Promise) {
+	  var id = options.id;
+	  var path = options.path;
+	  var match = options.match;
+	  var router = options.router;
+	  var log = router.log;
+	  var lastTransition = router.state.lastTransition;
+	  var routes = match.routes;
+	  var params = match.params;
+	  var query = match.query;
+
+	  var done = undefined;
+
+	  var deferred = (0, _dash.defer)();
+
+	  var transition = {
+	    descriptor: {
+	      id: id,
+	      routes: (0, _dash.clone)(routes),
+	      path: path,
+	      pathname: _path2['default'].withoutQuery(path),
+	      params: (0, _dash.clone)(params),
+	      query: (0, _dash.clone)(query),
+	      state: 'queued',
+	      prev: lastTransition && lastTransition.descriptor
+	    },
+
+	    // A promise to signal the completion of transition
+	    // this promise will resolve either when transition
+	    // completes with 'completed' or 'cancelled' state amd
+	    // in case of 'redirected' state will only complete
+	    // once redirect is fully resolved.
+	    // It will get rejected in case of transitioning completing
+	    // in 'failed' state.
+	    promise: deferred.promise,
+
+	    cancel: function cancel(reason) {
+	      if (transition.descriptor.state === 'queued') {
+	        return deferred.resolve();
+	      }
+	      if (transition.descriptor.state === 'transitioning') {
+	        if (reason === 'redirect') {
+	          return handleRedirect();
+	        } else {
+	          log('Transition #' + id, 'cancelled');
+	          return handleCancel();
+	        }
+	      }
+	    },
+
+	    redirect: function redirect(options) {
+	      log('Transition #' + id, 'redirecting to', options);
+	      router.transitionTo(options);
+	    },
+
+	    run: function run(doneCallback) {
+	      done = doneCallback;
+	      transition.startTime = new Date().getTime();
+	      transition.descriptor.state = 'transitioning';
+	      setTimeout(function () {
+	        log('---');
+	        log('Transition #' + id, 'to', path);
+	        log('Transition #' + id, 'routes', routes.map(function (r) {
+	          return r.name;
+	        }));
+	        log('Transition #' + id, 'params', params);
+	        log('Transition #' + id, 'query', query);
+	        runNext();
+	      }, 1);
+	    }
+	  };
+
+	  function afterNext(err) {
+	    if (err) return handleError(err);
+	    if (transition.descriptor.state !== 'transitioning') return;
+	    transition.descriptor.state = 'completed';
+	    setTimeout(runDone, 1);
+	  }
+
+	  function handleCancel() {
+	    if (transition.descriptor.state !== 'transitioning') return;
+	    transition.descriptor.state = 'cancelled';
+	    setTimeout(runDone, 1);
+	  }
+
+	  function handleRedirect() {
+	    if (transition.descriptor.state !== 'transitioning') return;
+	    transition.descriptor.state = 'redirected';
+	    setTimeout(runDone, 1);
+	  }
+
+	  function handleError(err) {
+	    if (transition.descriptor.state !== 'transitioning') return;
+	    transition.descriptor.state = 'failed';
+	    setTimeout(function () {
+	      return runError(err);
+	    }, 1);
+	  }
+
+	  function afterDone(err) {
+	    if (!err) transition.descriptor.state = 'completed';
+	    transition.duration = new Date().getTime() - transition.startTime;
+	    log('Transition #' + id, 'DONE -', transition.descriptor.state, '- (' + transition.duration + 'ms)');
+	    done(err, transition);
+	    if (transition.descriptor.state === 'failed') {
+	      deferred.reject(err);
+	    } else if (transition.descriptor.state === 'redirected') {
+	      router.state.currTransition.promise.then(deferred.resolve)['catch'](deferred.reject);
+	    } else {
+	      deferred.resolve();
+	    }
+	  }
+
+	  function runNext() {
+	    var middlewares = router.middleware;
+	    reduce(middlewares, function (context, middleware, i, list, cb) {
+	      if (transition.descriptor.state !== 'transitioning') return false;
+	      log('Transition #' + id, 'resolving middleware.next:', name(middleware, 'next'));
+	      transition.middlewareReached = i;
+	      if (!middleware.next) return cb(null, context);
+	      var next = cb;
+	      var redirect = transition.redirect;
+	      var cancel = transition.cancel;
+	      hook(middleware, 'next', next)(transition.descriptor, redirect, cancel);
+	    }, undefined, afterNext);
+	  }
+
+	  function runDone() {
+	    var middlewares = router.middleware.slice(0, transition.middlewareReached + 1).reverse();
+	    reduce(middlewares, function (context, middleware, i, list, cb) {
+	      log('Transition #' + id, 'resolving middleware.done:', name(middleware, 'done'));
+	      if (!middleware.done) return cb();
+	      var next = cb;
+	      hook(middleware, 'done', next)(transition.descriptor);
+	    }, undefined, afterDone);
+	  }
+
+	  function runError(err) {
+	    var middlewares = router.middleware.slice(0, transition.middlewareReached + 1).reverse();
+	    reduce(middlewares, function (context, middleware, i, list, cb) {
+	      log('Transition #' + id, 'resolving middleware.error:', name(middleware, 'error'));
+	      if (!context) return cb(null);
+	      if (!middleware.error) return cb(null, context);
+	      var next = function next(err) {
+	        return cb(null, err);
+	      };
+	      hook(middleware, 'error', next)(context, transition.descriptor);
+	    }, err, function (internalErr, err) {
+	      return afterDone(internalErr || err);
+	    });
+	  }
+
+	  function reduce(list, fn, initial, cb) {
+	    if (list.length === 0) return cb(initial);
+
+	    callNext(initial, 0);
+
+	    function callNext(memo, i) {
+	      if (i === list.length) return cb(null, memo);
+	      var ret = fn(memo, list[i], i, list, function (err, nextMemo) {
+	        if (err) return cb(err);
+	        callNext(nextMemo, i + 1);
+	      });
+	      if (ret === false) cb(null, memo);
+	    }
+	  }
+
+	  function hook(middleware, hook, next) {
+	    return function () {
+	      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	      }
+
+	      new Promise(function (resolve) {
+	        return resolve(middleware[hook].apply(middleware, args));
+	      }).then(function () {
+	        return next();
+	      })['catch'](next);
+	    };
+	  }
+
+	  function name(middleware, hook) {
+	    return (middleware.name || 'anonymous') + (middleware[hook] ? '' : ' (skipping)');
+	  }
+
+	  return transition;
+	}
+
+	module.exports = exports['default'];
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports.intercept = intercept;
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _events = __webpack_require__(11);
+
+	var _events2 = _interopRequireDefault(_events);
+
+	/**
+	 * Handle link delegation on `el` or the document,
+	 * and invoke `fn(e)` when clickable.
+	 *
+	 * @param {Element|Function} el or fn
+	 * @param {Function} [fn]
+	 * @api public
+	 */
+
+	function intercept(el, fn) {
+	  // default to document
+	  if (typeof el === 'function') {
+	    fn = el;
+	    el = document;
+	  }
+
+	  var cb = delegate(el, 'click', function (e, el) {
+	    if (clickable(e, el)) fn(e, el);
+	  });
+
+	  return function dispose() {
+	    undelegate(el, 'click', cb);
+	  };
+	}
+
+	function link(element) {
+	  element = { parentNode: element };
+
+	  var root = document;
+
+	  // Make sure `element !== document` and `element != null`
+	  // otherwise we get an illegal invocation
+	  while ((element = element.parentNode) && element !== document) {
+	    if (element.tagName.toLowerCase() === 'a') {
+	      return element;
+	    }
+	    // After `matches` on the edge case that
+	    // the selector matches the root
+	    // (when the root is not the document)
+	    if (element === root) {
+	      return;
+	    }
+	  }
+	}
+
+	/**
+	 * Delegate event `type` to links
+	 * and invoke `fn(e)`. A callback function
+	 * is returned which may be passed to `.unbind()`.
+	 *
+	 * @param {Element} el
+	 * @param {String} selector
+	 * @param {String} type
+	 * @param {Function} fn
+	 * @param {Boolean} capture
+	 * @return {Function}
+	 * @api public
+	 */
+
+	function delegate(el, type, fn) {
+	  return _events2['default'].bind(el, type, function (e) {
+	    var target = e.target || e.srcElement;
+	    var el = link(target);
+	    if (el) {
+	      fn(e, el);
+	    }
+	  });
+	}
+
+	/**
+	 * Unbind event `type`'s callback `fn`.
+	 *
+	 * @param {Element} el
+	 * @param {String} type
+	 * @param {Function} fn
+	 * @param {Boolean} capture
+	 * @api public
+	 */
+
+	function undelegate(el, type, fn) {
+	  _events2['default'].unbind(el, type, fn);
+	}
+
+	/**
+	 * Check if `e` is clickable.
+	 */
+
+	function clickable(e, el) {
+	  if (which(e) !== 1) return;
+	  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+	  if (e.defaultPrevented) return;
+
+	  // check target
+	  if (el.target) return;
+
+	  // check for data-bypass attribute
+	  if (el.getAttribute('data-bypass') !== null) return;
+
+	  // inspect the href
+	  var href = el.getAttribute('href');
+	  if (!href || href.length === 0) return;
+	  // don't handle hash links
+	  if (href[0] === '#') return;
+	  // external/absolute links
+	  if (/^[A-Za-z]+:\/\//.test(href)) return;
+	  // email links
+	  if (href.indexOf('mailto:') === 0) return;
+	  // don't intercept javascript links
+	  /* eslint-disable no-script-url */
+	  if (href.indexOf('javascript:') === 0) return;
+	  /* eslint-enable no-script-url */
+
+	  return true;
+	}
+
+	/**
+	 * Event button.
+	 */
+
+	function which(e) {
+	  e = e || window.event;
+	  return e.which === null ? e.button : e.which;
+	}
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	var events = createEvents();
+
+	exports['default'] = events;
+
+	function createEvents() {
+	  var exp = {};
+
+	  if (typeof window === 'undefined') {
+	    return exp;
+	  }
+
+	  /**
+	  * DOM Event bind/unbind
+	  */
+
+	  var bind = window.addEventListener ? 'addEventListener' : 'attachEvent';
+	  var unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
+	  var prefix = bind !== 'addEventListener' ? 'on' : '';
+
+	  /**
+	  * Bind `el` event `type` to `fn`.
+	  *
+	  * @param {Element} el
+	  * @param {String} type
+	  * @param {Function} fn
+	  * @param {Boolean} capture
+	  * @return {Function}
+	  * @api public
+	  */
+
+	  exp.bind = function (el, type, fn, capture) {
+	    el[bind](prefix + type, fn, capture || false);
+	    return fn;
+	  };
+
+	  /**
+	  * Unbind `el` event `type`'s callback `fn`.
+	  *
+	  * @param {Element} el
+	  * @param {String} type
+	  * @param {Function} fn
+	  * @param {Boolean} capture
+	  * @return {Function}
+	  * @api public
+	  */
+
+	  exp.unbind = function (el, type, fn, capture) {
+	    el[unbind](prefix + type, fn, capture || false);
+	    return fn;
+	  };
+
+	  return exp;
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports["default"] = createLogger;
+
+	function createLogger(log, options) {
+	  options = options || {};
+	  // falsy means no logging
+	  if (!log) return function () {};
+	  // custom logging function
+	  if (log !== true) return log;
+	  // true means use the default logger - console
+	  var fn = options.error ? console.error : console.info;
+	  return function () {
+	    fn.apply(console, arguments);
+	  };
+	}
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1325,147 +1824,180 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _dash = __webpack_require__(2);
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var _locationBar = __webpack_require__(9);
+	var _dash = __webpack_require__(3);
+
+	var _locationBar = __webpack_require__(14);
 
 	var _locationBar2 = _interopRequireDefault(_locationBar);
 
+	var BrowserLocation = (function () {
+	  function BrowserLocation(options) {
+	    _classCallCheck(this, BrowserLocation);
+
+	    this.options = (0, _dash.extend)({
+	      pushState: false,
+	      root: '/'
+	    }, options);
+
+	    this.path = '';
+
+	    // we're using the location-bar module for actual
+	    // URL management
+	    var self = this;
+	    this.locationBar = new _locationBar2['default']();
+	    this.locationBar.onChange(function (path) {
+	      self.handleURL('/' + (path || ''));
+	    });
+	  }
+
+	  _createClass(BrowserLocation, [{
+	    key: 'start',
+	    value: function start() {
+	      this.locationBar.start((0, _dash.extend)({}, this.options));
+	    }
+
+	    /**
+	     * Stop listening to URL changes and link clicks
+	     */
+	  }, {
+	    key: 'stop',
+	    value: function stop() {
+	      this.locationBar.stop();
+	    }
+
+	    /**
+	     * Check if we're actually using pushState. For browsers
+	     * that don't support it this would return false since
+	     * it would fallback to using hashState / polling
+	     * @return {Bool}
+	     */
+
+	  }, {
+	    key: 'usesPushState',
+	    value: function usesPushState() {
+	      return this.options.pushState && window.history && window.history.pushState;
+	    }
+
+	    /**
+	     * Get the current URL
+	     */
+
+	  }, {
+	    key: 'url',
+	    value: function url() {
+	      return this.path;
+	    }
+
+	    /**
+	     * Set the current URL without triggering any events
+	     * back to the router. Add a new entry in browser's history.
+	     */
+
+	  }, {
+	    key: 'push',
+	    value: function push(path, options) {
+	      if (this.path !== path) {
+	        this.path = path;
+	        this.locationBar.update(path, (0, _dash.extend)({ trigger: true }, options));
+	      }
+	    }
+
+	    /**
+	     * Set the current URL without triggering any events
+	     * back to the router. Replace the latest entry in broser's history.
+	     */
+
+	  }, {
+	    key: 'replace',
+	    value: function replace(path, options) {
+	      if (this.path !== path) {
+	        this.path = path;
+	        this.locationBar.update(path, (0, _dash.extend)({ trigger: true, replace: true }, options));
+	      }
+	    }
+
+	    /**
+	     * Setup a URL change handler
+	     * @param  {Function} callback
+	     */
+	  }, {
+	    key: 'onChange',
+	    value: function onChange(callback) {
+	      this.changeCallback = callback;
+	    }
+
+	    /**
+	     * Given a path, generate a URL appending root
+	     * if pushState is used and # if hash state is used
+	     */
+	  }, {
+	    key: 'format',
+	    value: function format(path) {
+	      if (/^[A-Za-z]+:\/\//.test(path)) return path;
+	      if (this.usesPushState()) {
+	        var rootURL = this.options.root;
+	        if (path !== '') {
+	          rootURL = rootURL.replace(/\/$/, '');
+	        }
+	        return rootURL + path;
+	      } else {
+	        if (path[0] === '/') {
+	          path = path.substr(1);
+	        }
+	        return '#' + path;
+	      }
+	    }
+
+	    /**
+	     * When we use pushState with a custom root option,
+	     * we need to take care of removingRoot at certain points.
+	     * Specifically
+	     * - browserLocation.update() can be called with the full URL by router
+	     * - LocationBar expects all .update() calls to be called without root
+	     * - this method is public so that we could dispatch URLs without root in router
+	     */
+	  }, {
+	    key: 'removeRoot',
+	    value: function removeRoot(url) {
+	      if (this.options.pushState && this.options.root && this.options.root !== '/') {
+	        return url.replace(this.options.root, '');
+	      } else {
+	        return url.replace(/^#/, '/');
+	      }
+	    }
+
+	    /**
+	      initially, the changeCallback won't be defined yet, but that's good
+	      because we dont' want to kick off routing right away, the router
+	      does that later by manually calling this handleURL method with the
+	      url it reads of the location. But it's important this is called
+	      first by Backbone, because we wanna set a correct this.path value
+	       @private
+	     */
+	  }, {
+	    key: 'handleURL',
+	    value: function handleURL(url) {
+	      this.path = url;
+	      if (this.changeCallback) {
+	        this.changeCallback(url);
+	      }
+	    }
+	  }]);
+
+	  return BrowserLocation;
+	})();
+
 	exports['default'] = BrowserLocation;
-
-	function BrowserLocation(options) {
-	  this.path = options.path || '';
-
-	  this.options = (0, _dash.extend)({
-	    pushState: false,
-	    root: '/'
-	  }, options);
-
-	  // we're using the location-bar module for actual
-	  // URL management
-	  var self = this;
-	  this.locationBar = new _locationBar2['default']();
-	  this.locationBar.onChange(function (path) {
-	    self.handleURL('/' + (path || ''));
-	  });
-
-	  this.locationBar.start((0, _dash.extend)({}, options));
-	}
-
-	/**
-	 * Check if we're actually using pushState. For browsers
-	 * that don't support it this would return false since
-	 * it would fallback to using hashState / polling
-	 * @return {Bool}
-	 */
-
-	BrowserLocation.prototype.usesPushState = function () {
-	  return this.options.pushState && this.locationBar.hasPushState();
-	};
-
-	/**
-	 * Get the current URL
-	 */
-
-	BrowserLocation.prototype.getURL = function () {
-	  return this.path;
-	};
-
-	/**
-	 * Set the current URL without triggering any events
-	 * back to the router. Add a new entry in browser's history.
-	 */
-
-	BrowserLocation.prototype.setURL = function (path, options) {
-	  if (this.path !== path) {
-	    this.path = path;
-	    this.locationBar.update(path, (0, _dash.extend)({ trigger: true }, options));
-	  }
-	};
-
-	/**
-	 * Set the current URL without triggering any events
-	 * back to the router. Replace the latest entry in broser's history.
-	 */
-
-	BrowserLocation.prototype.replaceURL = function (path, options) {
-	  if (this.path !== path) {
-	    this.path = path;
-	    this.locationBar.update(path, (0, _dash.extend)({ trigger: true, replace: true }, options));
-	  }
-	};
-
-	/**
-	 * Setup a URL change handler
-	 * @param  {Function} callback
-	 */
-	BrowserLocation.prototype.onChange = function (callback) {
-	  this.changeCallback = callback;
-	};
-
-	/**
-	 * Given a path, generate a URL appending root
-	 * if pushState is used and # if hash state is used
-	 */
-	BrowserLocation.prototype.formatURL = function (path) {
-	  if (this.locationBar.hasPushState()) {
-	    var rootURL = this.options.root;
-	    if (path !== '') {
-	      rootURL = rootURL.replace(/\/$/, '');
-	    }
-	    return rootURL + path;
-	  } else {
-	    if (path[0] === '/') {
-	      path = path.substr(1);
-	    }
-	    return '#' + path;
-	  }
-	};
-
-	/**
-	 * When we use pushState with a custom root option,
-	 * we need to take care of removingRoot at certain points.
-	 * Specifically
-	 * - browserLocation.update() can be called with the full URL by router
-	 * - LocationBar expects all .update() calls to be called without root
-	 * - this method is public so that we could dispatch URLs without root in router
-	 */
-	BrowserLocation.prototype.removeRoot = function (url) {
-	  if (this.options.pushState && this.options.root && this.options.root !== '/') {
-	    return url.replace(this.options.root, '');
-	  } else {
-	    return url;
-	  }
-	};
-
-	/**
-	 * Stop listening to URL changes and link clicks
-	 */
-	BrowserLocation.prototype.destroy = function () {
-	  this.locationBar.stop();
-	};
-
-	/**
-	  initially, the changeCallback won't be defined yet, but that's good
-	  because we dont' want to kick off routing right away, the router
-	  does that later by manually calling this handleURL method with the
-	  url it reads of the location. But it's important this is called
-	  first by Backbone, because we wanna set a correct this.path value
-
-	  @private
-	 */
-	BrowserLocation.prototype.handleURL = function (url) {
-	  this.path = url;
-	  if (this.changeCallback) {
-	    this.changeCallback(url);
-	  }
-	};
 	module.exports = exports['default'];
 
 /***/ },
-/* 9 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;// LocationBar module extracted from Backbone.js 1.1.0
@@ -1805,17 +2337,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // export
 	  return History;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(10));
+	})(__webpack_require__(15));
 
 /***/ },
-/* 10 */
+/* 15 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 11 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1824,498 +2356,118 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
-	var _dash = __webpack_require__(2);
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var _dash = __webpack_require__(3);
 
 	exports['default'] = MemoryLocation;
 
-	function MemoryLocation(options) {
-	  this.path = options.path || '';
-	}
+	var MemoryLocation = (function () {
+	  function MemoryLocation() {
+	    _classCallCheck(this, MemoryLocation);
 
-	MemoryLocation.prototype.getURL = function () {
-	  return this.path;
-	};
-
-	MemoryLocation.prototype.setURL = function (path, options) {
-	  if (this.path !== path) {
-	    this.path = path;
-	    this.handleURL(this.getURL(), options);
+	    this.path = '';
 	  }
-	};
 
-	MemoryLocation.prototype.replaceURL = function (path, options) {
-	  if (this.path !== path) {
-	    this.setURL(path, options);
-	  }
-	};
+	  _createClass(MemoryLocation, [{
+	    key: 'start',
+	    value: function start() {}
+	  }, {
+	    key: 'url',
+	    value: function url() {
+	      return this.path;
+	    }
+	  }, {
+	    key: 'push',
+	    value: function push(path, options) {
+	      if (this.path !== path) {
+	        this.path = path;
+	        this.handleURL(this.url(), options);
+	      }
+	    }
+	  }, {
+	    key: 'replace',
+	    value: function replace(path, options) {
+	      if (this.path !== path) {
+	        this.setURL(path, options);
+	      }
+	    }
+	  }, {
+	    key: 'onChange',
+	    value: function onChange(callback) {
+	      this.changeCallback = callback;
+	    }
+	  }, {
+	    key: 'handleURL',
+	    value: function handleURL(url, options) {
+	      this.path = url;
+	      options = (0, _dash.extend)({ trigger: true }, options);
+	      if (this.changeCallback && options.trigger) {
+	        this.changeCallback(url);
+	      }
+	    }
+	  }, {
+	    key: 'usesPushState',
+	    value: function usesPushState() {
+	      return false;
+	    }
+	  }, {
+	    key: 'removeRoot',
+	    value: function removeRoot(url) {
+	      return url;
+	    }
+	  }, {
+	    key: 'format',
+	    value: function format(url) {
+	      return url;
+	    }
+	  }]);
 
-	MemoryLocation.prototype.onChange = function (callback) {
-	  this.changeCallback = callback;
-	};
+	  return MemoryLocation;
+	})();
 
-	MemoryLocation.prototype.handleURL = function (url, options) {
-	  this.path = url;
-	  options = (0, _dash.extend)({ trigger: true }, options);
-	  if (this.changeCallback && options.trigger) {
-	    this.changeCallback(url);
-	  }
-	};
-
-	MemoryLocation.prototype.usesPushState = function () {
-	  return false;
-	};
-
-	MemoryLocation.prototype.removeRoot = function (url) {
-	  return url;
-	};
-
-	MemoryLocation.prototype.formatURL = function (url) {
-	  return url;
-	};
 	module.exports = exports['default'];
 
 /***/ },
-/* 12 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports['default'] = transition;
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _dash = __webpack_require__(2);
-
-	var _invariant = __webpack_require__(4);
-
-	var _invariant2 = _interopRequireDefault(_invariant);
-
-	var _path = __webpack_require__(5);
-
-	var _path2 = _interopRequireDefault(_path);
-
-	function transition(options, Promise) {
-	  options = options || {};
-
-	  var router = options.router;
-	  var log = router.log;
-	  var logError = router.logError;
-
-	  var path = options.path;
-	  var match = options.match;
-	  var routes = match.routes;
-	  var params = match.params;
-	  var query = match.query;
-
-	  var id = options.id;
-	  var startTime = Date.now();
-	  log('---');
-	  log('Transition #' + id, 'to', path);
-	  log('Transition #' + id, 'routes:', routes.map(function (r) {
-	    return r.name;
-	  }));
-	  log('Transition #' + id, 'params:', params);
-	  log('Transition #' + id, 'query:', query);
-
-	  // create the transition promise
-	  var resolve = undefined,
-	      reject = undefined;
-	  var promise = new Promise(function (res, rej) {
-	    resolve = res;
-	    reject = rej;
-	  });
-
-	  // 1. make transition errors loud
-	  // 2. by adding this handler we make sure
-	  //    we don't trigger the default 'Potentially
-	  //    unhandled rejection' for cancellations
-	  promise.then(function () {
-	    log('Transition #' + id, 'completed in', Date.now() - startTime + 'ms');
-	  })['catch'](function (err) {
-	    if (err.type !== 'TransitionRedirected' && err.type !== 'TransitionCancelled') {
-	      log('Transition #' + id, 'FAILED');
-	      logError(err.stack);
-	    }
-	  });
-
-	  var cancelled = false;
-
-	  var transition = {
-	    id: id,
-	    prev: {
-	      routes: (0, _dash.clone)(router.state.routes) || [],
-	      path: router.state.path || '',
-	      pathname: router.state.pathname || '',
-	      params: (0, _dash.clone)(router.state.params) || {},
-	      query: (0, _dash.clone)(router.state.query) || {}
-	    },
-	    routes: (0, _dash.clone)(routes),
-	    path: path,
-	    pathname: _path2['default'].withoutQuery(path),
-	    params: (0, _dash.clone)(params),
-	    query: (0, _dash.clone)(query),
-	    redirectTo: function redirectTo() {
-	      return router.transitionTo.apply(router, arguments);
-	    },
-	    retry: function retry() {
-	      return router.transitionTo(path);
-	    },
-	    cancel: function cancel(err) {
-	      if (router.state.activeTransition !== transition) {
-	        return;
-	      }
-
-	      if (transition.isCancelled) {
-	        return;
-	      }
-
-	      router.state.activeTransition = null;
-	      transition.isCancelled = true;
-	      cancelled = true;
-
-	      if (!err) {
-	        err = new Error('TransitionCancelled');
-	        err.type = 'TransitionCancelled';
-	      }
-	      if (err.type === 'TransitionCancelled') {
-	        log('Transition #' + id, 'cancelled');
-	      }
-	      if (err.type === 'TransitionRedirected') {
-	        log('Transition #' + id, 'redirected');
-	      }
-
-	      reject(err);
-	    },
-	    followRedirects: function followRedirects() {
-	      return promise['catch'](function (reason) {
-	        if (router.state.activeTransition) {
-	          return router.state.activeTransition.followRedirects();
-	        }
-	        return Promise.reject(reason);
-	      });
-	    },
-
-	    then: promise.then.bind(promise),
-	    'catch': promise['catch'].bind(promise)
-	  };
-
-	  // here we handle calls to all of the middlewares
-	  function callNext(i, prevResult) {
-	    var middlewareName = undefined;
-	    // if transition has been cancelled - nothing left to do
-	    if (cancelled) {
-	      return;
-	    }
-	    // done
-	    if (i < router.middleware.length) {
-	      middlewareName = router.middleware[i].name || 'anonymous';
-	      log('Transition #' + id, 'resolving middleware:', middlewareName);
-	      var middlewarePromise = undefined;
-	      try {
-	        middlewarePromise = router.middleware[i](transition, prevResult);
-	        (0, _invariant2['default'])(transition !== middlewarePromise, 'Middleware %s returned a transition which resulted in a deadlock', middlewareName);
-	      } catch (err) {
-	        router.state.activeTransition = null;
-	        return reject(err);
-	      }
-	      Promise.resolve(middlewarePromise).then(function (result) {
-	        callNext(i + 1, result);
-	      })['catch'](function (err) {
-	        log('Transition #' + id, 'resolving middleware:', middlewareName, 'FAILED');
-	        router.state.activeTransition = null;
-	        reject(err);
-	      });
-	    } else {
-	      router.state = {
-	        activeTransition: null,
-	        routes: routes,
-	        path: path,
-	        pathname: _path2['default'].withoutQuery(path),
-	        params: params,
-	        query: query
-	      };
-	      resolve();
-	    }
-	  }
-
-	  if (!options.noop) {
-	    Promise.resolve().then(function () {
-	      return callNext(0);
-	    });
-	  } else {
-	    resolve();
-	  }
-
-	  if (options.noop) {
-	    transition.noop = true;
-	  }
-
-	  return transition;
-	}
-
-	module.exports = exports['default'];
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports.intercept = intercept;
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _events = __webpack_require__(14);
-
-	var _events2 = _interopRequireDefault(_events);
-
 	/**
-	 * Handle link delegation on `el` or the document,
-	 * and invoke `fn(e)` when clickable.
+	 * A small helper for creating route maps.
+	 * This is useful mostly to workaround the standard linting
+	 * that no longer allows multiline objects.
 	 *
-	 * @param {Element|Function} el or fn
-	 * @param {Function} [fn]
-	 * @api public
-	 */
-
-	function intercept(el, fn) {
-	  // default to document
-	  if (typeof el === 'function') {
-	    fn = el;
-	    el = document;
-	  }
-
-	  var cb = delegate(el, 'click', function (e, el) {
-	    if (clickable(e, el)) fn(e, el);
-	  });
-
-	  return function dispose() {
-	    undelegate(el, 'click', cb);
-	  };
-	}
-
-	function link(element) {
-	  element = { parentNode: element };
-
-	  var root = document;
-
-	  // Make sure `element !== document` and `element != null`
-	  // otherwise we get an illegal invocation
-	  while ((element = element.parentNode) && element !== document) {
-	    if (element.tagName.toLowerCase() === 'a') {
-	      return element;
-	    }
-	    // After `matches` on the edge case that
-	    // the selector matches the root
-	    // (when the root is not the document)
-	    if (element === root) {
-	      return;
-	    }
-	  }
-	}
-
-	/**
-	 * Delegate event `type` to links
-	 * and invoke `fn(e)`. A callback function
-	 * is returned which may be passed to `.unbind()`.
+	 * This helper converts this:
+	 * [
+	 *   route({ name: 'foo', path: ':foo' }, [
+	 *     route({ name: 'bar', path: ':bar' })
+	 *   ])
+	 * ]
 	 *
-	 * @param {Element} el
-	 * @param {String} selector
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @return {Function}
-	 * @api public
-	 */
-
-	function delegate(el, type, fn) {
-	  return _events2['default'].bind(el, type, function (e) {
-	    var target = e.target || e.srcElement;
-	    var el = link(target);
-	    if (el) {
-	      fn(e, el);
-	    }
-	  });
-	}
-
-	/**
-	 * Unbind event `type`'s callback `fn`.
+	 * to this:
 	 *
-	 * @param {Element} el
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @api public
+	 * [
+	 *   { name: 'foo', path: ':foo', children: [
+	 *     { name: 'bar', path: ':bar' }
+	 *   ]}
+	 * ]
 	 */
-
-	function undelegate(el, type, fn) {
-	  _events2['default'].unbind(el, type, fn);
-	}
-
-	/**
-	 * Check if `e` is clickable.
-	 */
-
-	function clickable(e, el) {
-	  if (which(e) !== 1) return;
-	  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-	  if (e.defaultPrevented) return;
-
-	  // check target
-	  if (el.target) return;
-
-	  // check for data-bypass attribute
-	  if (el.getAttribute('data-bypass') !== null) return;
-
-	  // inspect the href
-	  var href = el.getAttribute('href');
-	  if (!href || href.length === 0) return;
-	  // don't handle hash links
-	  if (href[0] === '#') return;
-	  // external/absolute links
-	  if (href.indexOf('http://') === 0 || href.indexOf('https://') === 0) return;
-	  // email links
-	  if (href.indexOf('mailto:') === 0) return;
-	  // don't intercept javascript links
-	  /* eslint-disable no-script-url */
-	  if (href.indexOf('javascript:') === 0) return;
-	  /* eslint-enable no-script-url */
-
-	  return true;
-	}
-
-	/**
-	 * Event button.
-	 */
-
-	function which(e) {
-	  e = e || window.event;
-	  return e.which === null ? e.button : e.which;
-	}
-
-/***/ },
-/* 14 */
-/***/ function(module, exports) {
 
 	'use strict';
 
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-	var events = createEvents();
 
-	exports['default'] = events;
+	var _dash = __webpack_require__(3);
 
-	function createEvents() {
-	  var exp = {};
-
-	  if (typeof window === 'undefined') {
-	    return exp;
-	  }
-
-	  /**
-	  * DOM Event bind/unbind
-	  */
-
-	  var bind = window.addEventListener ? 'addEventListener' : 'attachEvent';
-	  var unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent';
-	  var prefix = bind !== 'addEventListener' ? 'on' : '';
-
-	  /**
-	  * Bind `el` event `type` to `fn`.
-	  *
-	  * @param {Element} el
-	  * @param {String} type
-	  * @param {Function} fn
-	  * @param {Boolean} capture
-	  * @return {Function}
-	  * @api public
-	  */
-
-	  exp.bind = function (el, type, fn, capture) {
-	    el[bind](prefix + type, fn, capture || false);
-	    return fn;
-	  };
-
-	  /**
-	  * Unbind `el` event `type`'s callback `fn`.
-	  *
-	  * @param {Element} el
-	  * @param {String} type
-	  * @param {Function} fn
-	  * @param {Boolean} capture
-	  * @return {Function}
-	  * @api public
-	  */
-
-	  exp.unbind = function (el, type, fn, capture) {
-	    el[unbind](prefix + type, fn, capture || false);
-	    return fn;
-	  };
-
-	  return exp;
-	}
-	module.exports = exports['default'];
-
-/***/ },
-/* 15 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports["default"] = createLogger;
-
-	function createLogger(log, options) {
-	  options = options || {};
-	  // falsy means no logging
-	  if (!log) return function () {};
-	  // custom logging function
-	  if (log !== true) return log;
-	  // true means use the default logger - console
-	  var fn = options.error ? console.error : console.info;
-	  return function () {
-	    fn.apply(console, arguments);
-	  };
-	}
-
-	module.exports = exports["default"];
-
-/***/ },
-/* 16 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports['default'] = {
-	  parse: function parse(querystring) {
-	    return querystring.split('&').reduce(function (acc, pair) {
-	      var parts = pair.split('=');
-	      acc[parts[0]] = decodeURIComponent(parts[1]);
-	      return acc;
-	    }, {});
-	  },
-
-	  stringify: function stringify(params) {
-	    return Object.keys(params).reduce(function (acc, key) {
-	      if (params[key] !== undefined) {
-	        acc.push(key + '=' + encodeURIComponent(params[key]));
-	      }
-	      return acc;
-	    }, []).join('&');
-	  }
+	var route = function route(options, children) {
+	  return (0, _dash.extend)({ children: children }, options);
 	};
+
+	exports['default'] = route;
 	module.exports = exports['default'];
 
 /***/ }

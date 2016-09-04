@@ -8,10 +8,12 @@ var keys = Object.keys;
 var assoc = function assoc(obj, attr, val) {
   obj[attr] = val;return obj;
 };
+
 var isArray = function isArray(obj) {
   return toString.call(obj) === '[object Array]';
 };
 
+exports.isArray = isArray;
 var clone = function clone(obj) {
   return obj ? isArray(obj) ? obj.slice(0) : extend({}, obj) : obj;
 };
@@ -77,4 +79,32 @@ exports.find = find;
 var isString = function isString(obj) {
   return Object.prototype.toString.call(obj) === '[object String]';
 };
+
 exports.isString = isString;
+var isObject = function isObject(obj) {
+  return typeof obj === 'object';
+};
+
+exports.isObject = isObject;
+var mapNested = function mapNested(root, childrenKey, fn) {
+  return root.map(map);
+
+  function map(node) {
+    node = clone(fn(node));
+    if (node[childrenKey]) {
+      node[childrenKey] = node[childrenKey].map(map);
+    }
+    return node;
+  }
+};
+
+exports.mapNested = mapNested;
+var defer = function defer() {
+  var deferred = {};
+  deferred.promise = new Promise(function (resolve, reject) {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+  return deferred;
+};
+exports.defer = defer;

@@ -1,0 +1,1 @@
+export let html = selector => document.querySelector(selector).innerHTML

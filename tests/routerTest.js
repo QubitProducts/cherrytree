@@ -1,6 +1,6 @@
 /* global suite, test, beforeEach, afterEach, assert, effroi */
 
-import cherrytree, { route } from '../..'
+import cherrytree, { route } from '../lib'
 
 let delay = t => new Promise(resolve => setTimeout(resolve, t))
 
@@ -21,8 +21,8 @@ beforeEach(() => {
   router = cherrytree({ pushState: false, routes })
 })
 
-afterEach(() => {
-  router.stop()
+afterEach(async () => {
+  await router.stop()
 })
 
 // @api public
@@ -165,28 +165,20 @@ test('#match matches a path with query params', () => {
 })
 
 test('#match returns an array of route descriptors', () => {
-  router.map((route) => {
-    route('foo', {customData: 1}, () => {
-      route('bar', {customData: 2})
-    })
-  })
+  router.map([
+    route({ name: 'foo', customData: 1 }, [
+      route({ name: 'bar', customData: 2 })
+    ])
+  ])
   let match = router.match('/foo/bar')
   assert.equals(match.routes, [{
     name: 'foo',
     path: 'foo',
-    params: {},
-    options: {
-      customData: 1,
-      path: 'foo'
-    }
+    customData: 1
   }, {
     name: 'bar',
     path: 'bar',
-    params: {},
-    options: {
-      customData: 2,
-      path: 'bar'
-    }
+    customData: 2
   }])
 })
 
@@ -233,7 +225,6 @@ test('#transitionTo called on the same route without running any middleware', as
 })
 
 test('#isActive returns true if arguments match current state and false if not', async () => {
-  router.map(routes)
   await router.start()
   await router.transitionTo({ route: 'notifications' })
   assert.equals(router.isActive({ route: 'notifications' }), true)
@@ -246,39 +237,23 @@ test('#isActive returns true if arguments match current state and false if not',
   assert.equals(router.isActive({ route: 'messages', query: {foo: 'baz'} }), false)
 })
 
-test('modifying params or query in middleware does not affect the router state', async function () {
-  router.map(routes)
-  await router.start()
-  router.use(transition => {
-    transition.params.foo = 1
-    transition.query.bar = 2
-    transition.routes.push({})
-    transition.routes[0].foobar = 123
-  })
-  await router.transitionTo('status', {user: 'me', id: 42}, {q: 'abc'})
-  // none of the modifications to params, query or routes
-  // array are persisted to the router state
-  assert.equals(router.state.params, {user: 'me', id: '42'})
-  assert.equals(router.state.query, {q: 'abc'})
-  assert.equals(router.state.routes.length, 2)
-})
+test('custom link intercept click handler', async () => {
+  if (!window.history || !window.history.pushState) return
 
-if (window.history && window.history.pushState) {
-  test('custom link intercept click handler', async function () {
-    let interceptCalledWith = false
-    router.options.pushState = true
-    router.options.interceptLinks = function (event, link) {
-      event.preventDefault()
-      interceptCalledWith = link.getAttribute('href')
-    }
-    router.map(routes)
-    await router.listen('foobar')
-    let a = document.createElement('a')
-    a.href = '/hello/world'
-    a.innerHTML = 'hello'
-    document.body.appendChild(a)
-    effroi.mouse.click(a)
-    assert.equals(interceptCalledWith, '/hello/world')
-    document.body.removeChild(a)
-  })
-}
+  let interceptCalledWith = false
+  function interceptLinks (event, link) {
+    event.preventDefault()
+    interceptCalledWith = link.getAttribute('href')
+  }
+
+  router = cherrytree({ interceptLinks, routes })
+  await router.start()
+
+  let a = document.createElement('a')
+  a.href = '/hello/world'
+  a.innerHTML = 'hello'
+  document.body.appendChild(a)
+  effroi.mouse.click(a)
+  assert.equals(interceptCalledWith, '/hello/world')
+  document.body.removeChild(a)
+})
