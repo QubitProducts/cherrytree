@@ -105,29 +105,21 @@ router.use(function redirect (transition) {
 If a route path is not specified, it defaults to the name of the route, e.g.:
 
 ```js
-router.map(function (route) {
-  route('foo')
-})
+route('foo')
 
 // equivalent to
 
-router.map(function (route) {
-  route('foo', {path: 'foo'})
-})
+route('foo', {path: 'foo'})
 ```
 
 If a route has a name with dots and no path specified, the path defaults to the last segment of the path. This special "dot" behaviour might be removed in the next major version of Cherrytree.
 
 ```js
-router.map(function (route) {
-  route('foo.bar')
-})
+route('foo.bar')
 
 // equivalent to
 
-router.map(function (route) {
-  route('foo.bar', {path: 'bar'})
-})
+route('foo.bar', {path: 'bar'})
 ```
 
 ### router.use(fn)
