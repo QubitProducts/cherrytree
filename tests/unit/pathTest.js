@@ -66,6 +66,16 @@ test('Path.extractParams', () => {
   assert.equals(Path.extractParams('/comments/:id(.*\/?edit)', '/comments/edit'), {id: 'edit'})
   assert.equals(Path.extractParams('/comments/:id(.*\/?edit)', '/comments/editor'), null)
   assert.equals(Path.extractParams('/comments/:id(.*\/?edit)', '/comments/123'), null)
+
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo'), { a: undefined, b: undefined, c: undefined })
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/'), { a: undefined, b: undefined, c: undefined })
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo///'), null)
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1'), {a: '1', b: undefined, c: undefined})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1/'), {a: '1', b: undefined, c: undefined})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1///'), null)
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1/2'), {a: '1', b: '2', c: undefined})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1/2/3'), {a: '1', b: '2', c: '3'})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo///1'), null)
 })
 
 test('Path.injectParams', () => {
@@ -90,6 +100,10 @@ test('Path.injectParams', () => {
   assert.exception(() => Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b' }))
 
   assert.equals(Path.injectParams('/foo.bar.baz'), '/foo.bar.baz')
+
+  assert.equals(Path.injectParams('/foo/:a?/:b?/:c?', {}), '/foo')
+  assert.equals(Path.injectParams('/foo/:a?/:b?/:c?', {a: 1}), '/foo/1')
+  assert.equals(Path.injectParams('/foo/:a?/:b?/:c?', {c: 1}), '/foo///1')
 })
 
 test('Path.extractQuery', () => {
