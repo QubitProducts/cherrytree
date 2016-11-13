@@ -88,10 +88,10 @@ Route nesting is one of the core features of cherrytree. It's useful to nest rou
 
 ```js
 router.map(function(route) {
-  route('gmail', {path: '/'}, function () {
-    route('inbox', function () {
-      route('mail', {path: 'm/:mailId'}, function () {
-        route('mail.raw')
+  route('gmail', {path: '/', abstract: true}, function () {
+    route('inbox', {path: ''}, function () {
+      route('email', {path: 'm/:emailId'}, function () {
+        route('email.raw')
       })
     })
   })
@@ -106,28 +106,28 @@ This router creates the following routes:
     <tr>
       <th>URL</th>
       <th>Route Name</th>
-      <th>Reason</th>
+      <th>Purpose</th>
     </tr>
     </thead>
     <tr>
-      <td><code>/</code></td>
+      <td><code>N/A</code></td>
       <td><code>gmail</code></td>
-      <td>Redirect to inbox</td>
+      <td>Can't route to it, it's an abstract route.</td>
     </tr>
     <tr>
-      <td>N/A</td>
+      <td>/</td>
       <td><code>inbox</code></td>
-      <td>Load 1 page of emails and render it</td>
+      <td>Load 1 page of emails and render it.</td>
     </tr>
     <tr>
-      <td>N/A</td>
-      <td><code>mail</code></td>
-      <td>Load the email contents of email with id `transition.params.mailId` and expand it in the list of emails while keeping the email list rendered</td>
+      <td>/m/:emailId/</td>
+      <td><code>email</code></td>
+      <td>Load the email contents of email with id `transition.params.emailId` and expand it in the list of emails while keeping the email list rendered.</td>
     </tr>
     <tr>
-      <td><code>/inbox/m/:mailId/raw</code></td>
-      <td><code>mail.raw</code></td>
-      <td>Render the raw textual version of the email in the expanded pane</td>
+      <td><code>/m/:mailId/raw</code></td>
+      <td><code>email.raw</code></td>
+      <td>Render the raw textual version of the email in an expanded pane.</td>
     </tr>
   </table>
 </div>

@@ -100,6 +100,28 @@ router.use(function redirect (transition) {
 })
 ```
 
+#### Default path
+
+If a route path is not specified, it defaults to the name of the route, e.g.:
+
+```js
+route('foo')
+
+// equivalent to
+
+route('foo', {path: 'foo'})
+```
+
+If a route has a name with dots and no path specified, the path defaults to the last segment of the path. This special "dot" behaviour might be removed in the next major version of Cherrytree.
+
+```js
+route('foo.bar')
+
+// equivalent to
+
+route('foo.bar', {path: 'bar'})
+```
+
 ### router.use(fn)
 
 Add a transition middleware. Every time a transition takes place this middleware will be called with a transition as the argument. You can call `use` multiple times to add more middlewares. The middleware function can return a promise and the next middleware will not be called until the promise of the previous middleware is resolved. The result of the promise is passed in as a second argument to the next middleware. E.g.
