@@ -115,12 +115,12 @@ This router creates the following routes:
       <td>Can't route to it, it's an abstract route.</td>
     </tr>
     <tr>
-      <td>/</td>
+      <td><code>/</code></td>
       <td><code>inbox</code></td>
       <td>Load 1 page of emails and render it.</td>
     </tr>
     <tr>
-      <td>/m/:emailId/</td>
+      <td><code>/m/:emailId/</code></td>
       <td><code>email</code></td>
       <td>Load the email contents of email with id `transition.params.emailId` and expand it in the list of emails while keeping the email list rendered.</td>
     </tr>
