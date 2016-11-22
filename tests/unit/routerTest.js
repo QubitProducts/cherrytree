@@ -262,13 +262,13 @@ test('#match ignores the trailing slash', () => {
 test('#match returns an empty route array if nothing matches', () => {
   router.map(routes)
   let match = router.match('/foo/bar')
-  assert.equals(match, {routes: [], params: {}, query: {}})
+  assert.equals(match, {routes: [], params: {}, pathname: '/foo/bar', query: {}})
 })
 
 test('#match always parses query parameters even if a route does not match', () => {
   router.map(routes)
   let match = router.match('/foo/bar?hello=world')
-  assert.equals(match, {routes: [], params: {}, query: { hello: 'world' }})
+  assert.equals(match, {routes: [], params: {}, pathname: '/foo/bar', query: { hello: 'world' }})
 })
 
 test('#transitionTo called multiple times reuses the active transition', (done) => {
