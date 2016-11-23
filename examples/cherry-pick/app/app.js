@@ -26,7 +26,7 @@ router.use(loader)
 // load route handlers
 router.use((transition) => {
   transition.routes.forEach(
-    (route) => route.RouteHandler = route.RouteHandler || getRouteHandler(route, transition.routes)
+    (route) => { route.RouteHandler = route.RouteHandler || getRouteHandler(route, transition.routes) }
   )
 })
 

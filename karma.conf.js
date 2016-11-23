@@ -31,7 +31,7 @@ function config (c) {
         loaders: [{
           test: /\.js$/,
           exclude: /node_modules/,
-          loader: 'babel?optional=runtime'
+          loader: 'babel'
         }],
         postLoaders: c.coverage ? [{
           test: /\.js/,

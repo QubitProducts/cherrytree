@@ -1,4 +1,4 @@
-const dispatchTransition = store => router => ({
+const dispatchTransition = store => ({
   name: 'dispatchTransition',
   next: transition => {
     store.dispatch({

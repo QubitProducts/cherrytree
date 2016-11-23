@@ -1,4 +1,8 @@
+import 'babel-regenerator-runtime'
 import { assert } from 'referee'
+import { Promise } from 'es6-promise'
+
+window.Promise = window.Promise || Promise
 
 window.assert = assert
 

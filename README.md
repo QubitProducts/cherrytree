@@ -1,7 +1,6 @@
 # <img src="https://cloud.githubusercontent.com/assets/324440/11302251/2c573b4a-8f94-11e5-9df6-889b19c2ad48.png" width="320" />
 
-Cherrytree is a flexible hierarchical router that translates every URL change into a transition descriptor object and calls your middleware functions that put the application into a desired state.
-
+Cherrytree is a flexible router that works with any framework. It translates URL changes to transitions and applies your middleware.
 
 ## Installation
 
@@ -37,50 +36,62 @@ To use `cherrytree` with React, check out [`cherrytree-for-react`](https://githu
 
 ## Usage
 
+Here's a simple way to render React apps using React.
+
 ```js
-var cherrytree = require('cherrytree')
+const cherrytree = require('cherrytree')
+const React = require('react')
+const ReactDOM = require('react-dom')
+const components = require('./components')
+
+// declare the routes
+const routes = [
+  { name: 'application', path: '/', abstract: true, children: [{
+    { name: 'feed', path: '' },
+    { name: 'messages' },
+    { name: 'status', path: ':user/status/:id' },
+    { name: 'profile', path: ':user', children: [{
+      { name: 'lists' },
+      { name: 'editProfile', path: 'edit' }
+    }]}
+  }]}
+]
+
+function render (transition) {
+  // transition.routes for something like /KidkArolis/edit
+  // would be [
+  //   { name: 'application' ... },
+  //   { name: 'profile' ... },
+  //   { name: 'editProfile' ...}
+  // ]
+  // We start with the inner most using reduceRight, and nest
+  // each component into each other and render out to the DOM
+  const App = transition.routes.reduceRight((children, route) => {
+    // get the component by route name
+    // you could also attach them to route config or
+    // get them any other way 
+    const { component } = components[route.name]
+    return component
+      ? React.createElement(component, { params: transition.params, children })
+      : children
+  }, null)
+  ReactDOM.render(App, document.getElementById('root'))
+}
 
 // create the router
-var router = cherrytree()
-var handlers = require('./handlers')
-
-// provide your route map
-router.map(function (route) {
-  route('application', {path: '/', abstract: true}, function () {
-    route('feed', {path: ''})
-    route('messages')
-    route('status', {path: ':user/status/:id'})
-    route('profile', {path: ':user'}, function () {
-      route('profile.lists')
-      route('profile.edit')
-    })
-  })
-})
-
-router.use(function render (transition) {
-  transition.routes.forEach(function (route, i) {
-    route.view = handlers[route.name]({
-      params: transition.params,
-      query: transition.query
-    })
-    var parent = transition.routes[i-1]
-    var containerEl = parent ? parent.view.el.querySelector('.outlet') : document.body
-    containerEl.appendChild(view.render().el)
-  })
-})
-
-router.use(function errorHandler (transition) {
-  transition.catch(function (err) {
-    if (err.type !== 'TransitionCancelled' && err.type !== 'TransitionRedirected') {
-      console.error(err.stack)
-    }
-  })
-})
-
+const router = cherrytree({ routes }, render)
 // start listening to URL changes
-router.listen()
+router.start()
 ```
 
+You can then extend this approach in various ways:
+
+* add a middleware to load components/pages asynchronously
+* add a middleware to track page changes for analytics
+* dispatch events to a Redux store instead of rendering inline
+* pass the router via context to be able to generate links or transition programmatically
+* add a middleware that translates the route changes into a stream
+* use middleware perform data fetching between page renders
 
 ## Examples
 

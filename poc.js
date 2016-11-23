@@ -7,41 +7,37 @@ let routes = [
 
 let middleware = [
   // common case
-  router => next => transition => { /* do stuff */ }
+  transition => { /* do stuff */ },
 
   // arrows
-  router => ({
-    next: (next, redirect, cancel) => (transition, context) => { /* main hook */ },
-    done: next => (err, transition) => { /* check transition.state = 'completed' | 'redirected' | 'cancelled'*/ },
-    error: next => transition, err => { /* when transition fails */ }
+  ({
+    next: (transition, redirect, cancel, router) => { /* main hook */ },
+    done: (transition, router) => { /* check transition.state = 'completed' | 'redirected' | 'cancelled' */ },
+    error: (err, transition, router) => { if (err) throw err /* when transition fails */ }
   }),
 
   // no arrows
-  function showLoadingAnimation (router) {
+  (function showLoadingAnimation (router) {
     let loading = true
     return {
-      next: function (next, redirect, cancel) {
-        return function (transition) {
-          return !loading && console.log('Loading...')
-        }
+      next: function (transition, redirect, cancel) {
+        return !loading && console.log('Loading...')
       },
-      done: function (next){
-        return function (transition) {
-          if (transition.state === 'completed') {
-            console.log('Loaded:', transition.path)
-            loading = false
-          }
+      done: function (transition) {
+        if (transition.state === 'completed') {
+          console.log('Loaded:', transition.path)
+          loading = false
         }
       }
     }
-  }
+  }())
 ]
 
-let router = neon({ routes, middleware })
+let router = neon({ routes }, middleware)
 
 router.start()
 router.stop()
 router.start()
 
-router.transitionTo('/foo').then(() => {})
-router.replaceWith('/bar').then(() => {})
+router.transitionTo({ route: '/foo' }).then(() => {})
+router.transitionTo({ route: '/bar', replace: true }).then(() => {})

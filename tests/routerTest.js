@@ -28,7 +28,7 @@ afterEach(async () => {
 // @api public
 
 test('#use registers middleware', () => {
-  let middleware = router => ({ name: 'test' })
+  let middleware = { name: 'test' }
   router.use(middleware)
   assert(router.middleware.length === 1)
   assert(router.middleware[0].name === 'test')
@@ -58,7 +58,7 @@ test('#use middleware gets passed a transition object', async () => {
       }
     })
   }
-  let middleware = router => ({ next })
+  let middleware = { next }
 
   router = cherrytree({ pushState: false, routes })
   await router.start()
@@ -122,13 +122,13 @@ if (window.history && !window.history.pushState) {
 
 test('middleware can not modify routers internal state by changing transition.routes', async () => {
   window.location.hash = '/application/messages'
-  router.use(router => transition => {
+  router.use(transition => {
     assert.equals(transition.routes[0].name, 'application')
     transition.routes[0].name = 'modified'
     transition.routes[0].foo = 1
     transition.routes[0].bar = 2
   })
-  router.use(router => transition => {
+  router.use(transition => {
     assert.equals(transition.routes[0].name, 'modified')
     assert.equals(transition.routes[0].foo, 1)
     assert.equals(transition.routes[0].bar, 2)

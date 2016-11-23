@@ -24,7 +24,7 @@ module.exports = {
   view: function (context) {
     var tpl = '<div>' + this.template(this.templateData(context)) + '</div>'
     var router = this.router
-    tpl = tpl.replace(/\{\{link\:(.*)\}\}/g, function (match, routeId) {
+    tpl = tpl.replace(/\{\{link:(.*)\}\}/g, function (match, routeId) {
       return router.generate(routeId)
     })
     return $(tpl)

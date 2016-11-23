@@ -6,33 +6,35 @@ import { html } from './lib/dom'
 
 suite('Cherrytree')
 
-let router
+let router, el
 
 beforeEach(async () => {
   window.location.hash = ''
+  el = document.createElement('div')
+  document.body.appendChild(el)
   router = createRouter({
     pushState: false,
-    routes: routes(),
-    middleware: router => transition => {
-      document.body.innerHTML = 'Rendered: ' + [
-        transition.routes.map(r => r.name).join('/'),
-        JSON.stringify(transition.params),
-        JSON.stringify(transition.query)
-      ].join('/')
-    }
+    routes: routes()
+  }, transition => {
+    el.innerHTML = 'Rendered: ' + [
+      transition.routes.map(r => r.name).join('/'),
+      JSON.stringify(transition.params),
+      JSON.stringify(transition.query)
+    ].join('/')
   })
   await router.start()
 })
 
 afterEach(async () => {
   await router.stop()
+  document.body.removeChild(el)
 })
 
 test('transition occurs when location.hash changes', done => {
-  router.use(router => ({
+  router.use(({
     done: transition => {
       assert.equals(transition.path, '/about')
-      assert.equals(html('body'), 'Rendered: application/about/{}/{}')
+      assert.equals(html(el), 'Rendered: application/about/{}/{}')
       done()
     },
     error: done
@@ -53,7 +55,7 @@ test('the original transition promise rejects if redirect fails', async () => {
   // and a failing redirect
   router.transitionTo({ route: '/about' })
     .catch(err => { transitioned2Rejected = err })
-  router.use(router => transition => { throw new Error('fail') })
+  router.use(transition => { throw new Error('fail') })
 
   assert.equals(transitioned1Rejected, false)
   assert.equals(transitioned2Rejected, false)
@@ -66,16 +68,16 @@ test('the original transition promise rejects if redirect fails', async () => {
 test('programmatic transition via url and route names', async () => {
   await router.transitionTo({ route: 'about' })
   await router.transitionTo({ route: '/faq?sortBy=date' })
-  assert.equals(html('body'), 'Rendered: application/faq/{}/{"sortBy":"date"}')
+  assert.equals(html(el), 'Rendered: application/faq/{}/{"sortBy":"date"}')
   await router.transitionTo({ route: 'faq', query: { sortBy: 'user' } })
-  assert.equals(html('body'), 'Rendered: application/faq/{}/{"sortBy":"user"}')
+  assert.equals(html(el), 'Rendered: application/faq/{}/{"sortBy":"user"}')
 })
 
 test('cancelling transitions', async function () {
   await router.transitionTo({ route: '/posts/filter/foo' })
   assert.equals(router.location.url(), '/posts/filter/foo')
 
-  router.use(router => (transition, redirect, cancel) => {
+  router.use((transition, redirect, cancel) => {
     cancel()
   })
   await router.transitionTo({ route: 'about' })
@@ -117,7 +119,7 @@ test.skip('cancelling transition does not add a history entry', async () => {
 
   // now attempt to transition to about and cancel
   let cancelled = false
-  router.use(router => (transition, redirect, cancel) => {
+  router.use((transition, redirect, cancel) => {
     if (!cancelled) cancel()
     cancelled = true
   })
@@ -128,15 +130,13 @@ test.skip('cancelling transition does not add a history entry', async () => {
 
   // going back should now take as to faq
   await new Promise((resolve, reject) => {
-    router.use(router => ({
+    router.use(({
       done: () => {
-        console.log('DONE!')
         assert.equals(window.location.hash, '#faq')
         resolve()
       },
       error: reject
     }))
-    console.log('GOING BACK!')
     window.history.back()
   })
 })
@@ -153,7 +153,7 @@ test('url behaviour during transitions', async () => {
   // window.history.back()
   window.location.hash = ''
   await new Promise((resolve) => {
-    router.use(router => transition => {
+    router.use(transition => {
       assert.equals(window.location.hash, '')
       resolve()
     })
@@ -164,7 +164,7 @@ test('url behaviour during failed transitions', async () => {
   await router.transitionTo({ route: 'about' })
   await new Promise((resolve, reject) => {
     // setup a middleware that will fail
-    router.use(router => ({
+    router.use(({
       next: transition => { throw new Error('failed') },
       error: err => {
         assert.equals(err.message, 'failed')
@@ -177,27 +177,27 @@ test('url behaviour during failed transitions', async () => {
 })
 
 test('navigating around the app', async () => {
-  assert.equals(html('body'), 'Rendered: application/{}/{}')
+  assert.equals(html(el), 'Rendered: application/{}/{}')
 
   await router.transitionTo({ route: 'about' })
-  assert.equals(html('body'), 'Rendered: application/about/{}/{}')
+  assert.equals(html(el), 'Rendered: application/about/{}/{}')
 
   await router.transitionTo({ route: '/faq?sortBy=date' })
-  assert.equals(html('body'), 'Rendered: application/faq/{}/{"sortBy":"date"}')
+  assert.equals(html(el), 'Rendered: application/faq/{}/{"sortBy":"date"}')
 
   await router.transitionTo({ route: 'faq', query: { sortBy: 'user' } })
-  assert.equals(html('body'), 'Rendered: application/faq/{}/{"sortBy":"user"}')
+  assert.equals(html(el), 'Rendered: application/faq/{}/{"sortBy":"user"}')
 
   // we can also change the url directly to cause another transition to happen
   await new Promise(resolve => {
-    router.use(router => resolve)
+    router.use({ done: resolve })
     window.location.hash = '#posts/filter/mine'
   })
-  assert.equals(html('body'), 'Rendered: application/posts/posts.filter/{"filterId":"mine"}/{}')
+  assert.equals(html(el), 'Rendered: application/posts/posts.filter/{"filterId":"mine"}/{}')
 
   await new Promise(resolve => {
-    router.use(router => resolve)
+    router.use({ done: resolve })
     window.location.hash = '#posts/filter/foo'
   })
-  assert.equals(html('body'), 'Rendered: application/posts/posts.filter/{"filterId":"foo"}/{}')
+  assert.equals(html(el), 'Rendered: application/posts/posts.filter/{"filterId":"foo"}/{}')
 })

@@ -9,21 +9,22 @@ import { html } from './lib/dom'
 if (window.history && window.history.pushState) {
   suite('Using pushState')
 
-  let router, history
+  let router, history, el
 
   beforeEach(async () => {
     window.location.hash = ''
+    el = document.createElement('div')
+    document.body.appendChild(el)
     router = createRouter({
       pushState: true,
       root: '/app',
-      routes: routes(),
-      middleware: router => transition => {
-        document.body.innerHTML = 'Rendered: ' + [
-          transition.routes.map(r => r.name).join('/'),
-          JSON.stringify(transition.params),
-          JSON.stringify(transition.query)
-        ].join('/')
-      }
+      routes: routes()
+    }, (transition) => {
+      el.innerHTML = 'Rendered: ' + [
+        transition.routes.map(r => r.name).join('/'),
+        JSON.stringify(transition.params),
+        JSON.stringify(transition.query)
+      ].join('/')
     })
     await router.start()
     history = fakeHistory(router.location)
@@ -32,13 +33,14 @@ if (window.history && window.history.pushState) {
   afterEach(async () => {
     await router.stop()
     history.restore()
+    document.body.removeChild(el)
   })
 
   test('transition occurs when location.hash changes', async () => {
     history.url('/app/about')
     await router.state.currTransition.promise
     assert.equals(router.state.lastTransition.descriptor.path, '/about')
-    assert.equals(html('body'), 'Rendered: application/about/{}/{}')
+    assert.equals(el.innerHTML, 'Rendered: application/about/{}/{}')
   })
 
   test('programmatic transition via url and route names', async function () {
@@ -47,9 +49,9 @@ if (window.history && window.history.pushState) {
 
     await router.transitionTo({ route: '/faq?sortBy=date' })
     assert.equals(history.url(), '/app/faq?sortBy=date')
-    assert.equals(html('body'), 'Rendered: application/faq/{}/{"sortBy":"date"}')
+    assert.equals(html(el), 'Rendered: application/faq/{}/{"sortBy":"date"}')
 
     await router.transitionTo({ route: 'faq', query: { sortBy: 'user' } })
-    assert.equals(html('body'), 'Rendered: application/faq/{}/{"sortBy":"user"}')
+    assert.equals(html(el), 'Rendered: application/faq/{}/{"sortBy":"user"}')
   })
 }

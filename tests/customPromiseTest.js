@@ -23,9 +23,8 @@ test('uses a custom provided Promise implementation', async () => {
 
   router = createRouter({
     routes: routes(),
-    Promise: LocalPromise,
-    middleware: router => transition => {}
-  })
+    Promise: LocalPromise
+  }, router => transition => {})
 
   await router.start()
   assert.equals(called, 1)

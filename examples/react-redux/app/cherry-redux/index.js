@@ -7,7 +7,7 @@ const routerReducer = (state = { current: {} }, action) => {
         current: {
           routes: transition.routes,
           params: transition.params,
-          query: transition.query,
+          query: transition.query
         }
       })
     default:

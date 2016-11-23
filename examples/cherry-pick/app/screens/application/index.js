@@ -35,7 +35,7 @@ module.exports = React.createClass({
       <div className='Application'>
         <div className='Navbar'>
           <div className='Navbar-header'>
-            <a className='Navbar-brand' href={this.link('index')}></a>
+            <a className='Navbar-brand' href={this.link('index')} />
           </div>
         </div>
 

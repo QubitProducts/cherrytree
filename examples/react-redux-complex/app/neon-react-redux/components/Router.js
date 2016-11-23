@@ -1,7 +1,12 @@
 let React = require('react')
-let PropTypes = React.PropTypes
+let connect = require('react-redux').connect
+let { PropTypes, createElement } = React
 
-module.exports = React.createClass({
+function mapStateToProps (state) {
+  return state.router
+}
+
+const Router = React.createClass({
   propTypes: {
     router: PropTypes.object.isRequired
   },
@@ -17,6 +22,17 @@ module.exports = React.createClass({
   },
 
   render: function () {
-    return this.props.children
+    const { router, routes } = this.props
+    if (!routes) return null
+    return routes.reduceRight((children, route) => {
+      let component = router.components[route.name]
+      if (!component) {
+        return children
+      } else {
+        return createElement(component, { children })
+      }
+    }, null)
   }
 })
+
+module.exports = connect(mapStateToProps)(Router)

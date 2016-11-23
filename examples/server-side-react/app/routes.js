@@ -72,7 +72,7 @@ let home = React.createClass({
             <a href={router.generate('profile.index', {user: 'dan_abramov'})}>Dan Abramov ‏@dan_abramov</a>
           </div>
           <div className='Tweet-time'>12m12 minutes ago</div>
-          <div className='Tweet-content'>Another use case for \`this.context\` I think might be valid: forms. They are too painful right now.</div>
+          <div className='Tweet-content'>Another use case for `this.context` I think might be valid: forms. They are too painful right now.</div>
         </div>
         <div className='Tweet'>
           <div className='Tweet-author'>

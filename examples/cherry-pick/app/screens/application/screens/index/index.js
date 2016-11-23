@@ -40,7 +40,7 @@ export default React.createClass({
               disabled={disabled}
               value={value}
               onChange={this.handleChange}
-              ></input>
+              / >
           </form>
         </div>
       </div>
