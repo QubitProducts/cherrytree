@@ -168,6 +168,26 @@ test('#generate throws a useful error when listen has not been called', () => {
   }
 })
 
+test('#generate throws a useful error when called with an abstract route', () => {
+  router.map((route) => {
+    route('foo', {abstract: true})
+  }).listen()
+
+  assert.exception(function () {
+    router.generate('foo')
+  }, {message: 'No route is named foo'})
+})
+
+test('#generate succeeds when called with an abstract route that has a child index route', () => {
+  router.map((route) => {
+    route('foo', {abstract: true}, () => {
+      route('bar', {path: ''})
+    })
+  }).listen()
+  let url = router.generate('foo')
+  assert.equals(url, '#foo')
+})
+
 test('#use middleware can not modify routers internal state by changing transition.routes', (done) => {
   window.location.hash = '/application/messages'
   router.map(routes)
@@ -295,6 +315,29 @@ test('#transitionTo called on the same route, returns a completed transition', (
     assert.equals(called, false)
     done()
   }).catch(done)
+})
+
+test('#transitionTo throws an useful error when called with an abstract route', () => {
+  router.map((route) => {
+    route('foo', {abstract: true})
+  }).listen()
+
+  assert.exception(function () {
+    router.transitionTo('foo')
+  }, {message: 'No route is named foo'})
+})
+
+test('#transitionTo called on an abstract route with a child index route should activate the index route', async () => {
+  router.map((route) => {
+    route('foo', {abstract: true}, () => {
+      route('bar', {path: ''})
+    })
+  }).listen()
+  await router.transitionTo('foo')
+  assert.equals(router.isActive('foo'), true)
+  assert.equals(router.isActive('bar'), true)
+  assert.equals(router.state.routes.length, 2)
+  assert.equals(router.state.path, '/foo')
 })
 
 test('#isActive returns true if arguments match current state and false if not', async () => {
