@@ -1,7 +1,7 @@
 rm -rf build
 
 # npm CJS
-babel -d build/lib ./lib
+babel --presets=es2015 -d build/lib ./lib
 cp README.md build
 cp CHANGELOG.md build
 cp index.js build

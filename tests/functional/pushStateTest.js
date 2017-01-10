@@ -1,8 +1,8 @@
-let $ = require('jquery')
-let {assert} = require('referee')
-let fakeHistory = require('../lib/fakeHistory')
+import $ from 'jquery'
+import {assert} from 'referee'
+import fakeHistory from '../lib/fakeHistory'
+import TestApp from './testApp'
 let {suite, test, beforeEach, afterEach} = window
-let TestApp = require('./testApp')
 let app, router, history
 
 // This is to avoid running these tests in IE9 in CI
