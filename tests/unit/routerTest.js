@@ -172,11 +172,10 @@ test('#generate throws a useful error when called with an abstract route', () =>
   router.map((route) => {
     route('foo', {abstract: true})
   }).listen()
-  try {
+
+  assert.exception(function () {
     router.generate('foo')
-  } catch (err) {
-    assert.equals(err.message, 'No route is named foo')
-  }
+  }, {message: 'No route is named foo'})
 })
 
 test('#generate succeeds when called with an abstract route that has a child index route', () => {
@@ -318,15 +317,14 @@ test('#transitionTo called on the same route, returns a completed transition', (
   }).catch(done)
 })
 
-test('#transitionTo throws a useful error when called with an abstract route', () => {
+test('#transitionTo throws an useful error when called with an abstract route', () => {
   router.map((route) => {
     route('foo', {abstract: true})
   }).listen()
-  try {
+
+  assert.exception(function () {
     router.transitionTo('foo')
-  } catch (err) {
-    assert.equals(err.message, 'No route is named foo')
-  }
+  }, {message: 'No route is named foo'})
 })
 
 test('#transitionTo called on an abstract route with a child index route should activate the index route', async () => {
