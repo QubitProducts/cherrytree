@@ -89,6 +89,20 @@ Abstract routes are especially useful when creating `index` subroutes as demonst
 /dashboard/:accountId/realtime - ['application', 'dashboard', 'realtimeDashboard']
 ```
 
+Navigating to an abstract route that has an index route is equivalent to navigating to the index route. E.g. these are equivalent:
+
+```js
+router.transitionTo('dashboard')
+router.transitionTo('defaultDashboard')
+```
+
+Generating links is also equivalent
+```js
+router.generate('dashboard') === router.generate('defaultDashboard')
+```
+
+However, if the abstract route does not have an index route, then it's not routable and can't have URLs generated.
+
 It's also common to redirect from non leaf routes. In this example we might want to redirect from `application` to the `defaultDashboard` route. If each of your routes are backed by some route handler object, you can achieve the redirect with the following middleware:
 
 ```js
