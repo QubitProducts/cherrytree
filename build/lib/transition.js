@@ -13,10 +13,6 @@ var _invariant = require('./invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
 
-var _path = require('./path');
-
-var _path2 = _interopRequireDefault(_path);
-
 function transition(options, Promise) {
   options = options || {};
 
@@ -28,6 +24,7 @@ function transition(options, Promise) {
   var match = options.match;
   var routes = match.routes;
   var params = match.params;
+  var pathname = match.pathname;
   var query = match.query;
 
   var id = options.id;
@@ -74,7 +71,7 @@ function transition(options, Promise) {
     },
     routes: (0, _dash.clone)(routes),
     path: path,
-    pathname: _path2['default'].withoutQuery(path),
+    pathname: pathname,
     params: (0, _dash.clone)(params),
     query: (0, _dash.clone)(query),
     redirectTo: function redirectTo() {
@@ -153,7 +150,7 @@ function transition(options, Promise) {
         activeTransition: null,
         routes: routes,
         path: path,
-        pathname: _path2['default'].withoutQuery(path),
+        pathname: pathname,
         params: params,
         query: query
       };

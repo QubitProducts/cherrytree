@@ -95,6 +95,8 @@ Cherrytree.prototype.map = function (routes) {
   // keep track of whether duplicate paths have been created,
   // in which case we'll warn the dev
   var dupes = {};
+  // keep track of abstract routes to build index route forwarding
+  var abstracts = {};
 
   eachBranch({ routes: this.routes }, [], function (routes) {
     // concatenate the paths of the list of routes
@@ -107,34 +109,55 @@ Cherrytree.prototype.map = function (routes) {
     if (path === '') {
       path = '/';
     }
+
+    var lastRoute = routes[routes.length - 1];
+
+    if (lastRoute.options.abstract) {
+      abstracts[path] = lastRoute.name;
+      return;
+    }
+
     // register routes
     matchers.push({
       routes: routes,
-      name: routes[routes.length - 1].name,
+      name: lastRoute.name,
       path: path
     });
 
     // dupe detection
-    var lastRoute = routes[routes.length - 1];
     if (dupes[path]) {
       throw new Error('Routes ' + dupes[path] + ' and ' + lastRoute.name + ' have the same url path \'' + path + '\'');
     }
     dupes[path] = lastRoute.name;
   });
 
+  // check if there is an index route for each abstract route
+  Object.keys(abstracts).forEach(function (path) {
+    var matcher = undefined;
+    if (!dupes[path]) return;
+
+    matchers.some(function (m) {
+      if (m.path === path) {
+        matcher = m;
+        return true;
+      }
+    });
+
+    matchers.push({
+      routes: matcher.routes,
+      name: abstracts[path],
+      path: path
+    });
+  });
+
   function eachBranch(node, memo, fn) {
     node.routes.forEach(function (route) {
-      if (!abstract(route)) {
-        fn(memo.concat(route));
-      }
-      if (route.routes && route.routes.length > 0) {
+      fn(memo.concat(route));
+
+      if (route.routes.length) {
         eachBranch(route, memo.concat(route), fn);
       }
     });
-  }
-
-  function abstract(route) {
-    return route.options && route.options.abstract;
   }
 
   return this;
@@ -247,7 +270,7 @@ Cherrytree.prototype.generate = function (name, params, query) {
  * @api public
  */
 Cherrytree.prototype.destroy = function () {
-  if (this.location && this.location.destroy && this.location.destroy) {
+  if (this.location && this.location.destroy) {
     this.location.destroy();
   }
   if (this.disposeIntercept) {
@@ -274,19 +297,19 @@ Cherrytree.prototype.isActive = function (name, params, query) {
 
   var activeRoutes = this.state.routes || [];
   var activeParams = this.state.params || {};
-  var activeQuery = this.state.query || [];
+  var activeQuery = this.state.query || {};
 
-  var isNameActive = !!(0, _dash.find)(activeRoutes, function (route) {
+  var isActive = !!(0, _dash.find)(activeRoutes, function (route) {
     return route.name === name;
   });
-  var areParamsActive = !!Object.keys(params).every(function (key) {
+  isActive = isActive && !!Object.keys(params).every(function (key) {
     return activeParams[key] === params[key];
   });
-  var isQueryActive = !!Object.keys(query).every(function (key) {
+  isActive = isActive && !!Object.keys(query).every(function (key) {
     return activeQuery[key] === query[key];
   });
 
-  return isNameActive && areParamsActive && isQueryActive;
+  return isActive;
 };
 
 /**
@@ -331,23 +354,21 @@ Cherrytree.prototype.doTransition = function (method, params) {
  */
 Cherrytree.prototype.match = function (path) {
   path = (path || '').replace(/\/$/, '') || '/';
-  var found = false;
   var params = undefined;
   var routes = [];
   var pathWithoutQuery = _path2['default'].withoutQuery(path);
   var qs = this.options.qs;
-  this.matchers.forEach(function (matcher) {
-    if (!found) {
-      params = _path2['default'].extractParams(matcher.path, pathWithoutQuery);
-      if (params) {
-        found = true;
-        routes = matcher.routes;
-      }
+  this.matchers.some(function (matcher) {
+    params = _path2['default'].extractParams(matcher.path, pathWithoutQuery);
+    if (params) {
+      routes = matcher.routes;
+      return true;
     }
   });
   return {
     routes: routes.map(descriptor),
     params: params || {},
+    pathname: pathWithoutQuery,
     query: _path2['default'].extractQuery(qs, path) || {}
   };
 
@@ -370,7 +391,7 @@ Cherrytree.prototype.match = function (path) {
 Cherrytree.prototype.dispatch = function (path) {
   var match = this.match(path);
   var query = match.query;
-  var pathname = _path2['default'].withoutQuery(path);
+  var pathname = match.pathname;
 
   var activeTransition = this.state.activeTransition;
 

@@ -159,6 +159,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // keep track of whether duplicate paths have been created,
 	  // in which case we'll warn the dev
 	  var dupes = {};
+	  // keep track of abstract routes to build index route forwarding
+	  var abstracts = {};
 
 	  eachBranch({ routes: this.routes }, [], function (routes) {
 	    // concatenate the paths of the list of routes
@@ -171,34 +173,55 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (path === '') {
 	      path = '/';
 	    }
+
+	    var lastRoute = routes[routes.length - 1];
+
+	    if (lastRoute.options.abstract) {
+	      abstracts[path] = lastRoute.name;
+	      return;
+	    }
+
 	    // register routes
 	    matchers.push({
 	      routes: routes,
-	      name: routes[routes.length - 1].name,
+	      name: lastRoute.name,
 	      path: path
 	    });
 
 	    // dupe detection
-	    var lastRoute = routes[routes.length - 1];
 	    if (dupes[path]) {
 	      throw new Error('Routes ' + dupes[path] + ' and ' + lastRoute.name + ' have the same url path \'' + path + '\'');
 	    }
 	    dupes[path] = lastRoute.name;
 	  });
 
+	  // check if there is an index route for each abstract route
+	  Object.keys(abstracts).forEach(function (path) {
+	    var matcher = undefined;
+	    if (!dupes[path]) return;
+
+	    matchers.some(function (m) {
+	      if (m.path === path) {
+	        matcher = m;
+	        return true;
+	      }
+	    });
+
+	    matchers.push({
+	      routes: matcher.routes,
+	      name: abstracts[path],
+	      path: path
+	    });
+	  });
+
 	  function eachBranch(node, memo, fn) {
 	    node.routes.forEach(function (route) {
-	      if (!abstract(route)) {
-	        fn(memo.concat(route));
-	      }
-	      if (route.routes && route.routes.length > 0) {
+	      fn(memo.concat(route));
+
+	      if (route.routes.length) {
 	        eachBranch(route, memo.concat(route), fn);
 	      }
 	    });
-	  }
-
-	  function abstract(route) {
-	    return route.options && route.options.abstract;
 	  }
 
 	  return this;
@@ -311,7 +334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @api public
 	 */
 	Cherrytree.prototype.destroy = function () {
-	  if (this.location && this.location.destroy && this.location.destroy) {
+	  if (this.location && this.location.destroy) {
 	    this.location.destroy();
 	  }
 	  if (this.disposeIntercept) {
@@ -338,19 +361,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  var activeRoutes = this.state.routes || [];
 	  var activeParams = this.state.params || {};
-	  var activeQuery = this.state.query || [];
+	  var activeQuery = this.state.query || {};
 
-	  var isNameActive = !!(0, _dash.find)(activeRoutes, function (route) {
+	  var isActive = !!(0, _dash.find)(activeRoutes, function (route) {
 	    return route.name === name;
 	  });
-	  var areParamsActive = !!Object.keys(params).every(function (key) {
+	  isActive = isActive && !!Object.keys(params).every(function (key) {
 	    return activeParams[key] === params[key];
 	  });
-	  var isQueryActive = !!Object.keys(query).every(function (key) {
+	  isActive = isActive && !!Object.keys(query).every(function (key) {
 	    return activeQuery[key] === query[key];
 	  });
 
-	  return isNameActive && areParamsActive && isQueryActive;
+	  return isActive;
 	};
 
 	/**
@@ -395,23 +418,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Cherrytree.prototype.match = function (path) {
 	  path = (path || '').replace(/\/$/, '') || '/';
-	  var found = false;
 	  var params = undefined;
 	  var routes = [];
 	  var pathWithoutQuery = _path2['default'].withoutQuery(path);
 	  var qs = this.options.qs;
-	  this.matchers.forEach(function (matcher) {
-	    if (!found) {
-	      params = _path2['default'].extractParams(matcher.path, pathWithoutQuery);
-	      if (params) {
-	        found = true;
-	        routes = matcher.routes;
-	      }
+	  this.matchers.some(function (matcher) {
+	    params = _path2['default'].extractParams(matcher.path, pathWithoutQuery);
+	    if (params) {
+	      routes = matcher.routes;
+	      return true;
 	    }
 	  });
 	  return {
 	    routes: routes.map(descriptor),
 	    params: params || {},
+	    pathname: pathWithoutQuery,
 	    query: _path2['default'].extractQuery(qs, path) || {}
 	  };
 
@@ -434,7 +455,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Cherrytree.prototype.dispatch = function (path) {
 	  var match = this.match(path);
 	  var query = match.query;
-	  var pathname = _path2['default'].withoutQuery(path);
+	  var pathname = match.pathname;
 
 	  var activeTransition = this.state.activeTransition;
 
@@ -910,14 +931,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * Parse a string for the raw tokens.
 	 *
-	 * @param  {string} str
+	 * @param  {string}  str
+	 * @param  {Object=} options
 	 * @return {!Array}
 	 */
-	function parse (str) {
+	function parse (str, options) {
 	  var tokens = []
 	  var key = 0
 	  var index = 0
 	  var path = ''
+	  var defaultDelimiter = options && options.delimiter || '/'
 	  var res
 
 	  while ((res = PATH_REGEXP.exec(str)) != null) {
@@ -950,8 +973,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var partial = prefix != null && next != null && next !== prefix
 	    var repeat = modifier === '+' || modifier === '*'
 	    var optional = modifier === '?' || modifier === '*'
-	    var delimiter = res[2] || '/'
-	    var pattern = capture || group || (asterisk ? '.*' : '[^' + delimiter + ']+?')
+	    var delimiter = res[2] || defaultDelimiter
+	    var pattern = capture || group
 
 	    tokens.push({
 	      name: name || key++,
@@ -961,7 +984,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      repeat: repeat,
 	      partial: partial,
 	      asterisk: !!asterisk,
-	      pattern: escapeGroup(pattern)
+	      pattern: pattern ? escapeGroup(pattern) : (asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?')
 	    })
 	  }
 
@@ -982,10 +1005,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Compile a string to a template function for the path.
 	 *
 	 * @param  {string}             str
+	 * @param  {Object=}            options
 	 * @return {!function(Object=, Object=)}
 	 */
-	function compile (str) {
-	  return tokensToFunction(parse(str))
+	function compile (str, options) {
+	  return tokensToFunction(parse(str, options))
 	}
 
 	/**
@@ -1196,34 +1220,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @return {!RegExp}
 	 */
 	function stringToRegexp (path, keys, options) {
-	  var tokens = parse(path)
-	  var re = tokensToRegExp(tokens, options)
-
-	  // Attach keys back to the regexp.
-	  for (var i = 0; i < tokens.length; i++) {
-	    if (typeof tokens[i] !== 'string') {
-	      keys.push(tokens[i])
-	    }
-	  }
-
-	  return attachKeys(re, keys)
+	  return tokensToRegExp(parse(path, options), keys, options)
 	}
 
 	/**
 	 * Expose a function for taking tokens and returning a RegExp.
 	 *
-	 * @param  {!Array}  tokens
-	 * @param  {Object=} options
+	 * @param  {!Array}          tokens
+	 * @param  {(Array|Object)=} keys
+	 * @param  {Object=}         options
 	 * @return {!RegExp}
 	 */
-	function tokensToRegExp (tokens, options) {
+	function tokensToRegExp (tokens, keys, options) {
+	  if (!isarray(keys)) {
+	    options = /** @type {!Object} */ (keys || options)
+	    keys = []
+	  }
+
 	  options = options || {}
 
 	  var strict = options.strict
 	  var end = options.end !== false
 	  var route = ''
-	  var lastToken = tokens[tokens.length - 1]
-	  var endsWithSlash = typeof lastToken === 'string' && /\/$/.test(lastToken)
 
 	  // Iterate over the tokens and create our regexp string.
 	  for (var i = 0; i < tokens.length; i++) {
@@ -1234,6 +1252,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      var prefix = escapeString(token.prefix)
 	      var capture = '(?:' + token.pattern + ')'
+
+	      keys.push(token)
 
 	      if (token.repeat) {
 	        capture += '(?:' + prefix + capture + ')*'
@@ -1253,12 +1273,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  var delimiter = escapeString(options.delimiter || '/')
+	  var endsWithDelimiter = route.slice(-delimiter.length) === delimiter
+
 	  // In non-strict mode we allow a slash at the end of match. If the path to
 	  // match already ends with a slash, we remove it for consistency. The slash
 	  // is valid at the end of a path match, not in the middle. This is important
 	  // in non-ending mode, where "/test/" shouldn't match "/test//route".
 	  if (!strict) {
-	    route = (endsWithSlash ? route.slice(0, -2) : route) + '(?:\\/(?=$))?'
+	    route = (endsWithDelimiter ? route.slice(0, -delimiter.length) : route) + '(?:' + delimiter + '(?=$))?'
 	  }
 
 	  if (end) {
@@ -1266,10 +1289,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else {
 	    // In non-ending mode, we need the capturing groups to match as much as
 	    // possible by using a positive lookahead to the end or next path segment.
-	    route += strict && endsWithSlash ? '' : '(?=\\/|$)'
+	    route += strict && endsWithDelimiter ? '' : '(?=' + delimiter + '|$)'
 	  }
 
-	  return new RegExp('^' + route, flags(options))
+	  return attachKeys(new RegExp('^' + route, flags(options)), keys)
 	}
 
 	/**
@@ -1285,14 +1308,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @return {!RegExp}
 	 */
 	function pathToRegexp (path, keys, options) {
-	  keys = keys || []
-
 	  if (!isarray(keys)) {
-	    options = /** @type {!Object} */ (keys)
+	    options = /** @type {!Object} */ (keys || options)
 	    keys = []
-	  } else if (!options) {
-	    options = {}
 	  }
+
+	  options = options || {}
 
 	  if (path instanceof RegExp) {
 	    return regexpToRegexp(path, /** @type {!Array} */ (keys))
@@ -1893,10 +1914,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _path = __webpack_require__(5);
-
-	var _path2 = _interopRequireDefault(_path);
-
 	function transition(options, Promise) {
 	  options = options || {};
 
@@ -1908,6 +1925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var match = options.match;
 	  var routes = match.routes;
 	  var params = match.params;
+	  var pathname = match.pathname;
 	  var query = match.query;
 
 	  var id = options.id;
@@ -1954,7 +1972,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    routes: (0, _dash.clone)(routes),
 	    path: path,
-	    pathname: _path2['default'].withoutQuery(path),
+	    pathname: pathname,
 	    params: (0, _dash.clone)(params),
 	    query: (0, _dash.clone)(query),
 	    redirectTo: function redirectTo() {
@@ -2033,7 +2051,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        activeTransition: null,
 	        routes: routes,
 	        path: path,
-	        pathname: _path2['default'].withoutQuery(path),
+	        pathname: pathname,
 	        params: params,
 	        query: query
 	      };

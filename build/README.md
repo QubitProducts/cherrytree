@@ -123,7 +123,7 @@ A more complex example in it's own repo:
 ## CI
 
 [![Build Status](https://travis-ci.org/QubitProducts/cherrytree.svg?branch=master)](https://travis-ci.org/QubitProducts/cherrytree)
-[![build status](https://www.codeship.io/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
+[![build status](https://codeship.com/projects/aa5e37b0-aeb1-0131-dd5f-06fd12e6a611/status?branch=master)](https://codeship.com/projects/19734)
 
 
 ## Browser Support
