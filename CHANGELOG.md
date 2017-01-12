@@ -1,3 +1,7 @@
+### v2.4.1
+
+* Fix a broken release, for some reason the `npm run release` failed to package correctly
+
 ### v2.4.0
 
 * Make it possible to `transitionTo('anAbstractRoute')` and `generate('anAbstractRoute')` in cases where the abstract route has a corresponding index route. This can be more intuitive in some cases.
