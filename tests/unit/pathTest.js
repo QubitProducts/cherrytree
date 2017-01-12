@@ -66,6 +66,16 @@ test('Path.extractParams', () => {
   assert.equals(Path.extractParams('/comments/:id(.*\/?edit)', '/comments/edit'), {id: 'edit'})
   assert.equals(Path.extractParams('/comments/:id(.*\/?edit)', '/comments/editor'), null)
   assert.equals(Path.extractParams('/comments/:id(.*\/?edit)', '/comments/123'), null)
+
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo'), { a: undefined, b: undefined, c: undefined })
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/'), { a: undefined, b: undefined, c: undefined })
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo///'), null)
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1'), {a: '1', b: undefined, c: undefined})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1/'), {a: '1', b: undefined, c: undefined})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1///'), null)
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1/2'), {a: '1', b: '2', c: undefined})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo/1/2/3'), {a: '1', b: '2', c: '3'})
+  assert.equals(Path.extractParams('/foo/:a?/:b?/:c?', '/foo///1'), null)
 })
 
 test('Path.injectParams', () => {
@@ -83,13 +93,17 @@ test('Path.injectParams', () => {
 
   assert.equals(Path.injectParams('/a/:foo*/d', { foo: 'b/c' }), '/a/b/c/d')
   assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b', bar: 'd' }), '/a/b/c/d')
-  assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }), '/a/b/c/')
+  assert.equals(Path.injectParams('/a/:foo*/c/:bar*', { foo: 'b' }), '/a/b/c')
 
   assert.equals(Path.injectParams('/a/:foo+/d', { foo: 'b/c' }), '/a/b/c/d')
   assert.equals(Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b?', bar: 'd ' }), '/a/b%3F/c/d%20')
   assert.exception(() => Path.injectParams('/a/:foo+/c/:bar+', { foo: 'b' }))
 
   assert.equals(Path.injectParams('/foo.bar.baz'), '/foo.bar.baz')
+
+  assert.equals(Path.injectParams('/foo/:a?/:b?/:c?', {}), '/foo')
+  assert.equals(Path.injectParams('/foo/:a?/:b?/:c?', {a: 1}), '/foo/1')
+  assert.equals(Path.injectParams('/foo/:a?/:b?/:c?', {c: 1}), '/foo///1')
 })
 
 test('Path.extractQuery', () => {
