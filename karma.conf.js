@@ -31,7 +31,11 @@ function config (c) {
         loaders: [{
           test: /\.js$/,
           exclude: /node_modules/,
-          loader: 'babel?optional=runtime'
+          loader: 'babel',
+          query: {
+            presets: ['es2015'],
+            plugins: ['transform-runtime', 'transform-async-to-generator']
+          }
         }],
         postLoaders: c.coverage ? [{
           test: /\.js/,
