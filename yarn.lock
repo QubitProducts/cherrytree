@@ -3353,9 +3353,9 @@ loader-utils@^0.2.11, loader-utils@^0.2.5:
     json5 "^0.5.0"
     object-assign "^4.0.1"
 
-location-bar@^2.0.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/location-bar/-/location-bar-2.1.0.tgz#5a248375930a236b7d2879862ba7a87d3ac9b11f"
+location-bar@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/location-bar/-/location-bar-3.0.1.tgz#10cbeca7f9b0f1a0a6d900906a5cc250b812bd35"
 
 lodash._arraycopy@^3.0.0:
   version "3.0.0"

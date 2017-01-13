@@ -20,7 +20,7 @@
     "url": "https://github.com/QubitProducts/cherrytree/issues"
   },
   "dependencies": {
-    "location-bar": "^2.0.0",
+    "location-bar": "^3.0.1",
     "path-to-regexp": "^1.0.3"
   },
   "keywords": [
