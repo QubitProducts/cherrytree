@@ -5,10 +5,6 @@ module.exports = {
     libraryTarget: 'umd'
   },
   resolve: {
-    alias: {
-      'cherrytree': __dirname,
-      'expect': 'referee/lib/expect'
-    }
   },
   module: {
     loaders: [
